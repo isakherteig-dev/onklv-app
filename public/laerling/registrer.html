@@ -6,52 +6,44 @@
   <title>Registrer deg som lærling — OLKV</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
-<body class="auth-side">
+<body class="login-side">
+
+  <!-- Flytende former (bakgrunn) -->
+  <div class="login-shape login-shape-1"></div>
+  <div class="login-shape login-shape-2"></div>
+  <div class="login-shape login-shape-3"></div>
 
   <!-- NAVIGASJON -->
-  <nav class="nav">
-    <div class="nav-innhold">
-      <a href="/" class="nav-logo">
-        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
-        <span class="logo-tagline">Fremtiden er din</span>
-      </a>
-      <div class="nav-lenker">
-        <a href="/bedrift/registrer.html" class="nav-lenke">For bedrifter</a>
-      </div>
-    </div>
+  <nav class="login-nav">
+    <a href="/" class="nav-logo">
+      <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+    </a>
+    <a href="/bedrift/registrer.html" style="font-size: 0.875rem;">For bedrifter →</a>
   </nav>
 
-  <!-- SKJEMA -->
-  <main style="flex: 1; padding: 1rem;">
-    <div class="auth-kort">
-      <h1>Lag lærlingprofil</h1>
-      <p class="auth-ingress">Registrer deg gratis og kom i kontakt med lærebedrifter i Vestland.</p>
+  <!-- INNHOLD -->
+  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 1rem 2rem; position: relative; z-index: 10;">
 
-      <div id="varsel" class="varsel skjult"></div>
+    <!-- Logo stor -->
+    <div class="login-logo-stor" style="margin-bottom: 0.25rem;">
+      <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+    </div>
+    <p class="login-tagline">Lag din lærlingprofil — det tar under 2 minutter</p>
+
+    <!-- SKJEMA-KORT -->
+    <div class="login-kort" style="max-width: 500px;">
+
+      <div id="varsel" class="varsel skjult" style="margin-bottom: 1rem;"></div>
 
       <form id="registrer-form" novalidate>
         <div class="form-gruppe">
           <label for="navn">Fullt navn *</label>
-          <input
-            type="text"
-            id="navn"
-            name="navn"
-            placeholder="Ola Nordmann"
-            autocomplete="name"
-            required
-          />
+          <input type="text" id="navn" name="navn" placeholder="Ola Nordmann" autocomplete="name" required />
         </div>
 
         <div class="form-gruppe">
           <label for="epost">E-postadresse *</label>
-          <input
-            type="email"
-            id="epost"
-            name="epost"
-            placeholder="ola@example.no"
-            autocomplete="email"
-            required
-          />
+          <input type="email" id="epost" name="epost" placeholder="ola@example.no" autocomplete="email" required />
         </div>
 
         <div class="form-gruppe">
@@ -71,75 +63,50 @@
           </select>
         </div>
 
-        <div class="form-gruppe">
-          <label for="passord">Passord *</label>
-          <input
-            type="password"
-            id="passord"
-            name="passord"
-            placeholder="Minst 8 tegn"
-            autocomplete="new-password"
-            required
-            minlength="8"
-          />
-          <span class="hint">Minst 8 tegn</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-gruppe">
+            <label for="passord">Passord *</label>
+            <input type="password" id="passord" name="passord" placeholder="Minst 8 tegn" autocomplete="new-password" required minlength="8" />
+          </div>
+          <div class="form-gruppe">
+            <label for="passord-bekreft">Bekreft passord *</label>
+            <input type="password" id="passord-bekreft" name="passord-bekreft" placeholder="Gjenta passord" autocomplete="new-password" required />
+          </div>
         </div>
 
         <div class="form-gruppe">
-          <label for="passord-bekreft">Bekreft passord *</label>
-          <input
-            type="password"
-            id="passord-bekreft"
-            name="passord-bekreft"
-            placeholder="Skriv passordet på nytt"
-            autocomplete="new-password"
-            required
-          />
+          <label for="bio">Kort om deg <span style="font-weight: 400; color: var(--olkv-gray);">(valgfritt)</span></label>
+          <textarea id="bio" name="bio" placeholder="Fortell litt om deg selv og hva du ønsker å lære..." style="min-height: 90px;"></textarea>
         </div>
 
-        <div class="form-gruppe">
-          <label for="bio">Kort om deg <span style="font-weight: 400; color: var(--farge-tekst-sekundaer);">(valgfritt)</span></label>
-          <textarea
-            id="bio"
-            name="bio"
-            placeholder="Fortell litt om deg selv, interesser og hva du ønsker å lære..."
-            style="min-height: 100px;"
-          ></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%;" id="send-btn">
-          Opprett profil
+        <button type="submit" class="btn btn-primary btn-puls" style="width: 100%;" id="send-btn">
+          Opprett profil →
         </button>
       </form>
 
-      <hr class="skille" />
-
-      <p class="auth-bunn">
+      <p style="font-size: 0.82rem; text-align: center; color: var(--olkv-gray); margin-top: 1.5rem;">
         Allerede registrert? <a href="/login.html">Logg inn</a>
-      </p>
-      <p class="auth-bunn" style="margin-top: 0.5rem;">
-        Er du en bedrift? <a href="/bedrift/registrer.html">Registrer bedrift her</a>
+        &nbsp;·&nbsp;
+        Er du en bedrift? <a href="/bedrift/registrer.html">Registrer bedrift</a>
       </p>
     </div>
   </main>
 
   <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-bunn" style="text-align: center; border-top: none; padding-top: 0;">
-      <p>© 2026 OLKV / Opplæringskontoret i Vestland &nbsp;·&nbsp; <a href="#" class="footer-lenke">Personvern</a></p>
-    </div>
+  <footer style="position: relative; z-index: 10; text-align: center; padding: 1.25rem; color: rgba(255,255,255,0.35); font-size: 0.78rem;">
+    © 2026 OLKV / Opplæringskontoret i Vestland &nbsp;·&nbsp;
+    <a href="#" style="color: rgba(255,255,255,0.45);">Personvern</a>
   </footer>
 
   <script type="module">
     import { registrerLaerling, visFeilmelding, visBekreftelse, erInnlogget } from '../app.js';
 
-    // Allerede innlogget? Send til dashboard
     if (erInnlogget()) window.location.href = '/laerling/dashboard.html';
 
     const form = document.getElementById('registrer-form');
     const sendBtn = document.getElementById('send-btn');
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const navn = document.getElementById('navn').value.trim();
@@ -170,13 +137,13 @@
       sendBtn.textContent = 'Oppretter profil…';
 
       try {
-        registrerLaerling({ navn, epost, passord, utdanningsprogram, bio });
-        visBekreftelse('✅ Profilen er opprettet! Du sendes til dashbordet ditt…');
+        await registrerLaerling({ navn, epost, passord, utdanningsprogram, bio });
+        visBekreftelse('Profilen er opprettet! Du sendes til dashbordet ditt…');
         setTimeout(() => { window.location.href = '/laerling/dashboard.html'; }, 1000);
       } catch (err) {
         visFeilmelding(err.message || 'Noe gikk galt. Prøv igjen.');
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Opprett profil';
+        sendBtn.textContent = 'Opprett profil →';
       }
     });
   </script>

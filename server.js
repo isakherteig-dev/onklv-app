@@ -1,45 +1,26 @@
 import 'dotenv/config';
 import express from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import cookieParser from 'cookie-parser';
+import { initDB } from './db/init.js';
+import authRuter from './routes/auth.js';
+import laereplasserRuter from './routes/laereplasser.js';
+import soknadRuter from './routes/soknader.js';
 
 const app = express();
 const port = process.env.PORT ?? 3000;
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// Midlleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static('public'));
 
-app.post('/api/chat', async (req, res) => {
-  const { message } = req.body;
+// API-ruter
+app.use('/api/auth', authRuter);
+app.use('/api/laereplasser', laereplasserRuter);
+app.use('/api/soknader', soknadRuter);
 
-  if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'message is required and must be a string' });
-  }
-
-  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your_key_here') {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not configured' });
-  }
-
-  try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: message }],
-    });
-
-    const text = response.content
-      .filter((block) => block.type === 'text')
-      .map((block) => block.text)
-      .join('');
-
-    res.json({ response: text });
-  } catch (err) {
-    console.error('Anthropic API error:', err);
-    const status = err.status ?? 500;
-    res.status(status).json({ error: err.message ?? 'Internal server error' });
-  }
-});
-
+// Start
+initDB();
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server kjører på http://localhost:${port}`);
 });

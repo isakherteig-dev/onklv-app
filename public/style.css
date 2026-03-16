@@ -866,7 +866,10 @@ tr:hover td {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.4rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
   margin: 0 auto 1.25rem;
   transition: var(--overgang);
   box-shadow: 0 4px 16px rgba(42,82,152,0.12);
@@ -903,7 +906,7 @@ tr:hover td {
   flex-direction: column;
   background-color: var(--olkv-dark);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Flytende former på login-siden */

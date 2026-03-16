@@ -44,7 +44,7 @@
           onmouseover="this.style.borderColor='var(--olkv-blue-light)'; this.style.background='var(--olkv-blue-pale)'"
           onmouseout="this.style.borderColor='var(--olkv-border)'; this.style.background='#fff'"
         >
-          <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">🎓</div>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--olkv-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin: 0 auto 0.4rem; font-family: 'Playfair Display', serif; letter-spacing: 0;">L</div>
           <div style="font-size: 0.75rem; font-weight: 700; color: var(--olkv-dark);">Lærling</div>
           <div style="font-size: 0.68rem; color: var(--olkv-gray);">laerling@demo.no</div>
         </button>
@@ -54,7 +54,7 @@
           onmouseover="this.style.borderColor='var(--olkv-blue-light)'; this.style.background='var(--olkv-blue-pale)'"
           onmouseout="this.style.borderColor='var(--olkv-border)'; this.style.background='#fff'"
         >
-          <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">🏢</div>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--olkv-red); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin: 0 auto 0.4rem; font-family: 'Playfair Display', serif; letter-spacing: 0;">B</div>
           <div style="font-size: 0.75rem; font-weight: 700; color: var(--olkv-dark);">Bedrift</div>
           <div style="font-size: 0.68rem; color: var(--olkv-gray);">bedrift@demo.no</div>
         </button>
@@ -64,7 +64,7 @@
           onmouseover="this.style.borderColor='var(--olkv-blue-light)'; this.style.background='var(--olkv-blue-pale)'"
           onmouseout="this.style.borderColor='var(--olkv-border)'; this.style.background='#fff'"
         >
-          <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">⚙️</div>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--olkv-gray); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; margin: 0 auto 0.4rem; font-family: 'Playfair Display', serif; letter-spacing: 0;">A</div>
           <div style="font-size: 0.75rem; font-weight: 700; color: var(--olkv-dark);">Admin</div>
           <div style="font-size: 0.68rem; color: var(--olkv-gray);">admin@demo.no</div>
         </button>
@@ -110,9 +110,11 @@
     import { loggInn, visFeilmelding, erInnlogget, hentBruker } from './app.js';
 
     if (erInnlogget()) {
-      const bruker = hentBruker();
-      const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-      window.location.href = sider[bruker.rolle] || '/';
+      const bruker = await hentBruker();
+      if (bruker) {
+        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
+        window.location.href = sider[bruker.rolle] || '/';
+      }
     }
 
     window.fyllDemoKonto = function(epost, passord) {
@@ -124,7 +126,7 @@
     const form = document.getElementById('login-form');
     const btn = document.getElementById('logg-inn-btn');
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const epost = document.getElementById('epost').value.trim();
       const passord = document.getElementById('passord').value;
@@ -138,9 +140,9 @@
       btn.textContent = 'Logger inn…';
 
       try {
-        const bruker = loggInn(epost, passord);
+        const data = await loggInn(epost, passord);
         const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-        window.location.href = sider[bruker.rolle] || '/';
+        window.location.href = sider[data.rolle] || '/';
       } catch (err) {
         visFeilmelding(err.message || 'Feil e-post eller passord');
         btn.disabled = false;

@@ -30,20 +30,20 @@
       <nav class="sidebar-nav">
         <div class="sidebar-seksjon-tittel">Administrasjon</div>
         <a href="/admin/dashboard.html" class="sidebar-lenke aktiv">
-          <span class="sidebar-ikon">📊</span> Oversikt
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span> Oversikt
         </a>
         <a href="#bedrifter-venter" class="sidebar-lenke" onclick="scrollTil('bedrifter-venter')">
-          <span class="sidebar-ikon">🏢</span> Bedrifter
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg></span> Bedrifter
         </a>
         <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
-          <span class="sidebar-ikon">📋</span> Søknader
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Søknader
         </a>
         <a href="#statistikk" class="sidebar-lenke" onclick="scrollTil('statistikk')">
-          <span class="sidebar-ikon">📈</span> Statistikk
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Statistikk
         </a>
         <div class="sidebar-seksjon-tittel">System</div>
         <a href="#" class="sidebar-lenke">
-          <span class="sidebar-ikon">⚙️</span> Innstillinger
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2"/></svg></span> Innstillinger
         </a>
       </nav>
     </aside>
@@ -139,7 +139,7 @@
     initScrollReveal();
 
     // ===== AUTH GUARD =====
-    const bruker = krevInnlogging('admin');
+    const bruker = await krevInnlogging('admin');
     if (!bruker) throw new Error('redirect');
 
     document.getElementById('nav-navn').textContent = bruker.navn;
@@ -188,7 +188,7 @@
       document.getElementById('antall-venter').textContent = `${bedrifterData.length} venter`;
 
       if (bedrifterData.length === 0) {
-        container.innerHTML = `<div class="varsel varsel-suksess">✅ Ingen bedrifter venter godkjenning akkurat nå.</div>`;
+        container.innerHTML = `<div class="varsel varsel-suksess">Ingen bedrifter venter godkjenning akkurat nå.</div>`;
         return;
       }
 
@@ -210,8 +210,8 @@
                   <td style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">${formaterDato(b.registrert_dato)}</td>
                   <td>
                     <div class="rad" style="gap: 0.5rem; flex-wrap: nowrap;">
-                      <button class="btn btn-suksess btn-liten" onclick="godkjennBedrift(${b.id})">✓ Godkjenn</button>
-                      <button class="btn btn-feil btn-liten" onclick="avvisBedrift(${b.id})">✕ Avvis</button>
+                      <button class="btn btn-suksess btn-liten" onclick="godkjennBedrift(${b.id})">Godkjenn</button>
+                      <button class="btn btn-feil btn-liten" onclick="avvisBedrift(${b.id})">Avvis</button>
                     </div>
                   </td>
                 </tr>
@@ -226,7 +226,7 @@
       const bedrift = bedrifterData.find(b => b.id === id);
       if (!bedrift) return;
       bedrifterData = bedrifterData.filter(b => b.id !== id);
-      visBekreftelse(`✅ ${bedrift.navn} er godkjent og kan nå ta imot lærlinger.`);
+      visBekreftelse(`${bedrift.navn} er godkjent og kan nå ta imot lærlinger.`);
       visBedrifter();
       visStats();
     };

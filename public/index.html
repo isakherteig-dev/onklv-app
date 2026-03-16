@@ -29,10 +29,10 @@
     <p>Perfect Match kobler ambisiøse lærlinger med de beste lærebedriftene i Vestland. Enklere, raskere og mer personlig enn noe annet.</p>
     <div class="hero-knapper">
       <a href="/laerling/registrer.html" class="btn btn-stor btn-hvit">
-        🎓 Jeg er lærling
+        Jeg er lærling
       </a>
       <a href="/bedrift/registrer.html" class="btn btn-stor btn-hvit-outline">
-        🏢 Vi er en bedrift
+        Vi er en bedrift
       </a>
     </div>
   </section>
@@ -65,18 +65,18 @@
     <p style="max-width: 500px; margin: 0 auto 3rem;">Tre enkle steg — fra registrering til signert lærekontrakt.</p>
     <div class="rutenett-3">
       <div class="kort reveal stagger-1" style="text-align: center;">
-        <div class="steg-ikon">📝</div>
-        <h3>1. Lag profil</h3>
+        <div class="steg-ikon">01</div>
+        <h3>Lag profil</h3>
         <p style="margin-top: 0.5rem;">Registrer deg, fortell om deg selv og last opp CV. Det tar under 5 minutter.</p>
       </div>
       <div class="kort reveal stagger-2" style="text-align: center;">
-        <div class="steg-ikon">🔍</div>
-        <h3>2. Bli matchet</h3>
+        <div class="steg-ikon">02</div>
+        <h3>Bli matchet</h3>
         <p style="margin-top: 0.5rem;">Vi anbefaler læreplasser som passer deg basert på utdanningsprogram og interesser.</p>
       </div>
       <div class="kort reveal stagger-3" style="text-align: center;">
-        <div class="steg-ikon">🤝</div>
-        <h3>3. Søk og signer</h3>
+        <div class="steg-ikon">03</div>
+        <h3>Søk og signer</h3>
         <p style="margin-top: 0.5rem;">Send søknad med ett klikk. Bedriften tar kontakt, og opplæringskontoret hjelper deg videre.</p>
       </div>
     </div>
@@ -106,14 +106,13 @@
         <h2 style="margin-bottom: 1rem;">Finn de riktige lærlingene raskere</h2>
         <p style="margin-bottom: 1rem;">Legg ut læreplasser, motta søknader og vurder kandidater — alt på ett sted. Opplæringskontoret i Vestland sørger for at prosessen er trygg og effektiv.</p>
         <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
-          <li style="color: var(--farge-tekst-sekundaer);">✅ Enkel registrering og godkjenning</li>
-          <li style="color: var(--farge-tekst-sekundaer);">✅ Direkte søknader fra kvalifiserte lærlinger</li>
-          <li style="color: var(--farge-tekst-sekundaer);">✅ Support fra Opplæringskontoret i Vestland</li>
+          <li style="color: var(--farge-tekst-sekundaer);">— Enkel registrering og godkjenning</li>
+          <li style="color: var(--farge-tekst-sekundaer);">— Direkte søknader fra kvalifiserte lærlinger</li>
+          <li style="color: var(--farge-tekst-sekundaer);">— Support fra Opplæringskontoret i Vestland</li>
         </ul>
         <a href="/bedrift/registrer.html" class="btn btn-primary">Registrer bedriften din</a>
       </div>
       <div class="kort" style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-color: #bfdbfe;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
         <h3 style="margin-bottom: 0.5rem;">Drevet av Opplæringskontoret i Vestland</h3>
         <p>Perfect Match er utviklet i samarbeid med fagopplæringen i Vestland for å gjøre overgangen fra skole til læreplass smidigere for alle parter.</p>
       </div>
@@ -125,7 +124,7 @@
     <h2 style="color: #fff; margin-bottom: 1rem;">Klar til å finne din lærlingplass?</h2>
     <p style="color: rgba(255,255,255,0.85); max-width: 460px; margin: 0 auto 2rem;">Registrer deg gratis i dag og kom i kontakt med lærebedrifter i Vestland.</p>
     <div class="hero-knapper">
-      <a href="/laerling/registrer.html" class="btn btn-stor btn-hvit">Registrer deg som lærling</a>
+      <a href="/laerling/registrer.html" class="btn btn-stor btn-hvit">Registrer deg som lærling →</a>
       <a href="/bedrift/registrer.html" class="btn btn-stor btn-hvit-outline">Jeg representerer en bedrift</a>
     </div>
   </section>
@@ -165,14 +164,14 @@
           <div class="kort-header">
             <div>
               <div class="kort-tittel">${p.tittel}</div>
-              <div class="kort-undertittel">🏢 ${p.bedrift_navn}</div>
+              <div class="kort-undertittel">${p.bedrift_navn}</div>
             </div>
             <span class="badge badge-gronn">${p.bransje}</span>
           </div>
           <p style="font-size: 0.9rem; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.beskrivelse}</p>
           <div class="kort-footer">
             <div style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">
-              📍 ${p.sted} &nbsp;·&nbsp; 📅 Frist: ${formaterDato(p.frist)}
+              ${p.sted} &nbsp;·&nbsp; Frist: ${formaterDato(p.frist)}
             </div>
             <a href="/laerling/registrer.html" class="btn btn-primary btn-liten">Søk nå</a>
           </div>

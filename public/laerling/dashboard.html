@@ -29,20 +29,20 @@
       <nav class="sidebar-nav">
         <div class="sidebar-seksjon-tittel">Meny</div>
         <a href="/laerling/dashboard.html" class="sidebar-lenke aktiv">
-          <span class="sidebar-ikon">🏠</span> Dashbord
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
         </a>
         <a href="#laereplasser" class="sidebar-lenke" onclick="scrollTil('laereplasser')">
-          <span class="sidebar-ikon">🔍</span> Læreplasser
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Læreplasser
         </a>
         <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
-          <span class="sidebar-ikon">📋</span> Mine søknader
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Mine søknader
         </a>
         <a href="#profil" class="sidebar-lenke" onclick="scrollTil('profil')">
-          <span class="sidebar-ikon">👤</span> Min profil
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Min profil
         </a>
         <div class="sidebar-seksjon-tittel">Hjelp</div>
         <a href="#" class="sidebar-lenke">
-          <span class="sidebar-ikon">❓</span> Veiledning
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Veiledning
         </a>
       </nav>
     </aside>
@@ -53,10 +53,10 @@
       <!-- HILSEN -->
       <div class="rad" style="margin-bottom: 2rem; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <h1 style="font-size: 1.75rem;" id="hilsen">Hei! 👋</h1>
+          <h1 style="font-size: 1.75rem;" id="hilsen">Hei!</h1>
           <p id="hilsen-tekst">Her er en oversikt over læreplasser og søknader tilpasset deg.</p>
         </div>
-        <a href="#laereplasser" class="btn btn-primary" onclick="scrollTil('laereplasser'); return false;">🔍 Finn læreplasser</a>
+        <a href="#laereplasser" class="btn btn-primary" onclick="scrollTil('laereplasser'); return false;">Finn læreplasser →</a>
       </div>
 
       <!-- PROFILKORT -->
@@ -70,7 +70,7 @@
               <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--farge-tekst-sekundaer);" id="profil-epost">—</p>
             </div>
           </div>
-          <button class="btn btn-ghost btn-liten" id="rediger-profil-btn">✏️ Rediger</button>
+          <button class="btn btn-ghost btn-liten" id="rediger-profil-btn">Rediger</button>
         </div>
         <hr class="skille" style="margin: 1rem 0;" />
         <div>
@@ -85,10 +85,10 @@
         </div>
         <div class="rad" style="margin-top: 1rem; gap: 0.75rem;">
           <label class="btn btn-secondary btn-liten" style="cursor: pointer; min-height: 36px;">
-            📄 Last opp CV
+            Last opp CV
             <input type="file" id="cv-input" accept=".pdf,.docx,.doc" style="display: none;" />
           </label>
-          <button class="btn btn-ghost btn-liten" id="oppdater-bio-btn">✏️ Oppdater bio</button>
+          <button class="btn btn-ghost btn-liten" id="oppdater-bio-btn">Oppdater bio</button>
         </div>
         <div id="cv-varsel" class="varsel skjult" style="margin-top: 0.75rem;"></div>
       </section>
@@ -192,12 +192,12 @@
     initScrollReveal();
 
     // ===== AUTH GUARD =====
-    const bruker = krevInnlogging('laerling');
+    const bruker = await krevInnlogging('laerling');
     if (!bruker) throw new Error('redirect');
 
     // ===== PERSONALISERING =====
     document.getElementById('nav-navn').textContent = bruker.navn;
-    document.getElementById('hilsen').textContent = `Hei, ${bruker.navn.split(' ')[0]}! 👋`;
+    document.getElementById('hilsen').textContent = `Hei, ${bruker.navn.split(' ')[0]}!`;
     document.getElementById('hilsen-tekst').textContent =
       `Her er læreplasser tilpasset ${bruker.utdanningsprogram || 'deg'}.`;
     document.getElementById('profil-avatar').textContent = initialFra(bruker.navn);
@@ -213,7 +213,7 @@
       document.getElementById('profil-prosent').textContent = pst + '%';
       document.getElementById('profil-fyll').style.width = pst + '%';
       document.getElementById('profil-tips').textContent = b.cv_lastet_opp
-        ? (b.bio ? '✅ Profilen ser bra ut!' : 'Legg til en bio for å skille deg ut')
+        ? (b.bio ? 'Profilen ser bra ut!' : 'Legg til en bio for å skille deg ut')
         : 'Last opp CV for å øke synligheten din overfor bedrifter';
     }
     oppdaterProfildisplay(bruker);
@@ -233,7 +233,7 @@
           <div class="kort-header">
             <div>
               <div class="kort-tittel">${p.tittel}</div>
-              <div class="kort-undertittel">🏢 ${p.bedrift_navn}</div>
+              <div class="kort-undertittel">${p.bedrift_navn}</div>
             </div>
             <span class="badge badge-blaa">${p.antall_plasser} plass${p.antall_plasser !== 1 ? 'er' : ''}</span>
           </div>
@@ -241,9 +241,9 @@
             ${p.beskrivelse}
           </p>
           <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--farge-tekst-sekundaer); margin-bottom: 1rem; flex-wrap: wrap;">
-            <span>📍 ${p.sted}</span>
-            <span>📅 Frist: ${formaterDato(p.frist)}</span>
-            <span>📂 ${p.bransje}</span>
+            <span>${p.sted}</span>
+            <span>Frist: ${formaterDato(p.frist)}</span>
+            <span>${p.bransje}</span>
           </div>
           <button
             class="btn btn-primary btn-liten"
@@ -265,7 +265,6 @@
       if (soknader.length === 0) {
         container.innerHTML = `
           <div class="kort" style="text-align: center; padding: 2.5rem;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
             <h3 style="margin-bottom: 0.5rem;">Ingen søknader ennå</h3>
             <p>Finn en lærlingplass og send din første søknad!</p>
           </div>
@@ -324,7 +323,7 @@
       const oppdatert = oppdaterBruker({ cv_lastet_opp: true, cv_filnavn: fil.name });
       const el = document.getElementById('cv-varsel');
       el.className = 'varsel varsel-suksess';
-      el.textContent = `✅ CV lastet opp: ${fil.name}`;
+      el.textContent = `CV lastet opp: ${fil.name}`;
       el.classList.remove('skjult');
       oppdaterProfildisplay(oppdatert);
     });
@@ -366,7 +365,7 @@
         await sendSoknad(valgtLaerplass.id, melding);
         const tittel = valgtLaerplass.tittel;
         lukkModal();
-        visBekreftelse(`✅ Søknaden din til «${tittel}» er sendt!`);
+        visBekreftelse(`Søknaden din til «${tittel}» er sendt!`);
         await lastSoknader();
       } catch (err) {
         const el = document.getElementById('varsel-modal');
@@ -421,7 +420,7 @@
       document.getElementById('profil-avatar').textContent = initialFra(oppdatert.navn);
       oppdaterProfildisplay(oppdatert);
       lukkProfilModal();
-      visBekreftelse('✅ Profilen er oppdatert!');
+      visBekreftelse('Profilen er oppdatert!');
     });
 
     // ===== LOGG UT =====

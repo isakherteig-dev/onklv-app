@@ -34,7 +34,6 @@
       <div id="varsel" class="varsel skjult"></div>
 
       <div id="bekreftelse-kort" class="skjult" style="text-align: center; padding: 1.5rem 0;">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
         <h2 style="margin-bottom: 0.75rem;">Søknaden er mottatt!</h2>
         <p style="max-width: 380px; margin: 0 auto 1.5rem;">
           Vi gjennomgår registreringen din og tar kontakt på e-post når bedriften er godkjent.
@@ -164,7 +163,7 @@
       e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
     });
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const navn = document.getElementById('bedrift-navn').value.trim();
@@ -200,7 +199,7 @@
       sendBtn.textContent = 'Sender søknad…';
 
       try {
-        registrerBedrift({ navn, orgNr, bransje, epost, passord, beskrivelse });
+        await registrerBedrift({ navn, orgNr, bransje, epost, passord, beskrivelse });
         form.classList.add('skjult');
         document.querySelector('.info-boks')?.classList.add('skjult');
         bekreftelse.classList.remove('skjult');
