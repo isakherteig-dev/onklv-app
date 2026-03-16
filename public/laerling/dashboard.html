@@ -299,7 +299,7 @@
     }
 
     // ===== CV OPPLASTING =====
-    document.getElementById('cv-input').addEventListener('change', (e) => {
+    document.getElementById('cv-input').addEventListener('change', async (e) => {
       const fil = e.target.files[0];
       if (!fil) return;
 
@@ -320,7 +320,7 @@
         return;
       }
 
-      const oppdatert = oppdaterBruker({ cv_lastet_opp: true, cv_filnavn: fil.name });
+      const oppdatert = await oppdaterBruker({ cv_filnavn: fil.name });
       const el = document.getElementById('cv-varsel');
       el.className = 'varsel varsel-suksess';
       el.textContent = `CV lastet opp: ${fil.name}`;

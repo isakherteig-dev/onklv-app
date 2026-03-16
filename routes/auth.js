@@ -127,13 +127,18 @@ ruter.post('/logg-ut', (req, res) => {
 
 // PATCH /api/auth/profil — oppdater eget navn/bio
 ruter.patch('/profil', krevAuth, (req, res) => {
-  const { navn, bio } = req.body;
+  const { navn, bio, cv_filnavn } = req.body;
   const db = getDB();
   if (navn) {
     db.prepare('UPDATE users SET navn = ? WHERE id = ?').run(navn.trim(), req.user.id);
   }
-  if (req.user.rolle === 'laerling' && bio !== undefined) {
-    db.prepare('UPDATE laerlinger SET bio = ? WHERE user_id = ?').run(bio, req.user.id);
+  if (req.user.rolle === 'laerling') {
+    if (bio !== undefined) {
+      db.prepare('UPDATE laerlinger SET bio = ? WHERE user_id = ?').run(bio, req.user.id);
+    }
+    if (cv_filnavn) {
+      db.prepare('UPDATE laerlinger SET cv_filnavn = ? WHERE user_id = ?').run(cv_filnavn, req.user.id);
+    }
   }
   res.json({ ok: true });
 });
