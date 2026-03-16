@@ -41,7 +41,7 @@
           <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Min profil
         </a>
         <div class="sidebar-seksjon-tittel">Hjelp</div>
-        <a href="#" class="sidebar-lenke">
+        <a href="#" class="sidebar-lenke" id="veiledning-btn">
           <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Veiledning
         </a>
       </nav>
@@ -119,6 +119,26 @@
       </section>
 
     </main>
+  </div>
+
+  <!-- VEILEDNING-MODAL -->
+  <div id="veiledning-modal" class="modal-bakgrunn skjult">
+    <div class="modal" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3>Slik bruker du OLKV</h3>
+        <button class="modal-lukk" id="veiledning-lukk">✕</button>
+      </div>
+      <ol style="padding-left: 1.25rem; line-height: 2; font-size: 0.9rem; color: var(--farge-tekst-sekundaer);">
+        <li><strong style="color: var(--farge-tekst);">Last opp CV</strong> — øker synligheten din overfor bedrifter.</li>
+        <li><strong style="color: var(--farge-tekst);">Oppdater bio</strong> — fortell hvem du er og hva du vil lære.</li>
+        <li><strong style="color: var(--farge-tekst);">Finn læreplasser</strong> — bla gjennom aktive stillinger.</li>
+        <li><strong style="color: var(--farge-tekst);">Send søknad</strong> — skriv en personlig melding til bedriften.</li>
+        <li><strong style="color: var(--farge-tekst);">Følg med på status</strong> — se om søknaden er under vurdering, akseptert eller avvist under «Mine søknader».</li>
+      </ol>
+      <p style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer); margin-top: 1rem; border-top: 1px solid var(--farge-kant); padding-top: 1rem;">
+        Spørsmål? Ta kontakt med Opplæringskontoret i Vestland på <strong>post@olkv.no</strong>
+      </p>
+    </div>
   </div>
 
   <!-- SØKNAD-MODAL -->
@@ -426,6 +446,18 @@
     // ===== LOGG UT =====
     document.getElementById('logg-ut-btn').addEventListener('click', () => {
       if (confirm('Er du sikker på at du vil logge ut?')) loggUt();
+    });
+
+    // ===== VEILEDNING =====
+    document.getElementById('veiledning-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('veiledning-modal').classList.remove('skjult');
+    });
+    document.getElementById('veiledning-lukk').addEventListener('click', () => {
+      document.getElementById('veiledning-modal').classList.add('skjult');
+    });
+    document.getElementById('veiledning-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('veiledning-modal').classList.add('skjult');
     });
 
     // ===== INIT =====
