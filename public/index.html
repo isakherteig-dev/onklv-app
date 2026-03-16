@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfect Match — Finn din lærlingplass</title>
+  <title>OLKV — Finn din lærlingplass</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,7 +11,10 @@
   <!-- NAVIGASJON -->
   <nav class="nav">
     <div class="nav-innhold">
-      <a href="/" class="nav-logo">✦ Perfect Match</a>
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+        <span class="logo-tagline">Fremtiden er din</span>
+      </a>
       <div class="nav-lenker">
         <a href="/laerling/registrer.html" class="nav-lenke">For lærlinger</a>
         <a href="/bedrift/registrer.html" class="nav-lenke">For bedrifter</a>
@@ -35,7 +38,7 @@
   </section>
 
   <!-- TALL -->
-  <section style="background: #fff; padding: 3rem 1.5rem; border-bottom: 1px solid var(--farge-kant);">
+  <section class="reveal" style="background: #fff; padding: 3rem 1.5rem; border-bottom: 1px solid var(--farge-kant);">
     <div class="rutenett-4 container" style="max-width: 900px;">
       <div class="stat-boks">
         <div class="stat-tall">230+</div>
@@ -57,21 +60,21 @@
   </section>
 
   <!-- SLIK FUNGERER DET -->
-  <section class="seksjon tekst-sentert">
+  <section class="seksjon tekst-sentert reveal">
     <h2 style="margin-bottom: 0.5rem;">Slik fungerer det</h2>
     <p style="max-width: 500px; margin: 0 auto 3rem;">Tre enkle steg — fra registrering til signert lærekontrakt.</p>
     <div class="rutenett-3">
-      <div class="kort" style="text-align: center;">
+      <div class="kort reveal stagger-1" style="text-align: center;">
         <div class="steg-ikon">📝</div>
         <h3>1. Lag profil</h3>
         <p style="margin-top: 0.5rem;">Registrer deg, fortell om deg selv og last opp CV. Det tar under 5 minutter.</p>
       </div>
-      <div class="kort" style="text-align: center;">
+      <div class="kort reveal stagger-2" style="text-align: center;">
         <div class="steg-ikon">🔍</div>
         <h3>2. Bli matchet</h3>
         <p style="margin-top: 0.5rem;">Vi anbefaler læreplasser som passer deg basert på utdanningsprogram og interesser.</p>
       </div>
-      <div class="kort" style="text-align: center;">
+      <div class="kort reveal stagger-3" style="text-align: center;">
         <div class="steg-ikon">🤝</div>
         <h3>3. Søk og signer</h3>
         <p style="margin-top: 0.5rem;">Send søknad med ett klikk. Bedriften tar kontakt, og opplæringskontoret hjelper deg videre.</p>
@@ -80,7 +83,7 @@
   </section>
 
   <!-- LÆREPLASSER UTSNITT -->
-  <section style="background: #fff; padding: 4rem 1.5rem; border-top: 1px solid var(--farge-kant);">
+  <section class="reveal" style="background: #fff; padding: 4rem 1.5rem; border-top: 1px solid var(--farge-kant);">
     <div class="container">
       <div class="rad" style="justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
@@ -96,7 +99,7 @@
   </section>
 
   <!-- FOR BEDRIFTER -->
-  <section class="seksjon">
+  <section class="seksjon reveal">
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 900px; margin: 0 auto;">
       <div>
         <span class="badge badge-blaa" style="margin-bottom: 1rem; display: inline-flex;">For lærebedrifter</span>
@@ -131,8 +134,10 @@
   <footer class="footer">
     <div class="footer-innhold">
       <div>
-        <div class="footer-logo">✦ Perfect Match</div>
-        <p style="margin-top: 0.5rem; font-size: 0.875rem;">Drevet av Opplæringskontoret i Vestland</p>
+        <div class="footer-logo nav-logo" style="font-size: 1.2rem;">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </div>
+        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--olkv-gray);">Opplæringskontoret i Vestland</p>
       </div>
       <div class="footer-lenker">
         <a href="#" class="footer-lenke">Personvern</a>
@@ -142,12 +147,13 @@
       </div>
     </div>
     <div class="footer-bunn">
-      <p>© 2026 Perfect Match / Opplæringskontoret i Vestland. Alle rettigheter forbeholdt.</p>
+      <p>© 2026 OLKV / Opplæringskontoret i Vestland. Alle rettigheter forbeholdt.</p>
     </div>
   </footer>
 
   <script type="module">
-    import { hentLaereplasser, formaterDato } from './app.js';
+    import { hentLaereplasser, formaterDato, initScrollReveal } from './app.js';
+    initScrollReveal();
 
     async function visLaereplasser() {
       const plasser = await hentLaereplasser();

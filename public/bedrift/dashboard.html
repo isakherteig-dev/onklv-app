@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bedriftsdashbord — Perfect Match</title>
+  <title>Bedriftsdashbord — OLKV</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
@@ -11,7 +11,9 @@
   <!-- NAVIGASJON -->
   <nav class="nav">
     <div class="nav-innhold">
-      <a href="/" class="nav-logo">✦ Perfect Match</a>
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
       <div class="nav-lenker">
         <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);"></span>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
@@ -135,8 +137,10 @@
       statusBadgeKlasse,
       visBekreftelse,
       visFeilmelding,
-      loggUt
+      loggUt,
+      initScrollReveal
     } from '../app.js';
+    initScrollReveal();
 
     // ===== AUTH GUARD =====
     const bruker = krevInnlogging('bedrift');

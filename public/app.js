@@ -456,3 +456,20 @@ export async function slettAnnonse(id) {
   localStorage.setItem(key, JSON.stringify(oppdatert));
   return oppdatert;
 }
+
+// ===== SCROLL REVEAL (IntersectionObserver) =====
+export function initScrollReveal() {
+  const elementer = document.querySelectorAll('.reveal');
+  if (!elementer.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  elementer.forEach(el => observer.observe(el));
+}

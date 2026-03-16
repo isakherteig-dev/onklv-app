@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Adminpanel — Perfect Match</title>
+  <title>Adminpanel — OLKV</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
@@ -11,7 +11,9 @@
   <!-- NAVIGASJON -->
   <nav class="nav">
     <div class="nav-innhold">
-      <a href="/" class="nav-logo">✦ Perfect Match</a>
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
       <div class="nav-lenker">
         <span class="badge badge-oransje">Admin</span>
         <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer); margin-left: 0.25rem;"></span>
@@ -131,8 +133,10 @@
       statusTekst,
       statusBadgeKlasse,
       visBekreftelse,
-      loggUt
+      loggUt,
+      initScrollReveal
     } from '../app.js';
+    initScrollReveal();
 
     // ===== AUTH GUARD =====
     const bruker = krevInnlogging('admin');
