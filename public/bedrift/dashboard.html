@@ -13,7 +13,7 @@
     <div class="nav-innhold">
       <a href="/" class="nav-logo">✦ Perfect Match</a>
       <div class="nav-lenker">
-        <span style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);">Bergen Elektro AS</span>
+        <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);"></span>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -29,18 +29,16 @@
         <a href="/bedrift/dashboard.html" class="sidebar-lenke aktiv">
           <span class="sidebar-ikon">🏠</span> Dashbord
         </a>
-        <a href="#annonser" class="sidebar-lenke">
+        <a href="#annonser" class="sidebar-lenke" onclick="scrollTil('annonser')">
           <span class="sidebar-ikon">📢</span> Mine annonser
         </a>
-        <a href="#soknader" class="sidebar-lenke">
+        <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
           <span class="sidebar-ikon">📋</span> Søknader
-        </a>
-        <a href="#profil" class="sidebar-lenke">
-          <span class="sidebar-ikon">🏢</span> Bedriftsprofil
         </a>
         <div class="sidebar-seksjon-tittel">Hjelp</div>
         <a href="#" class="sidebar-lenke">
-          <span class="sidebar-ikon">❓</span> Veiledning</a>
+          <span class="sidebar-ikon">❓</span> Veiledning
+        </a>
       </nav>
     </aside>
 
@@ -50,7 +48,7 @@
       <!-- HILSEN -->
       <div class="rad" style="margin-bottom: 2rem; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <h1 style="font-size: 1.75rem;">Hei, Bergen Elektro! 👋</h1>
+          <h1 style="font-size: 1.75rem;" id="hilsen">Hei! 👋</h1>
           <p>Her er en oversikt over annonser og innkomne søknader.</p>
         </div>
         <button class="btn btn-primary" id="ny-annonse-btn">+ Ny læreplassannonse</button>
@@ -58,7 +56,10 @@
 
       <!-- STATS -->
       <div class="rutenett-4" style="margin-bottom: 2.5rem;" id="stats-rad">
-        <!-- Fylles av JS -->
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Aktive annonser</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Innkomne søknader</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Under vurdering</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Akseptert</div></div>
       </div>
 
       <!-- VARSEL -->
@@ -66,31 +67,23 @@
 
       <!-- MINE ANNONSER -->
       <section id="annonser" style="margin-bottom: 2.5rem;">
-        <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
-          <h2 style="font-size: 1.3rem;">Mine læreplassannonser</h2>
-        </div>
-        <div id="annonser-liste" class="rutenett-2">
-          <!-- Fylles av JS -->
-        </div>
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.25rem;">Mine læreplassannonser</h2>
+        <div id="annonser-liste" class="rutenett-2"></div>
       </section>
 
       <!-- INNKOMNE SØKNADER -->
       <section id="soknader">
         <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <h2 style="font-size: 1.3rem;">Innkomne søknader</h2>
-          <div class="rad" style="gap: 0.5rem;">
-            <select id="status-filter" style="min-height: 36px; font-size: 0.875rem; padding: 0.35rem 2rem 0.35rem 0.75rem; width: auto;">
-              <option value="">Alle statuser</option>
-              <option value="sendt">Sendt</option>
-              <option value="under_vurdering">Under vurdering</option>
-              <option value="akseptert">Akseptert</option>
-              <option value="avvist">Avvist</option>
-            </select>
-          </div>
+          <select id="status-filter" style="min-height: 36px; font-size: 0.875rem; padding: 0.35rem 2rem 0.35rem 0.75rem; width: auto;">
+            <option value="">Alle statuser</option>
+            <option value="sendt">Sendt</option>
+            <option value="under_vurdering">Under vurdering</option>
+            <option value="akseptert">Akseptert</option>
+            <option value="avvist">Avvist</option>
+          </select>
         </div>
-        <div id="soknader-liste">
-          <!-- Fylles av JS -->
-        </div>
+        <div id="soknader-liste"></div>
       </section>
 
     </main>
@@ -103,7 +96,6 @@
         <h3>Ny læreplassannonse</h3>
         <button class="modal-lukk" id="annonse-modal-lukk">✕</button>
       </div>
-      <div id="varsel-modal" class="varsel skjult"></div>
       <form id="annonse-form">
         <div class="form-gruppe">
           <label for="ann-tittel">Tittel *</label>
@@ -121,7 +113,7 @@
         </div>
         <div class="form-gruppe">
           <label for="ann-beskrivelse">Beskrivelse *</label>
-          <textarea id="ann-beskrivelse" placeholder="Beskriv læreplassen, arbeidsoppgaver og hva du ser etter..." required></textarea>
+          <textarea id="ann-beskrivelse" placeholder="Beskriv læreplassen, arbeidsoppgaver og hva du ser etter i en kandidat…" required></textarea>
         </div>
         <div class="rad" style="justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
           <button type="button" class="btn btn-ghost" id="annonse-modal-avbryt">Avbryt</button>
@@ -133,8 +125,11 @@
 
   <script type="module">
     import {
+      krevInnlogging,
       hentMineAnnonser,
       hentSoknaderBedrift,
+      lagreAnnonse,
+      slettAnnonse,
       formaterDato,
       statusTekst,
       statusBadgeKlasse,
@@ -143,39 +138,39 @@
       loggUt
     } from '../app.js';
 
-    let alleSoknader = [];
+    // ===== AUTH GUARD =====
+    const bruker = krevInnlogging('bedrift');
+    if (!bruker) throw new Error('redirect');
 
-    async function lastStats(annonser, soknader) {
-      const aktive = annonser.filter(a => a.aktiv).length;
-      const innkomne = soknader.length;
-      const underVurdering = soknader.filter(s => s.status === 'under_vurdering').length;
-      const aksepterte = soknader.filter(s => s.status === 'akseptert').length;
+    document.getElementById('nav-navn').textContent = bruker.navn;
+    document.getElementById('hilsen').textContent = `Hei, ${bruker.navn}! 👋`;
+
+    window.scrollTil = id => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    let alleSoknader = [];
+    let alleAnnonser = [];
+
+    // ===== STATS =====
+    function visStats() {
+      const aktive = alleAnnonser.filter(a => a.aktiv).length;
+      const innkomne = alleSoknader.length;
+      const underVurdering = alleSoknader.filter(s => s.status === 'under_vurdering').length;
+      const aksepterte = alleSoknader.filter(s => s.status === 'akseptert').length;
 
       document.getElementById('stats-rad').innerHTML = `
-        <div class="stat-boks">
-          <div class="stat-tall">${aktive}</div>
-          <div class="stat-etikett">Aktive annonser</div>
-        </div>
-        <div class="stat-boks">
-          <div class="stat-tall">${innkomne}</div>
-          <div class="stat-etikett">Innkomne søknader</div>
-        </div>
-        <div class="stat-boks">
-          <div class="stat-tall">${underVurdering}</div>
-          <div class="stat-etikett">Under vurdering</div>
-        </div>
-        <div class="stat-boks">
-          <div class="stat-tall">${aksepterte}</div>
-          <div class="stat-etikett">Akseptert</div>
-        </div>
+        <div class="stat-boks"><div class="stat-tall">${aktive}</div><div class="stat-etikett">Aktive annonser</div></div>
+        <div class="stat-boks"><div class="stat-tall">${innkomne}</div><div class="stat-etikett">Innkomne søknader</div></div>
+        <div class="stat-boks"><div class="stat-tall">${underVurdering}</div><div class="stat-etikett">Under vurdering</div></div>
+        <div class="stat-boks"><div class="stat-tall">${aksepterte}</div><div class="stat-etikett">Akseptert</div></div>
       `;
     }
 
+    // ===== ANNONSER =====
     async function lastAnnonser() {
-      const annonser = await hentMineAnnonser();
+      alleAnnonser = await hentMineAnnonser();
       const container = document.getElementById('annonser-liste');
 
-      if (annonser.length === 0) {
+      if (alleAnnonser.length === 0) {
         container.innerHTML = `
           <div class="kort" style="grid-column: 1 / -1; text-align: center; padding: 2.5rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">📢</div>
@@ -184,10 +179,10 @@
             <button class="btn btn-primary" onclick="document.getElementById('ny-annonse-btn').click()">+ Ny annonse</button>
           </div>
         `;
-        return annonser;
+        return;
       }
 
-      container.innerHTML = annonser.map(a => `
+      container.innerHTML = alleAnnonser.map(a => `
         <div class="kort">
           <div class="kort-header">
             <div>
@@ -201,26 +196,30 @@
             <span>📨 ${a.antall_soknader} søknad${a.antall_soknader !== 1 ? 'er' : ''}</span>
           </div>
           <div class="rad" style="gap: 0.5rem;">
-            <button class="btn btn-ghost btn-liten">✏️ Rediger</button>
-            <button class="btn btn-ghost btn-liten" style="color: var(--farge-feil);">🗑 Slett</button>
+            <button class="btn btn-ghost btn-liten" onclick="slettAnnonseMed(${a.id})" style="color: var(--farge-feil);">🗑 Slett</button>
           </div>
         </div>
       `).join('');
-
-      return annonser;
     }
 
+    window.slettAnnonseMed = async function(id) {
+      const annonse = alleAnnonser.find(a => a.id === id);
+      if (!annonse) return;
+      if (!confirm(`Slett annonsen «${annonse.tittel}»?`)) return;
+      alleAnnonser = await slettAnnonse(id);
+      visBekreftelse(`Annonsen «${annonse.tittel}» er slettet.`);
+      await lastAnnonser();
+      visStats();
+    };
+
+    // ===== SØKNADER =====
     async function lastSoknader(filter = '') {
       alleSoknader = await hentSoknaderBedrift();
       const soknader = filter ? alleSoknader.filter(s => s.status === filter) : alleSoknader;
       const container = document.getElementById('soknader-liste');
 
       if (soknader.length === 0) {
-        container.innerHTML = `
-          <div class="kort" style="text-align: center; padding: 2rem;">
-            <p>Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''} ennå.</p>
-          </div>
-        `;
+        container.innerHTML = `<div class="kort" style="text-align: center; padding: 2rem;"><p>Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''} ennå.</p></div>`;
         return;
       }
 
@@ -236,22 +235,14 @@
             </div>
             <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
           </div>
-          <p style="font-size: 0.875rem; background: #f8fafc; padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; border-left: 3px solid var(--farge-kant);">
+          <p style="font-size: 0.875rem; background: #f8fafc; padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; border-left: 3px solid var(--farge-kant); font-style: italic;">
             "${s.melding}"
           </p>
           <div class="kort-footer">
             <span style="font-size: 0.8rem; color: var(--farge-tekst-sekundaer);">Sendt ${formaterDato(s.sendt_dato)}</span>
             <div class="rad" style="gap: 0.5rem;">
-              <button
-                class="btn btn-suksess btn-liten"
-                onclick="oppdaterStatus(${s.id}, 'akseptert')"
-                ${s.status === 'akseptert' ? 'disabled' : ''}
-              >✓ Aksepter</button>
-              <button
-                class="btn btn-feil btn-liten"
-                onclick="oppdaterStatus(${s.id}, 'avvist')"
-                ${s.status === 'avvist' ? 'disabled' : ''}
-              >✕ Avvis</button>
+              <button class="btn btn-suksess btn-liten" onclick="oppdaterStatus(${s.id}, 'akseptert')" ${s.status === 'akseptert' ? 'disabled' : ''}>✓ Aksepter</button>
+              <button class="btn btn-feil btn-liten" onclick="oppdaterStatus(${s.id}, 'avvist')" ${s.status === 'avvist' ? 'disabled' : ''}>✕ Avvis</button>
             </div>
           </div>
         </div>
@@ -259,48 +250,67 @@
     }
 
     window.oppdaterStatus = function(id, nyStatus) {
-      // I MVP — simulerer oppdatering
       const soknad = alleSoknader.find(s => s.id === id);
-      if (soknad) {
-        soknad.status = nyStatus;
-        visBekreftelse(`Status oppdatert til «${statusTekst(nyStatus)}»`);
-        lastSoknader(document.getElementById('status-filter').value);
-      }
+      if (!soknad) return;
+      soknad.status = nyStatus;
+      visBekreftelse(`Status oppdatert til «${statusTekst(nyStatus)}»`);
+      lastSoknader(document.getElementById('status-filter').value);
+      visStats();
     };
 
     document.getElementById('status-filter').addEventListener('change', (e) => {
       lastSoknader(e.target.value);
     });
 
-    // NY ANNONSE MODAL
+    // ===== NY ANNONSE MODAL =====
     document.getElementById('ny-annonse-btn').addEventListener('click', () => {
       document.getElementById('annonse-modal').classList.remove('skjult');
+      // Sett min. dato til i dag
+      document.getElementById('ann-frist').min = new Date().toISOString().split('T')[0];
     });
-
-    document.getElementById('annonse-modal-lukk').addEventListener('click', lukkAnnonseModal);
-    document.getElementById('annonse-modal-avbryt').addEventListener('click', lukkAnnonseModal);
 
     function lukkAnnonseModal() {
       document.getElementById('annonse-modal').classList.add('skjult');
       document.getElementById('annonse-form').reset();
     }
 
-    document.getElementById('annonse-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      lukkAnnonseModal();
-      visBekreftelse('✅ Læreplassannonsen er publisert!');
-      lastAnnonser();
+    document.getElementById('annonse-modal-lukk').addEventListener('click', lukkAnnonseModal);
+    document.getElementById('annonse-modal-avbryt').addEventListener('click', lukkAnnonseModal);
+    document.getElementById('annonse-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) lukkAnnonseModal();
     });
 
-    // LOGG UT
+    document.getElementById('annonse-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tittel = document.getElementById('ann-tittel').value.trim();
+      const antall_plasser = parseInt(document.getElementById('ann-plasser').value);
+      const frist = document.getElementById('ann-frist').value;
+      const beskrivelse = document.getElementById('ann-beskrivelse').value.trim();
+
+      if (!tittel || !frist || !beskrivelse) {
+        visFeilmelding('Fyll ut alle påkrevde felter', 'varsel');
+        lukkAnnonseModal();
+        return;
+      }
+
+      await lagreAnnonse({ tittel, antall_plasser, frist, beskrivelse });
+      lukkAnnonseModal();
+      visBekreftelse(`✅ Annonsen «${tittel}» er publisert!`);
+      await lastAnnonser();
+      visStats();
+    });
+
+    // ===== LOGG UT =====
     document.getElementById('logg-ut-btn').addEventListener('click', () => {
       if (confirm('Er du sikker på at du vil logge ut?')) loggUt();
     });
 
-    // INIT
-    const [annonser] = await Promise.all([lastAnnonser(), lastSoknader()]);
-    const soknader = await hentSoknaderBedrift();
-    lastStats(await hentMineAnnonser(), soknader);
+    // ===== INIT =====
+    async function init() {
+      await Promise.all([lastAnnonser(), lastSoknader()]);
+      visStats();
+    }
+    init();
   </script>
 </body>
 </html>

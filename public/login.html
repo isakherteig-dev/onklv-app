@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logg inn — Perfect Match</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-side">
+
+  <!-- NAVIGASJON -->
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">✦ Perfect Match</a>
+      <div class="nav-lenker">
+        <a href="/laerling/registrer.html" class="nav-lenke">Registrer deg</a>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 1; padding: 1rem 1rem 2rem;">
+    <div class="auth-kort" style="max-width: 460px;">
+      <h1>Logg inn</h1>
+      <p class="auth-ingress">Skriv inn e-post og passord for å komme til dashbordet ditt.</p>
+
+      <!-- DEMO-KONTOER -->
+      <div style="margin-bottom: 1.5rem;">
+        <p style="font-size: 0.8rem; font-weight: 600; color: var(--farge-tekst-sekundaer); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem;">
+          Demo-kontoer — klikk for å fylle ut:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+          <button
+            class="demo-kort"
+            onclick="fyllDemoKonto('laerling@demo.no', 'demo1234')"
+            style="padding: 0.75rem 0.5rem; border: 1.5px solid var(--farge-kant); border-radius: var(--radius); background: #fff; cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;"
+            onmouseover="this.style.borderColor='var(--farge-hoved)'; this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='var(--farge-kant)'; this.style.background='#fff'"
+          >
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🎓</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--farge-tekst);">Lærling</div>
+            <div style="font-size: 0.7rem; color: var(--farge-tekst-sekundaer);">laerling@demo.no</div>
+          </button>
+          <button
+            class="demo-kort"
+            onclick="fyllDemoKonto('bedrift@demo.no', 'demo1234')"
+            style="padding: 0.75rem 0.5rem; border: 1.5px solid var(--farge-kant); border-radius: var(--radius); background: #fff; cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;"
+            onmouseover="this.style.borderColor='var(--farge-hoved)'; this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='var(--farge-kant)'; this.style.background='#fff'"
+          >
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🏢</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--farge-tekst);">Bedrift</div>
+            <div style="font-size: 0.7rem; color: var(--farge-tekst-sekundaer);">bedrift@demo.no</div>
+          </button>
+          <button
+            class="demo-kort"
+            onclick="fyllDemoKonto('admin@demo.no', 'demo1234')"
+            style="padding: 0.75rem 0.5rem; border: 1.5px solid var(--farge-kant); border-radius: var(--radius); background: #fff; cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;"
+            onmouseover="this.style.borderColor='var(--farge-hoved)'; this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='var(--farge-kant)'; this.style.background='#fff'"
+          >
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">⚙️</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--farge-tekst);">Admin</div>
+            <div style="font-size: 0.7rem; color: var(--farge-tekst-sekundaer);">admin@demo.no</div>
+          </button>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--farge-tekst-sekundaer); text-align: center; margin-top: 0.4rem;">Passord for alle: <strong>demo1234</strong></p>
+      </div>
+
+      <hr class="skille" />
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <form id="login-form" novalidate style="margin-top: 1.25rem;">
+        <div class="form-gruppe">
+          <label for="epost">E-postadresse</label>
+          <input
+            type="email"
+            id="epost"
+            name="epost"
+            placeholder="din@epost.no"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-gruppe">
+          <label for="passord">Passord</label>
+          <input
+            type="password"
+            id="passord"
+            name="passord"
+            placeholder="Skriv inn passordet ditt"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem;" id="logg-inn-btn">
+          Logg inn
+        </button>
+      </form>
+
+      <hr class="skille" />
+
+      <p class="auth-bunn">
+        Ikke registrert ennå?
+        <a href="/laerling/registrer.html">Registrer som lærling</a>
+        &nbsp;eller&nbsp;
+        <a href="/bedrift/registrer.html">Registrer bedrift</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-bunn" style="text-align: center; border-top: none; padding-top: 0;">
+      <p>© 2026 Perfect Match / Opplæringskontoret i Vestland &nbsp;·&nbsp; <a href="#" class="footer-lenke">Personvern</a></p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { loggInn, visFeilmelding, erInnlogget, hentBruker } from './app.js';
+
+    // Hvis allerede innlogget — redirect
+    if (erInnlogget()) {
+      const bruker = hentBruker();
+      const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
+      window.location.href = sider[bruker.rolle] || '/';
+    }
+
+    window.fyllDemoKonto = function(epost, passord) {
+      document.getElementById('epost').value = epost;
+      document.getElementById('passord').value = passord;
+      document.getElementById('epost').focus();
+    };
+
+    const form = document.getElementById('login-form');
+    const btn = document.getElementById('logg-inn-btn');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const epost = document.getElementById('epost').value.trim();
+      const passord = document.getElementById('passord').value;
+
+      if (!epost || !passord) {
+        visFeilmelding('Fyll ut e-post og passord');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Logger inn…';
+
+      try {
+        const bruker = loggInn(epost, passord);
+        const sider = {
+          laerling: '/laerling/dashboard.html',
+          bedrift: '/bedrift/dashboard.html',
+          admin: '/admin/dashboard.html'
+        };
+        window.location.href = sider[bruker.rolle] || '/';
+      } catch (err) {
+        visFeilmelding(err.message || 'Feil e-post eller passord');
+        btn.disabled = false;
+        btn.textContent = 'Logg inn';
+      }
+    });
+  </script>
+</body>
+</html>

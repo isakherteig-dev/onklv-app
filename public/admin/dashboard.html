@@ -14,7 +14,7 @@
       <a href="/" class="nav-logo">✦ Perfect Match</a>
       <div class="nav-lenker">
         <span class="badge badge-oransje">Admin</span>
-        <span style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer); margin-left: 0.25rem;">Jimmy Pasali</span>
+        <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer); margin-left: 0.25rem;"></span>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -30,16 +30,13 @@
         <a href="/admin/dashboard.html" class="sidebar-lenke aktiv">
           <span class="sidebar-ikon">📊</span> Oversikt
         </a>
-        <a href="#bedrifter-venter" class="sidebar-lenke">
+        <a href="#bedrifter-venter" class="sidebar-lenke" onclick="scrollTil('bedrifter-venter')">
           <span class="sidebar-ikon">🏢</span> Bedrifter
         </a>
-        <a href="#soknader" class="sidebar-lenke">
+        <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
           <span class="sidebar-ikon">📋</span> Søknader
         </a>
-        <a href="#laerlinger" class="sidebar-lenke">
-          <span class="sidebar-ikon">🎓</span> Lærlinger
-        </a>
-        <a href="#statistikk" class="sidebar-lenke">
+        <a href="#statistikk" class="sidebar-lenke" onclick="scrollTil('statistikk')">
           <span class="sidebar-ikon">📈</span> Statistikk
         </a>
         <div class="sidebar-seksjon-tittel">System</div>
@@ -63,7 +60,10 @@
 
       <!-- STATISTIKK TOPP -->
       <div class="rutenett-4" style="margin-bottom: 2.5rem;" id="stats-rad">
-        <!-- Fylles av JS -->
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Totale søknader</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Bedrifter til godkjenning</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Registrerte lærlinger</div></div>
+        <div class="stat-boks"><div class="stat-tall">—</div><div class="stat-etikett">Aktive læreplasser</div></div>
       </div>
 
       <!-- BEDRIFTER SOM VENTER GODKJENNING -->
@@ -72,24 +72,20 @@
           <h2 style="font-size: 1.3rem;">Bedrifter som venter godkjenning</h2>
           <span id="antall-venter" class="badge badge-oransje">0 venter</span>
         </div>
-        <div id="bedrifter-liste">
-          <!-- Fylles av JS -->
-        </div>
+        <div id="bedrifter-liste"></div>
       </section>
 
       <!-- ALLE SØKNADER -->
       <section id="soknader" style="margin-bottom: 2.5rem;">
         <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <h2 style="font-size: 1.3rem;">Alle søknader</h2>
-          <div class="rad" style="gap: 0.5rem; flex-wrap: wrap;">
-            <select id="status-filter" style="min-height: 36px; font-size: 0.875rem; padding: 0.35rem 2rem 0.35rem 0.75rem; width: auto;">
-              <option value="">Alle statuser</option>
-              <option value="sendt">Sendt</option>
-              <option value="under_vurdering">Under vurdering</option>
-              <option value="akseptert">Akseptert</option>
-              <option value="avvist">Avvist</option>
-            </select>
-          </div>
+          <select id="status-filter" style="min-height: 36px; font-size: 0.875rem; padding: 0.35rem 2rem 0.35rem 0.75rem; width: auto;">
+            <option value="">Alle statuser</option>
+            <option value="sendt">Sendt</option>
+            <option value="under_vurdering">Under vurdering</option>
+            <option value="akseptert">Akseptert</option>
+            <option value="avvist">Avvist</option>
+          </select>
         </div>
         <div class="tabell-wrapper">
           <table>
@@ -103,9 +99,7 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody id="soknader-tabell">
-              <!-- Fylles av JS -->
-            </tbody>
+            <tbody id="soknader-tabell"></tbody>
           </table>
         </div>
       </section>
@@ -116,15 +110,11 @@
         <div class="rutenett-2">
           <div class="kort">
             <h3 style="margin-bottom: 1rem;">Søknader per status</h3>
-            <div id="status-fordeling" style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <!-- Fylles av JS -->
-            </div>
+            <div id="status-fordeling" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
           </div>
           <div class="kort">
             <h3 style="margin-bottom: 1rem;">Læreplasser per bransje</h3>
-            <div id="bransje-fordeling" style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <!-- Fylles av JS -->
-            </div>
+            <div id="bransje-fordeling" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
           </div>
         </div>
       </section>
@@ -134,18 +124,25 @@
 
   <script type="module">
     import {
+      krevInnlogging,
       BEDRIFTER_VENTER,
-      SOKNADER_BEDRIFT,
       LAEREPLASSER,
       formaterDato,
       statusTekst,
       statusBadgeKlasse,
       visBekreftelse,
-      visFeilmelding,
       loggUt
     } from '../app.js';
 
-    // Dummy-data for admin
+    // ===== AUTH GUARD =====
+    const bruker = krevInnlogging('admin');
+    if (!bruker) throw new Error('redirect');
+
+    document.getElementById('nav-navn').textContent = bruker.navn;
+
+    window.scrollTil = id => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Dummy admin-data
     const ALLE_SOKNADER = [
       { id: 1, laerling_navn: 'Marius Haugen', utdanningsprogram: 'Elektrofag', tittel: 'Elektriker-lærling', bedrift: 'Bergen Elektro AS', dato: '2026-03-10', status: 'under_vurdering' },
       { id: 2, laerling_navn: 'Nora Kristiansen', utdanningsprogram: 'Elektrofag', tittel: 'Elektriker-lærling', bedrift: 'Bergen Elektro AS', dato: '2026-03-11', status: 'sendt' },
@@ -158,45 +155,36 @@
     let bedrifterData = [...BEDRIFTER_VENTER];
     let soknaderData = [...ALLE_SOKNADER];
 
-    // Stats
+    // ===== STATS =====
     function visStats() {
-      const totalSoknader = soknaderData.length;
       const venterGodkjenning = bedrifterData.length;
-      const aktiveLaerlinger = 230;
-      const aktivePlasser = LAEREPLASSER.filter(p => p.aktiv).length;
-
       document.getElementById('stats-rad').innerHTML = `
         <div class="stat-boks">
-          <div class="stat-tall">${totalSoknader}</div>
+          <div class="stat-tall">${soknaderData.length}</div>
           <div class="stat-etikett">Totale søknader</div>
         </div>
-        <div class="stat-boks" style="border-color: ${venterGodkjenning > 0 ? '#fde68a' : 'var(--farge-kant)'};">
-          <div class="stat-tall" style="color: ${venterGodkjenning > 0 ? 'var(--farge-advarsel)' : 'var(--farge-hoved)'};">${venterGodkjenning}</div>
+        <div class="stat-boks" style="${venterGodkjenning > 0 ? 'border-color: #fde68a;' : ''}">
+          <div class="stat-tall" style="${venterGodkjenning > 0 ? 'color: var(--farge-advarsel);' : ''}">${venterGodkjenning}</div>
           <div class="stat-etikett">Bedrifter til godkjenning</div>
         </div>
         <div class="stat-boks">
-          <div class="stat-tall">${aktiveLaerlinger}</div>
+          <div class="stat-tall">230</div>
           <div class="stat-etikett">Registrerte lærlinger</div>
         </div>
         <div class="stat-boks">
-          <div class="stat-tall">${aktivePlasser}</div>
+          <div class="stat-tall">${LAEREPLASSER.filter(p => p.aktiv).length}</div>
           <div class="stat-etikett">Aktive læreplasser</div>
         </div>
       `;
     }
 
-    // Bedrifter som venter
+    // ===== BEDRIFTER =====
     function visBedrifter() {
       const container = document.getElementById('bedrifter-liste');
-      const antall = document.getElementById('antall-venter');
-      antall.textContent = `${bedrifterData.length} venter`;
+      document.getElementById('antall-venter').textContent = `${bedrifterData.length} venter`;
 
       if (bedrifterData.length === 0) {
-        container.innerHTML = `
-          <div class="varsel varsel-suksess">
-            ✅ Ingen bedrifter venter godkjenning akkurat nå.
-          </div>
-        `;
+        container.innerHTML = `<div class="varsel varsel-suksess">✅ Ingen bedrifter venter godkjenning akkurat nå.</div>`;
         return;
       }
 
@@ -205,12 +193,7 @@
           <table>
             <thead>
               <tr>
-                <th>Bedrift</th>
-                <th>Org.nr</th>
-                <th>Bransje</th>
-                <th>E-post</th>
-                <th>Registrert</th>
-                <th>Handling</th>
+                <th>Bedrift</th><th>Org.nr</th><th>Bransje</th><th>E-post</th><th>Registrert</th><th>Handling</th>
               </tr>
             </thead>
             <tbody>
@@ -239,7 +222,7 @@
       const bedrift = bedrifterData.find(b => b.id === id);
       if (!bedrift) return;
       bedrifterData = bedrifterData.filter(b => b.id !== id);
-      visBekreftelse(`✅ ${bedrift.navn} er nå godkjent og kan ta imot lærlinger.`);
+      visBekreftelse(`✅ ${bedrift.navn} er godkjent og kan nå ta imot lærlinger.`);
       visBedrifter();
       visStats();
     };
@@ -254,19 +237,13 @@
       visStats();
     };
 
-    // Søknader-tabell
+    // ===== SØKNADER =====
     function visSoknader(filter = '') {
       const soknader = filter ? soknaderData.filter(s => s.status === filter) : soknaderData;
       const tbody = document.getElementById('soknader-tabell');
 
       if (soknader.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" style="text-align: center; color: var(--farge-tekst-sekundaer); padding: 2rem;">
-              Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''}.
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--farge-tekst-sekundaer); padding: 2rem;">Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''}.</td></tr>`;
         return;
       }
 
@@ -286,7 +263,7 @@
       visSoknader(e.target.value);
     });
 
-    // Statistikk
+    // ===== STATISTIKK =====
     function visStatistikk() {
       const statuser = ['sendt', 'under_vurdering', 'akseptert', 'avvist'];
       const total = soknaderData.length;
@@ -294,6 +271,7 @@
       document.getElementById('status-fordeling').innerHTML = statuser.map(s => {
         const antall = soknaderData.filter(x => x.status === s).length;
         const prosent = total > 0 ? Math.round((antall / total) * 100) : 0;
+        const farge = s === 'akseptert' ? 'var(--farge-suksess)' : s === 'avvist' ? 'var(--farge-feil)' : s === 'under_vurdering' ? 'var(--farge-advarsel)' : 'var(--farge-hoved)';
         return `
           <div>
             <div class="rad" style="justify-content: space-between; margin-bottom: 0.25rem;">
@@ -301,21 +279,14 @@
               <span style="font-size: 0.875rem; font-weight: 600;">${antall} (${prosent}%)</span>
             </div>
             <div class="fremgang-linje">
-              <div class="fremgang-fyll" style="width: ${prosent}%; background-color: ${
-                s === 'akseptert' ? 'var(--farge-suksess)' :
-                s === 'avvist' ? 'var(--farge-feil)' :
-                s === 'under_vurdering' ? 'var(--farge-advarsel)' :
-                'var(--farge-hoved)'
-              };"></div>
+              <div class="fremgang-fyll" style="width: ${prosent}%; background-color: ${farge};"></div>
             </div>
           </div>
         `;
       }).join('');
 
       const bransjer = {};
-      LAEREPLASSER.forEach(p => {
-        bransjer[p.bransje] = (bransjer[p.bransje] || 0) + 1;
-      });
+      LAEREPLASSER.forEach(p => { bransjer[p.bransje] = (bransjer[p.bransje] || 0) + 1; });
 
       document.getElementById('bransje-fordeling').innerHTML = Object.entries(bransjer)
         .sort((a, b) => b[1] - a[1])
@@ -327,12 +298,12 @@
         `).join('');
     }
 
-    // LOGG UT
+    // ===== LOGG UT =====
     document.getElementById('logg-ut-btn').addEventListener('click', () => {
       if (confirm('Er du sikker på at du vil logge ut?')) loggUt();
     });
 
-    // INIT
+    // ===== INIT =====
     visStats();
     visBedrifter();
     visSoknader();

@@ -135,7 +135,7 @@
       </form>
 
       <p class="auth-bunn" style="margin-top: 1.25rem;">
-        Allerede registrert? <a href="/bedrift/dashboard.html">Logg inn</a>
+        Allerede registrert? <a href="/login.html">Logg inn</a>
       </p>
     </div>
   </main>
@@ -148,51 +148,46 @@
   </footer>
 
   <script type="module">
-    import { handleRegister, visFeilmelding } from '../app.js';
+    import { registrerBedrift, visFeilmelding, erInnlogget } from '../app.js';
+
+    // Allerede innlogget?
+    if (erInnlogget()) window.location.href = '/bedrift/dashboard.html';
 
     const form = document.getElementById('registrer-form');
     const sendBtn = document.getElementById('send-btn');
     const bekreftelse = document.getElementById('bekreftelse-kort');
 
-    // Formater org.nr med mellomrom mens bruker skriver
     document.getElementById('org-nr').addEventListener('input', (e) => {
-      let val = e.target.value.replace(/\D/g, '').slice(0, 9);
-      e.target.value = val;
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
     });
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      const bedriftNavn = document.getElementById('bedrift-navn').value.trim();
-      const orgNr = document.getElementById('org-nr').value.trim().replace(/\s/g, '');
+      const navn = document.getElementById('bedrift-navn').value.trim();
+      const orgNr = document.getElementById('org-nr').value.trim();
       const bransje = document.getElementById('bransje').value;
       const epost = document.getElementById('epost').value.trim();
       const passord = document.getElementById('passord').value;
       const passordBekreft = document.getElementById('passord-bekreft').value;
       const beskrivelse = document.getElementById('beskrivelse').value.trim();
 
-      // Validering
-      if (!bedriftNavn || !orgNr || !bransje || !epost || !passord) {
+      if (!navn || !orgNr || !bransje || !epost || !passord) {
         visFeilmelding('Fyll ut alle påkrevde felter');
         return;
       }
-
       if (!/^\d{9}$/.test(orgNr)) {
         visFeilmelding('Organisasjonsnummeret må være nøyaktig 9 siffer');
         return;
       }
-
-      const epostMønster = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!epostMønster.test(epost)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(epost)) {
         visFeilmelding('Skriv inn en gyldig e-postadresse');
         return;
       }
-
       if (passord.length < 8) {
         visFeilmelding('Passordet må være minst 8 tegn');
         return;
       }
-
       if (passord !== passordBekreft) {
         visFeilmelding('Passordene stemmer ikke overens');
         return;
@@ -202,13 +197,10 @@
       sendBtn.textContent = 'Sender søknad…';
 
       try {
-        await handleRegister({ bedriftNavn, orgNr, bransje, epost, passord, beskrivelse }, 'bedrift');
-
-        // Skjul skjema, vis bekreftelse
+        registrerBedrift({ navn, orgNr, bransje, epost, passord, beskrivelse });
         form.classList.add('skjult');
         document.querySelector('.info-boks')?.classList.add('skjult');
         bekreftelse.classList.remove('skjult');
-
       } catch (err) {
         visFeilmelding(err.message || 'Noe gikk galt. Prøv igjen.');
         sendBtn.disabled = false;

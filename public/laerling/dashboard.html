@@ -13,7 +13,7 @@
     <div class="nav-innhold">
       <a href="/" class="nav-logo">✦ Perfect Match</a>
       <div class="nav-lenker">
-        <span style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);">Marius Haugen</span>
+        <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);"></span>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -29,13 +29,13 @@
         <a href="/laerling/dashboard.html" class="sidebar-lenke aktiv">
           <span class="sidebar-ikon">🏠</span> Dashbord
         </a>
-        <a href="#laereplasser" class="sidebar-lenke">
+        <a href="#laereplasser" class="sidebar-lenke" onclick="scrollTil('laereplasser')">
           <span class="sidebar-ikon">🔍</span> Læreplasser
         </a>
-        <a href="#soknader" class="sidebar-lenke">
+        <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
           <span class="sidebar-ikon">📋</span> Mine søknader
         </a>
-        <a href="#profil" class="sidebar-lenke">
+        <a href="#profil" class="sidebar-lenke" onclick="scrollTil('profil')">
           <span class="sidebar-ikon">👤</span> Min profil
         </a>
         <div class="sidebar-seksjon-tittel">Hjelp</div>
@@ -51,40 +51,44 @@
       <!-- HILSEN -->
       <div class="rad" style="margin-bottom: 2rem; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <h1 style="font-size: 1.75rem;">Hei, Marius! 👋</h1>
-          <p>Her er en oversikt over læreplasser og søknader tilpasset deg.</p>
+          <h1 style="font-size: 1.75rem;" id="hilsen">Hei! 👋</h1>
+          <p id="hilsen-tekst">Her er en oversikt over læreplasser og søknader tilpasset deg.</p>
         </div>
-        <a href="#laereplasser" class="btn btn-primary">🔍 Finn læreplasser</a>
+        <a href="#laereplasser" class="btn btn-primary" onclick="scrollTil('laereplasser'); return false;">🔍 Finn læreplasser</a>
       </div>
 
       <!-- PROFILKORT -->
       <section id="profil" class="kort" style="margin-bottom: 2rem;">
         <div class="kort-header">
           <div class="rad" style="gap: 1rem; align-items: center;">
-            <div class="avatar avatar-stor">MH</div>
+            <div class="avatar avatar-stor" id="profil-avatar">?</div>
             <div>
-              <h3 style="margin-bottom: 0.2rem;">Marius Haugen</h3>
-              <p style="margin: 0; font-size: 0.9rem;">Elektrofag · Åsane videregående skole</p>
-              <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">marius.haugen@elev.vlfk.no</p>
+              <h3 style="margin-bottom: 0.2rem;" id="profil-navn">—</h3>
+              <p style="margin: 0; font-size: 0.9rem;" id="profil-program">—</p>
+              <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--farge-tekst-sekundaer);" id="profil-epost">—</p>
             </div>
           </div>
-          <a href="#profil" class="btn btn-ghost btn-liten">Rediger</a>
+          <button class="btn btn-ghost btn-liten" id="rediger-profil-btn">✏️ Rediger</button>
         </div>
         <hr class="skille" style="margin: 1rem 0;" />
         <div>
           <div class="rad" style="justify-content: space-between; margin-bottom: 0.3rem;">
             <span style="font-size: 0.875rem; font-weight: 600;">Profilkomplettering</span>
-            <span style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer);">65%</span>
+            <span style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer);" id="profil-prosent">0%</span>
           </div>
           <div class="fremgang-linje">
-            <div class="fremgang-fyll" style="width: 65%;"></div>
+            <div class="fremgang-fyll" id="profil-fyll" style="width: 0%;"></div>
           </div>
-          <p class="fremgang-tekst">Last opp CV for å øke synligheten din overfor bedrifter</p>
+          <p class="fremgang-tekst" id="profil-tips">Last opp CV for å øke synligheten din</p>
         </div>
         <div class="rad" style="margin-top: 1rem; gap: 0.75rem;">
-          <button class="btn btn-secondary btn-liten">📄 Last opp CV</button>
-          <button class="btn btn-ghost btn-liten">✏️ Oppdater bio</button>
+          <label class="btn btn-secondary btn-liten" style="cursor: pointer; min-height: 36px;">
+            📄 Last opp CV
+            <input type="file" id="cv-input" accept=".pdf,.docx,.doc" style="display: none;" />
+          </label>
+          <button class="btn btn-ghost btn-liten" id="oppdater-bio-btn">✏️ Oppdater bio</button>
         </div>
+        <div id="cv-varsel" class="varsel skjult" style="margin-top: 0.75rem;"></div>
       </section>
 
       <!-- VARSEL -->
@@ -94,10 +98,12 @@
       <section id="laereplasser" style="margin-bottom: 2.5rem;">
         <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <h2 style="font-size: 1.3rem;">Anbefalte læreplasser</h2>
-          <span class="badge badge-blaa">Basert på Elektrofag</span>
+          <span class="badge badge-blaa" id="program-badge">Alle programmer</span>
         </div>
         <div id="laereplasser-liste" class="rutenett-2">
-          <!-- Fylles av JS -->
+          <div class="kort" style="text-align:center; padding: 2rem;">
+            <p style="color: var(--farge-tekst-sekundaer);">Laster læreplasser…</p>
+          </div>
         </div>
       </section>
 
@@ -107,9 +113,7 @@
           <h2 style="font-size: 1.3rem;">Mine søknader</h2>
           <span id="antall-soknader" class="badge badge-graa">0 søknader</span>
         </div>
-        <div id="soknader-liste">
-          <!-- Fylles av JS -->
-        </div>
+        <div id="soknader-liste"></div>
       </section>
 
     </main>
@@ -129,13 +133,38 @@
           <label for="soknad-melding">Søknadsmelding *</label>
           <textarea
             id="soknad-melding"
-            placeholder="Fortell hvorfor du ønsker akkurat denne læreplassen..."
+            placeholder="Fortell hvorfor du ønsker akkurat denne læreplassen, hva du kan bidra med og hva du vil lære…"
             required
           ></textarea>
         </div>
         <div class="rad" style="justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
           <button type="button" class="btn btn-ghost" id="modal-avbryt">Avbryt</button>
-          <button type="submit" class="btn btn-primary" id="send-soknad-btn">Send søknad</button>
+          <button type="submit" class="btn btn-primary" id="send-soknad-btn">Send søknad →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REDIGER PROFIL MODAL -->
+  <div id="profil-modal" class="modal-bakgrunn skjult">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Oppdater profil</h3>
+        <button class="modal-lukk" id="profil-modal-lukk">✕</button>
+      </div>
+      <div id="varsel-profil" class="varsel skjult"></div>
+      <form id="profil-form">
+        <div class="form-gruppe">
+          <label for="edit-navn">Fullt navn</label>
+          <input type="text" id="edit-navn" required />
+        </div>
+        <div class="form-gruppe">
+          <label for="edit-bio">Om deg</label>
+          <textarea id="edit-bio" placeholder="Fortell litt om deg selv og hva du ønsker å lære…"></textarea>
+        </div>
+        <div class="rad" style="justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+          <button type="button" class="btn btn-ghost" id="profil-modal-avbryt">Avbryt</button>
+          <button type="submit" class="btn btn-primary">Lagre profil</button>
         </div>
       </form>
     </div>
@@ -143,25 +172,59 @@
 
   <script type="module">
     import {
+      krevInnlogging,
       hentLaereplasser,
       hentSoknaderLaerling,
       sendSoknad,
+      oppdaterBruker,
+      beregnProfilkomplettering,
       formaterDato,
       statusTekst,
       statusBadgeKlasse,
+      initialFra,
       visFeilmelding,
       visBekreftelse,
       loggUt
     } from '../app.js';
 
-    let valgtLaerplass = null;
+    // ===== AUTH GUARD =====
+    const bruker = krevInnlogging('laerling');
+    if (!bruker) throw new Error('redirect');
 
-    // Last inn læreplasser
+    // ===== PERSONALISERING =====
+    document.getElementById('nav-navn').textContent = bruker.navn;
+    document.getElementById('hilsen').textContent = `Hei, ${bruker.navn.split(' ')[0]}! 👋`;
+    document.getElementById('hilsen-tekst').textContent =
+      `Her er læreplasser tilpasset ${bruker.utdanningsprogram || 'deg'}.`;
+    document.getElementById('profil-avatar').textContent = initialFra(bruker.navn);
+    document.getElementById('profil-navn').textContent = bruker.navn;
+    document.getElementById('profil-program').textContent =
+      (bruker.utdanningsprogram || '—') + (bruker.skole ? ' · ' + bruker.skole : '');
+    document.getElementById('profil-epost').textContent = bruker.epost;
+    document.getElementById('program-badge').textContent =
+      bruker.utdanningsprogram ? 'Basert på ' + bruker.utdanningsprogram : 'Alle programmer';
+
+    function oppdaterProfildisplay(b) {
+      const pst = beregnProfilkomplettering(b);
+      document.getElementById('profil-prosent').textContent = pst + '%';
+      document.getElementById('profil-fyll').style.width = pst + '%';
+      document.getElementById('profil-tips').textContent = b.cv_lastet_opp
+        ? (b.bio ? '✅ Profilen ser bra ut!' : 'Legg til en bio for å skille deg ut')
+        : 'Last opp CV for å øke synligheten din overfor bedrifter';
+    }
+    oppdaterProfildisplay(bruker);
+
+    // ===== SCROLL =====
+    window.scrollTil = function(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // ===== LÆREPLASSER =====
     async function lastLaereplasser() {
       const plasser = await hentLaereplasser();
       const container = document.getElementById('laereplasser-liste');
 
-      container.innerHTML = plasser.slice(0, 4).map(p => `
+      container.innerHTML = plasser.map(p => `
         <div class="kort">
           <div class="kort-header">
             <div>
@@ -180,16 +243,14 @@
           </div>
           <button
             class="btn btn-primary btn-liten"
-            onclick="åpneSøknadModal(${p.id}, '${p.tittel}', '${p.bedrift_navn}')"
+            onclick="åpneSøknadModal(${p.id}, '${p.tittel.replace(/'/g, "\\'")}', '${p.bedrift_navn.replace(/'/g, "\\'")}')"
             style="width: 100%;"
-          >
-            Søk nå →
-          </button>
+          >Søk nå →</button>
         </div>
       `).join('');
     }
 
-    // Last inn søknader
+    // ===== SØKNADER =====
     async function lastSoknader() {
       const soknader = await hentSoknaderLaerling();
       const container = document.getElementById('soknader-liste');
@@ -234,23 +295,59 @@
       `;
     }
 
-    // Søknad-modal
+    // ===== CV OPPLASTING =====
+    document.getElementById('cv-input').addEventListener('change', (e) => {
+      const fil = e.target.files[0];
+      if (!fil) return;
+
+      const tillatteTyper = ['application/pdf', 'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!tillatteTyper.includes(fil.type)) {
+        const el = document.getElementById('cv-varsel');
+        el.className = 'varsel varsel-feil';
+        el.textContent = 'Kun PDF og Word-filer kan lastes opp';
+        el.classList.remove('skjult');
+        return;
+      }
+      if (fil.size > 5 * 1024 * 1024) {
+        const el = document.getElementById('cv-varsel');
+        el.className = 'varsel varsel-feil';
+        el.textContent = 'Filen er for stor. Maks 5 MB.';
+        el.classList.remove('skjult');
+        return;
+      }
+
+      const oppdatert = oppdaterBruker({ cv_lastet_opp: true, cv_filnavn: fil.name });
+      const el = document.getElementById('cv-varsel');
+      el.className = 'varsel varsel-suksess';
+      el.textContent = `✅ CV lastet opp: ${fil.name}`;
+      el.classList.remove('skjult');
+      oppdaterProfildisplay(oppdatert);
+    });
+
+    // ===== SØKNAD-MODAL =====
+    let valgtLaerplass = null;
+
     window.åpneSøknadModal = function(id, tittel, bedrift) {
       valgtLaerplass = { id, tittel, bedrift };
       document.getElementById('modal-tittel').textContent = `Søk: ${tittel}`;
       document.getElementById('modal-bedrift').textContent = `Bedrift: ${bedrift}`;
+      document.getElementById('varsel-modal').classList.add('skjult');
+      document.getElementById('soknad-form').reset();
       document.getElementById('soknad-modal').classList.remove('skjult');
       document.getElementById('soknad-melding').focus();
     };
 
-    document.getElementById('modal-lukk').addEventListener('click', lukkModal);
-    document.getElementById('modal-avbryt').addEventListener('click', lukkModal);
-
     function lukkModal() {
       document.getElementById('soknad-modal').classList.add('skjult');
-      document.getElementById('soknad-form').reset();
       valgtLaerplass = null;
     }
+
+    document.getElementById('modal-lukk').addEventListener('click', lukkModal);
+    document.getElementById('modal-avbryt').addEventListener('click', lukkModal);
+    document.getElementById('soknad-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) lukkModal();
+    });
 
     document.getElementById('soknad-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -263,27 +360,72 @@
 
       try {
         await sendSoknad(valgtLaerplass.id, melding);
+        const tittel = valgtLaerplass.tittel;
         lukkModal();
-        visBekreftelse(`✅ Søknaden din til ${valgtLaerplass?.tittel} er sendt!`);
+        visBekreftelse(`✅ Søknaden din til «${tittel}» er sendt!`);
         await lastSoknader();
       } catch (err) {
-        document.getElementById('varsel-modal').className = 'varsel varsel-feil';
-        document.getElementById('varsel-modal').textContent = 'Noe gikk galt. Prøv igjen.';
-        document.getElementById('varsel-modal').classList.remove('skjult');
+        const el = document.getElementById('varsel-modal');
+        el.className = 'varsel varsel-feil';
+        el.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+        el.classList.remove('skjult');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Send søknad';
+        btn.textContent = 'Send søknad →';
       }
     });
 
-    // Logg ut
+    // ===== REDIGER PROFIL MODAL =====
+    document.getElementById('rediger-profil-btn').addEventListener('click', () => {
+      document.getElementById('edit-navn').value = bruker.navn || '';
+      document.getElementById('edit-bio').value = bruker.bio || '';
+      document.getElementById('profil-modal').classList.remove('skjult');
+    });
+    document.getElementById('oppdater-bio-btn').addEventListener('click', () => {
+      document.getElementById('edit-navn').value = bruker.navn || '';
+      document.getElementById('edit-bio').value = bruker.bio || '';
+      document.getElementById('profil-modal').classList.remove('skjult');
+    });
+
+    function lukkProfilModal() {
+      document.getElementById('profil-modal').classList.add('skjult');
+    }
+
+    document.getElementById('profil-modal-lukk').addEventListener('click', lukkProfilModal);
+    document.getElementById('profil-modal-avbryt').addEventListener('click', lukkProfilModal);
+    document.getElementById('profil-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) lukkProfilModal();
+    });
+
+    document.getElementById('profil-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nyttNavn = document.getElementById('edit-navn').value.trim();
+      const nyBio = document.getElementById('edit-bio').value.trim();
+
+      if (!nyttNavn) {
+        const el = document.getElementById('varsel-profil');
+        el.className = 'varsel varsel-feil';
+        el.textContent = 'Navn kan ikke være tomt';
+        el.classList.remove('skjult');
+        return;
+      }
+
+      const oppdatert = oppdaterBruker({ navn: nyttNavn, bio: nyBio });
+      document.getElementById('profil-navn').textContent = oppdatert.navn;
+      document.getElementById('nav-navn').textContent = oppdatert.navn;
+      document.getElementById('hilsen').textContent = `Hei, ${oppdatert.navn.split(' ')[0]}! 👋`;
+      document.getElementById('profil-avatar').textContent = initialFra(oppdatert.navn);
+      oppdaterProfildisplay(oppdatert);
+      lukkProfilModal();
+      visBekreftelse('✅ Profilen er oppdatert!');
+    });
+
+    // ===== LOGG UT =====
     document.getElementById('logg-ut-btn').addEventListener('click', () => {
-      if (confirm('Er du sikker på at du vil logge ut?')) {
-        loggUt();
-      }
+      if (confirm('Er du sikker på at du vil logge ut?')) loggUt();
     });
 
-    // Init
+    // ===== INIT =====
     lastLaereplasser();
     lastSoknader();
   </script>
