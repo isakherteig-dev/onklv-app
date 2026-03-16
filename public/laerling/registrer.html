@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrer deg som lærling — Perfect Match</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="auth-side">
+
+  <!-- NAVIGASJON -->
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">✦ Perfect Match</a>
+      <div class="nav-lenker">
+        <a href="/bedrift/registrer.html" class="nav-lenke">For bedrifter</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SKJEMA -->
+  <main style="flex: 1; padding: 1rem;">
+    <div class="auth-kort">
+      <h1>Lag lærlingprofil</h1>
+      <p class="auth-ingress">Registrer deg gratis og kom i kontakt med lærebedrifter i Vestland.</p>
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <form id="registrer-form" novalidate>
+        <div class="form-gruppe">
+          <label for="navn">Fullt navn *</label>
+          <input
+            type="text"
+            id="navn"
+            name="navn"
+            placeholder="Ola Nordmann"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="form-gruppe">
+          <label for="epost">E-postadresse *</label>
+          <input
+            type="email"
+            id="epost"
+            name="epost"
+            placeholder="ola@example.no"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-gruppe">
+          <label for="utdanningsprogram">Utdanningsprogram *</label>
+          <select id="utdanningsprogram" name="utdanningsprogram" required>
+            <option value="" disabled selected>Velg utdanningsprogram</option>
+            <option value="elektrofag">Elektrofag</option>
+            <option value="tip">Teknikk og industriell produksjon (TIP)</option>
+            <option value="bygg">Bygg og anleggsteknikk</option>
+            <option value="restaurant">Restaurant og matfag</option>
+            <option value="helse">Helse og oppvekstfag</option>
+            <option value="ikt">Informasjonsteknologi og medieproduksjon (IKT)</option>
+            <option value="naturbruk">Naturbruk</option>
+            <option value="design">Design og håndverk</option>
+            <option value="medier">Medier og kommunikasjon</option>
+            <option value="annet">Annet</option>
+          </select>
+        </div>
+
+        <div class="form-gruppe">
+          <label for="passord">Passord *</label>
+          <input
+            type="password"
+            id="passord"
+            name="passord"
+            placeholder="Minst 8 tegn"
+            autocomplete="new-password"
+            required
+            minlength="8"
+          />
+          <span class="hint">Minst 8 tegn</span>
+        </div>
+
+        <div class="form-gruppe">
+          <label for="passord-bekreft">Bekreft passord *</label>
+          <input
+            type="password"
+            id="passord-bekreft"
+            name="passord-bekreft"
+            placeholder="Skriv passordet på nytt"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="form-gruppe">
+          <label for="bio">Kort om deg <span style="font-weight: 400; color: var(--farge-tekst-sekundaer);">(valgfritt)</span></label>
+          <textarea
+            id="bio"
+            name="bio"
+            placeholder="Fortell litt om deg selv, interesser og hva du ønsker å lære..."
+            style="min-height: 100px;"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="send-btn">
+          Opprett profil
+        </button>
+      </form>
+
+      <hr class="skille" />
+
+      <p class="auth-bunn">
+        Allerede registrert? <a href="/laerling/dashboard.html">Logg inn</a>
+      </p>
+      <p class="auth-bunn" style="margin-top: 0.5rem;">
+        Er du en bedrift? <a href="/bedrift/registrer.html">Registrer bedrift her</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-bunn" style="text-align: center; border-top: none; padding-top: 0;">
+      <p>© 2026 Perfect Match / Opplæringskontoret i Vestland &nbsp;·&nbsp; <a href="#" class="footer-lenke">Personvern</a></p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { handleRegister, visFeilmelding, visBekreftelse } from '../app.js';
+
+    const form = document.getElementById('registrer-form');
+    const sendBtn = document.getElementById('send-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const navn = document.getElementById('navn').value.trim();
+      const epost = document.getElementById('epost').value.trim();
+      const utdanningsprogram = document.getElementById('utdanningsprogram').value;
+      const passord = document.getElementById('passord').value;
+      const passordBekreft = document.getElementById('passord-bekreft').value;
+      const bio = document.getElementById('bio').value.trim();
+
+      // Validering
+      if (!navn || !epost || !utdanningsprogram || !passord) {
+        visFeilmelding('Fyll ut alle påkrevde felter');
+        return;
+      }
+
+      if (passord.length < 8) {
+        visFeilmelding('Passordet må være minst 8 tegn');
+        return;
+      }
+
+      if (passord !== passordBekreft) {
+        visFeilmelding('Passordene stemmer ikke overens');
+        return;
+      }
+
+      const epostMønster = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!epostMønster.test(epost)) {
+        visFeilmelding('Skriv inn en gyldig e-postadresse');
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Oppretter profil…';
+
+      try {
+        await handleRegister({ navn, epost, passord, utdanningsprogram, bio }, 'laerling');
+        visBekreftelse('Profilen er opprettet! Du sendes til dashbordet ditt…');
+        setTimeout(() => {
+          window.location.href = '/laerling/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        visFeilmelding(err.message || 'Noe gikk galt. Prøv igjen.');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Opprett profil';
+      }
+    });
+  </script>
+</body>
+</html>
