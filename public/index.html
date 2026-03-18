@@ -18,7 +18,10 @@
       <div class="nav-lenker">
         <a href="/laerling/registrer.html" class="nav-lenke">For lærlinger</a>
         <a href="/bedrift/registrer.html" class="nav-lenke">For bedrifter</a>
-        <a href="/login.html" class="btn btn-primary btn-liten">Logg inn</a>
+        <div id="nav-auth" style="display:flex;gap:0.5rem;align-items:center;">
+          <a href="/login.html" class="btn btn-ghost btn-liten">Logg inn</a>
+          <a href="/register.html" class="btn btn-primary btn-liten">Registrer deg</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -179,7 +182,31 @@
   </footer>
 
   <script type="module">
-    import { hentLaereplasser, formaterDato, initScrollReveal } from './app.js';
+    import { hentLaereplasser, formaterDato, initScrollReveal, loggUt } from './app.js';
+    import { auth } from './firebase-config.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+
+    onAuthStateChanged(auth, async (user) => {
+      const navAuth = document.getElementById('nav-auth');
+      if (!navAuth) return;
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/auth/meg', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const bruker = await res.json();
+        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
+        const navn = bruker.navn || user.displayName || 'Min side';
+        navAuth.innerHTML = `
+          <a href="${sider[bruker.rolle] || '/'}" class="btn btn-ghost btn-liten" style="font-weight:600;">${navn}</a>
+          <button class="btn btn-primary btn-liten" id="nav-logg-ut">Logg ut</button>
+        `;
+        document.getElementById('nav-logg-ut').addEventListener('click', async () => {
+          await loggUt();
+          window.location.reload();
+        });
+      } catch { /* brukeren er ikke innlogget */ }
+    });
     initScrollReveal();
 
     async function visLaereplasser() {

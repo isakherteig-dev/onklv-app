@@ -6,183 +6,229 @@
   <title>Registrer deg — OLKV</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="auth-side">
+<body class="login-side">
 
-  <nav class="nav">
-    <div class="nav-innhold">
-      <a href="/" class="nav-logo">
-        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
-        <span class="logo-tagline">Fremtiden er din</span>
-      </a>
-      <a href="/login.html" class="btn btn-primary btn-liten">Logg inn</a>
-    </div>
+  <!-- Flytende former (bakgrunn) -->
+  <div class="login-shape login-shape-1"></div>
+  <div class="login-shape login-shape-2"></div>
+  <div class="login-shape login-shape-3"></div>
+
+  <nav class="login-nav">
+    <a href="/" class="nav-logo">
+      <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+    </a>
+    <a href="/login.html" style="font-size: 0.875rem;">Logg inn →</a>
   </nav>
 
-  <main style="flex: 1; padding: 2rem var(--avstand) 4rem;">
-    <div class="auth-kort" style="max-width: 520px;">
+  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 1rem 2rem; position: relative; z-index: 10;">
 
-      <!-- ROLLEVALG -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.75rem;">
-        <button id="velg-laerling"
-          class="rolle-knapp aktiv"
-          onclick="byttRolle('laerling')">
-          <span style="font-size: 1.5rem;">🎓</span>
-          <span style="font-weight: 700; font-size: 0.9rem;">Jeg er lærling</span>
+    <!-- STEG 1: ROLLEVALG -->
+    <div id="steg-1" class="reg-steg" style="max-width: 520px; width: 100%;">
+      <div class="login-logo-stor" style="margin-bottom: 0.25rem;">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </div>
+      <p class="login-tagline">Opplæringskontoret i Vestland · Fremtiden er din</p>
+      <p style="color: rgba(255,255,255,0.75); font-size: 0.95rem; margin: 1.5rem 0 1.25rem; text-align: center;">Hvem er du?</p>
+
+      <div class="rolle-valg-grid">
+        <button class="rolle-kort laerling" onclick="byttTilSteg2('laerling')">
+          <span class="rolle-ikon">👷</span>
+          <span class="rolle-tittel">Jeg er lærling</span>
+          <span class="rolle-beskr">Finn din lærlingplass</span>
         </button>
-        <button id="velg-bedrift"
-          class="rolle-knapp"
-          onclick="byttRolle('bedrift')">
-          <span style="font-size: 1.5rem;">🏢</span>
-          <span style="font-weight: 700; font-size: 0.9rem;">Vi er en bedrift</span>
+        <button class="rolle-kort bedrift" onclick="byttTilSteg2('bedrift')">
+          <span class="rolle-ikon">🏢</span>
+          <span class="rolle-tittel">Jeg er bedrift</span>
+          <span class="rolle-beskr">Finn dine lærlinger</span>
         </button>
       </div>
 
-      <h1 id="side-tittel" style="font-size: 1.5rem; margin-bottom: 0.3rem;">Registrer som lærling</h1>
-      <p class="auth-ingress" id="side-ingress">Lag profil, last opp CV og bli matchet med riktig bedrift.</p>
-
-      <div id="varsel" class="varsel skjult"></div>
-      <div id="suksess-boks" class="skjult">
-        <div class="varsel varsel-suksess" style="margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">
-          ✅ <strong>Konto opprettet!</strong>
-        </div>
-        <p id="suksess-tekst" style="margin-bottom: 1.5rem;"></p>
-        <a href="/login.html" class="btn btn-primary" style="width: 100%; text-align: center;">Gå til innlogging →</a>
-      </div>
-
-      <form id="reg-form" novalidate>
-
-        <!-- FELLES FELT -->
-        <div class="form-gruppe">
-          <label for="navn">Fullt navn *</label>
-          <input type="text" id="navn" placeholder="Ola Nordmann" autocomplete="name" required />
-        </div>
-
-        <div class="form-gruppe">
-          <label for="epost">E-postadresse *</label>
-          <input type="email" id="epost" placeholder="din@epost.no" autocomplete="email" required />
-        </div>
-
-        <!-- LÆRLING-FELT -->
-        <div id="laerling-felt">
-          <div class="form-gruppe">
-            <label for="utdanningsprogram">Utdanningsprogram *</label>
-            <select id="utdanningsprogram">
-              <option value="">Velg utdanningsprogram</option>
-              <option value="Elektrofag">Elektrofag</option>
-              <option value="Teknikk og industriell produksjon">Teknikk og industriell produksjon</option>
-              <option value="Bygg- og anleggsteknikk">Bygg- og anleggsteknikk</option>
-              <option value="Restaurant- og matfag">Restaurant- og matfag</option>
-              <option value="Helse- og oppvekstfag">Helse- og oppvekstfag</option>
-              <option value="Informasjonsteknologi og medieproduksjon">Informasjonsteknologi og medieproduksjon</option>
-              <option value="Naturbruk">Naturbruk</option>
-              <option value="Design og håndverk">Design og håndverk</option>
-              <option value="Service og samferdsel">Service og samferdsel</option>
-              <option value="Frisør, blomster, interiør og eksponeringsdesign">Frisør, blomster, interiør og eksponeringsdesign</option>
-            </select>
-          </div>
-          <div class="form-gruppe">
-            <label for="skole">Skole <span style="font-weight: 400; color: var(--olkv-gray);">(valgfritt)</span></label>
-            <input type="text" id="skole" placeholder="f.eks. Åsane videregående skole" />
-          </div>
-          <div class="info-boks" style="font-size: 0.85rem;">
-            👤 Er du under 18 år? Appen behandler opplysningene dine utelukkende som del av lærlingordningen.
-            Du kan lese mer i vår <a href="/personvern.html" target="_blank">personvernerklæring</a>.
-          </div>
-        </div>
-
-        <!-- BEDRIFT-FELT -->
-        <div id="bedrift-felt" class="skjult">
-          <div class="info-boks" style="font-size: 0.85rem;">
-            ⏳ Bedriftskontoer gjennomgås av Opplæringskontoret i Vestland og godkjennes vanligvis innen 1–2 virkedager.
-          </div>
-          <div class="form-gruppe">
-            <label for="orgnr">Organisasjonsnummer *</label>
-            <input type="text" id="orgnr" placeholder="123456789" maxlength="9" pattern="\d{9}" inputmode="numeric" />
-            <span class="hint">9 siffer — finn det på Brønnøysundregisteret</span>
-          </div>
-          <div class="form-gruppe">
-            <label for="bransje">Bransje *</label>
-            <select id="bransje">
-              <option value="">Velg bransje</option>
-              <option value="Elektrofag">Elektrofag</option>
-              <option value="Bygg og anlegg">Bygg og anlegg</option>
-              <option value="Teknikk og industri">Teknikk og industri</option>
-              <option value="Restaurant og matfag">Restaurant og matfag</option>
-              <option value="Helse og omsorg">Helse og omsorg</option>
-              <option value="IT og teknologi">IT og teknologi</option>
-              <option value="Naturbruk">Naturbruk</option>
-              <option value="Annet">Annet</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- PASSORD -->
-        <div id="passord-seksjon">
-          <div class="form-gruppe">
-            <label for="passord">Passord *</label>
-            <input type="password" id="passord" placeholder="Minst 8 tegn" autocomplete="new-password" required minlength="8" />
-            <div id="passord-styrke" style="margin-top: 0.4rem; height: 4px; border-radius: 999px; background: var(--olkv-gray-light); overflow: hidden;">
-              <div id="passord-styrke-fyll" style="height: 100%; width: 0%; border-radius: 999px; transition: all 0.3s ease;"></div>
-            </div>
-          </div>
-          <div class="form-gruppe">
-            <label for="passord2">Bekreft passord *</label>
-            <input type="password" id="passord2" placeholder="Skriv passordet på nytt" autocomplete="new-password" required />
-          </div>
-        </div>
-
-        <!-- SAMTYKKE -->
-        <div style="margin-bottom: 1.25rem; display: flex; gap: 0.75rem; align-items: flex-start;">
-          <input type="checkbox" id="samtykke" style="width: 18px; height: 18px; margin-top: 0.15rem; flex-shrink: 0; cursor: pointer;" required />
-          <label for="samtykke" style="font-size: 0.875rem; color: var(--olkv-dark); cursor: pointer; line-height: 1.5; font-weight: 400;">
-            Jeg har lest og godtar <a href="/personvern.html" target="_blank">personvernerklæringen</a>
-            og gir OLKV tillatelse til å behandle mine opplysninger som beskrevet der.
-          </label>
-        </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%;" id="reg-btn">
-          Opprett konto →
-        </button>
-
-        <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0;">
-          <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
-          <span style="font-size: 0.78rem; color: var(--olkv-gray);">eller</span>
-          <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
-        </div>
-
-        <button type="button" id="google-btn" style="width: 100%; padding: 0.75rem; border: 1.5px solid var(--olkv-border); border-radius: var(--radius); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; font-family: inherit; color: var(--olkv-dark); transition: var(--overgang);">
-          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Registrer med Google
-        </button>
-      </form>
-
-      <p class="auth-bunn">
-        Har du allerede konto? <a href="/login.html">Logg inn her</a>
+      <p style="text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-top: 2rem;">
+        Har du allerede konto? <a href="/login.html" style="color: rgba(255,255,255,0.65);">Logg inn her</a>
       </p>
     </div>
+
+    <!-- STEG 2: REGISTRERINGSSKJEMA -->
+    <div id="steg-2" class="reg-steg" style="display: none; width: 100%; max-width: 520px;">
+      <button onclick="byttTilSteg1()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.4rem;color:rgba(255,255,255,0.55);font-size:0.875rem;padding:0;font-family:inherit;margin-bottom:1.25rem;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+        ← Tilbake
+      </button>
+      <div class="auth-kort" style="max-width: 520px;">
+
+        <h1 id="side-tittel" style="font-size: 1.5rem; margin-bottom: 0.3rem;">Registrer som lærling</h1>
+        <p class="auth-ingress" id="side-ingress">Lag profil, last opp CV og bli matchet med riktig bedrift.</p>
+
+        <div id="varsel" class="varsel skjult"></div>
+        <div id="suksess-boks" class="skjult">
+          <div class="varsel varsel-suksess" style="margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">
+            ✅ <strong>Konto opprettet!</strong>
+          </div>
+          <p id="suksess-tekst" style="margin-bottom: 1.5rem;"></p>
+          <a href="/login.html" class="btn btn-primary" style="width: 100%; text-align: center;">Gå til innlogging →</a>
+        </div>
+
+        <form id="reg-form" novalidate>
+
+          <!-- FELLES FELT -->
+          <div class="form-gruppe">
+            <label for="navn">Fullt navn *</label>
+            <input type="text" id="navn" placeholder="Ola Nordmann" autocomplete="name" required />
+          </div>
+
+          <div class="form-gruppe">
+            <label for="epost">E-postadresse *</label>
+            <input type="email" id="epost" placeholder="din@epost.no" autocomplete="email" required />
+          </div>
+
+          <!-- LÆRLING-FELT -->
+          <div id="laerling-felt">
+            <div class="form-gruppe">
+              <label for="utdanningsprogram">Utdanningsprogram *</label>
+              <select id="utdanningsprogram">
+                <option value="">Velg utdanningsprogram</option>
+                <option value="Elektrofag">Elektrofag</option>
+                <option value="Teknikk og industriell produksjon">Teknikk og industriell produksjon</option>
+                <option value="Bygg- og anleggsteknikk">Bygg- og anleggsteknikk</option>
+                <option value="Restaurant- og matfag">Restaurant- og matfag</option>
+                <option value="Helse- og oppvekstfag">Helse- og oppvekstfag</option>
+                <option value="Informasjonsteknologi og medieproduksjon">Informasjonsteknologi og medieproduksjon</option>
+                <option value="Naturbruk">Naturbruk</option>
+                <option value="Design og håndverk">Design og håndverk</option>
+                <option value="Service og samferdsel">Service og samferdsel</option>
+                <option value="Frisør, blomster, interiør og eksponeringsdesign">Frisør, blomster, interiør og eksponeringsdesign</option>
+              </select>
+            </div>
+            <div class="form-gruppe">
+              <label for="skole">Skole <span style="font-weight: 400; color: var(--olkv-gray);">(valgfritt)</span></label>
+              <input type="text" id="skole" placeholder="f.eks. Åsane videregående skole" />
+            </div>
+            <div class="info-boks" style="font-size: 0.85rem;">
+              👤 Er du under 18 år? Appen behandler opplysningene dine utelukkende som del av lærlingordningen.
+              Du kan lese mer i vår <a href="/personvern.html" target="_blank">personvernerklæring</a>.
+            </div>
+          </div>
+
+          <!-- BEDRIFT-FELT -->
+          <div id="bedrift-felt" class="skjult">
+            <div class="info-boks" style="font-size: 0.85rem;">
+              ⏳ Bedriftskontoer gjennomgås av Opplæringskontoret i Vestland og godkjennes vanligvis innen 1–2 virkedager.
+            </div>
+            <div class="form-gruppe">
+              <label for="orgnr">Organisasjonsnummer *</label>
+              <input type="text" id="orgnr" placeholder="123456789" maxlength="9" pattern="\d{9}" inputmode="numeric" />
+              <span class="hint">9 siffer — finn det på Brønnøysundregisteret</span>
+            </div>
+            <div class="form-gruppe">
+              <label for="bransje">Bransje *</label>
+              <select id="bransje">
+                <option value="">Velg bransje</option>
+                <option value="Elektrofag">Elektrofag</option>
+                <option value="Bygg og anlegg">Bygg og anlegg</option>
+                <option value="Teknikk og industri">Teknikk og industri</option>
+                <option value="Restaurant og matfag">Restaurant og matfag</option>
+                <option value="Helse og omsorg">Helse og omsorg</option>
+                <option value="IT og teknologi">IT og teknologi</option>
+                <option value="Naturbruk">Naturbruk</option>
+                <option value="Annet">Annet</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- PASSORD -->
+          <div id="passord-seksjon">
+            <div class="form-gruppe">
+              <label for="passord">Passord *</label>
+              <input type="password" id="passord" placeholder="Minst 8 tegn" autocomplete="new-password" required minlength="8" />
+              <div id="passord-styrke" style="margin-top: 0.4rem; height: 4px; border-radius: 999px; background: var(--olkv-gray-light); overflow: hidden;">
+                <div id="passord-styrke-fyll" style="height: 100%; width: 0%; border-radius: 999px; transition: all 0.3s ease;"></div>
+              </div>
+            </div>
+            <div class="form-gruppe">
+              <label for="passord2">Bekreft passord *</label>
+              <input type="password" id="passord2" placeholder="Skriv passordet på nytt" autocomplete="new-password" required />
+            </div>
+          </div>
+
+          <!-- SAMTYKKE -->
+          <div style="margin-bottom: 1.25rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+            <input type="checkbox" id="samtykke" style="width: 18px; height: 18px; margin-top: 0.15rem; flex-shrink: 0; cursor: pointer;" required />
+            <label for="samtykke" style="font-size: 0.875rem; color: var(--olkv-dark); cursor: pointer; line-height: 1.5; font-weight: 400;">
+              Jeg har lest og godtar <a href="/personvern.html" target="_blank">personvernerklæringen</a>
+              og gir OLKV tillatelse til å behandle mine opplysninger som beskrevet der.
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;" id="reg-btn">
+            Opprett konto →
+          </button>
+
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0;">
+            <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
+            <span style="font-size: 0.78rem; color: var(--olkv-gray);">eller</span>
+            <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
+          </div>
+
+          <button type="button" id="google-btn" style="width: 100%; padding: 0.75rem; border: 1.5px solid var(--olkv-border); border-radius: var(--radius); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; font-family: inherit; color: var(--olkv-dark); transition: var(--overgang);">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Registrer med Google
+          </button>
+        </form>
+
+        <p class="auth-bunn">
+          Har du allerede konto? <a href="/login.html">Logg inn her</a>
+        </p>
+      </div>
+    </div>
+
   </main>
 
   <style>
-    .rolle-knapp {
+    .reg-steg {
+      animation: regStegInn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes regStegInn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rolle-valg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .rolle-kort {
+      border-radius: 14px;
+      padding: 2.25rem 1.5rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 2px solid transparent;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.4rem;
-      padding: 1rem 0.5rem;
-      border: 2px solid var(--olkv-blue);
-      border-radius: var(--radius);
-      background: var(--olkv-blue);
-      color: #fff;
-      cursor: pointer;
+      gap: 0.65rem;
       font-family: inherit;
-      transition: var(--overgang);
     }
-    .rolle-knapp:hover { background: var(--olkv-blue-light); border-color: var(--olkv-blue-light); }
-    .rolle-knapp.aktiv { background: var(--olkv-blue-light); border-color: var(--olkv-blue-light); box-shadow: 0 0 0 3px rgba(42,82,152,0.25); }
+    .rolle-kort:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    }
+    .rolle-kort:active { transform: translateY(-3px); }
+    .rolle-kort.laerling { background: var(--olkv-blue); color: #fff; }
+    .rolle-kort.laerling:hover { background: var(--olkv-blue-light); }
+    .rolle-kort.bedrift  { background: var(--olkv-red);  color: #fff; }
+    .rolle-kort.bedrift:hover  { background: var(--olkv-red-light); }
+    .rolle-ikon   { font-size: 2.5rem; line-height: 1; }
+    .rolle-tittel { font-size: 1.1rem; font-weight: 700; }
+    .rolle-beskr  { font-size: 0.85rem; opacity: 0.82; }
+    @media (max-width: 480px) {
+      .rolle-valg-grid { gap: 0.75rem; }
+      .rolle-kort { padding: 1.75rem 1rem; }
+    }
   </style>
 
-  <footer style="background: var(--olkv-dark); color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.78rem; margin-top: auto;">
-    © 2026 OLKV · <a href="/personvern.html" style="color: #64748b;">Personvern</a>
+  <footer style="position: relative; z-index: 10; text-align: center; padding: 1.25rem; color: rgba(255,255,255,0.35); font-size: 0.78rem;">
+    © 2026 OLKV · Opplæringskontoret i Vestland &nbsp;·&nbsp;
+    <a href="/personvern.html" style="color: rgba(255,255,255,0.45);">Personvern</a>
   </footer>
 
   <script type="module">
@@ -197,23 +243,52 @@
 
     let rolle = 'laerling';
 
-    window.byttRolle = function(nyRolle) {
-      rolle = nyRolle;
-      document.getElementById('velg-laerling').classList.toggle('aktiv', rolle === 'laerling');
-      document.getElementById('velg-bedrift').classList.toggle('aktiv', rolle === 'bedrift');
+    function oppdaterSkjema() {
       document.getElementById('laerling-felt').classList.toggle('skjult', rolle !== 'laerling');
       document.getElementById('bedrift-felt').classList.toggle('skjult', rolle !== 'bedrift');
       document.getElementById('side-tittel').textContent = rolle === 'laerling' ? 'Registrer som lærling' : 'Registrer bedrift';
       document.getElementById('side-ingress').textContent = rolle === 'laerling'
         ? 'Lag profil, last opp CV og bli matchet med riktig bedrift.'
         : 'Registrer bedriften din og motta søknader fra kvalifiserte lærlinger.';
+    }
+
+    window.byttTilSteg2 = function(nyRolle) {
+      rolle = nyRolle;
+      oppdaterSkjema();
+
+      const steg1 = document.getElementById('steg-1');
+      const steg2 = document.getElementById('steg-2');
+      steg1.style.display = 'none';
+      steg2.style.display = 'block';
+      steg2.style.animation = 'none';
+      steg2.offsetHeight;
+      steg2.style.animation = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Pre-fyll fra URL-params (for Google-innlogging av ny bruker) — må stå ETTER byttRolle er definert
+    window.byttTilSteg1 = function() {
+      const steg1 = document.getElementById('steg-1');
+      const steg2 = document.getElementById('steg-2');
+      steg2.style.display = 'none';
+      steg1.style.display = 'block';
+      steg1.style.animation = 'none';
+      steg1.offsetHeight;
+      steg1.style.animation = '';
+      document.getElementById('varsel').classList.add('skjult');
+    };
+
+    // Pre-fyll fra URL-params og hopp til steg 2 om rolle er satt
     const params = new URLSearchParams(window.location.search);
     const fraGoogle = !!params.get('uid');
 
-    if (params.get('rolle') === 'bedrift') byttRolle('bedrift');
+    if (params.get('rolle')) {
+      rolle = params.get('rolle') === 'bedrift' ? 'bedrift' : 'laerling';
+      oppdaterSkjema();
+      // Hopp direkte til steg 2
+      document.getElementById('steg-1').style.display = 'none';
+      document.getElementById('steg-2').style.display = 'block';
+    }
+
     if (params.get('navn'))  document.getElementById('navn').value  = params.get('navn');
     if (params.get('epost')) {
       document.getElementById('epost').value    = params.get('epost');
