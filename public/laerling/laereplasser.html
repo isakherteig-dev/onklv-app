@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finn læreplasser — OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Meny</div>
+        <a href="/laerling/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/laerling/laereplasser.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Finn læreplasser
+        </a>
+        <a href="/laerling/mine-soknader.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Mine søknader
+        </a>
+        <a href="/laerling/dashboard.html#profil" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Min profil
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+      <div class="rad reveal" style="margin-bottom:2rem;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem;">Ledige læreplasser</h1>
+          <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster læreplasser…</p>
+        </div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="filter-rad reveal">
+        <input type="search" id="sok-input" placeholder="Søk på tittel eller bedrift…" />
+        <select id="fagomraade-filter">
+          <option value="">Alle fagområder</option>
+        </select>
+        <input type="text" id="sted-filter" placeholder="By / sted…" style="max-width:160px;" />
+      </div>
+
+      <!-- VARSELMELDINGER -->
+      <div id="varsel" class="varsel skjult"></div>
+
+      <!-- LÆREPLASSER-LISTE -->
+      <div class="rutenett-2" id="laereplasser-liste">
+        <div class="skeleton" style="height:220px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:220px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:220px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:220px;border-radius:var(--radius);"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SØKNADSSKJEMA MODAL -->
+  <div class="modal-bakgrunn skjult" id="soknad-modal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-hode">
+        <h3 class="modal-tittel" id="modal-laereplasstitle">Søk på læreplassen</h3>
+        <button class="modal-lukk" id="modal-lukk-btn">&times;</button>
+      </div>
+      <div class="modal-kropp">
+        <div id="soknad-varsel" class="varsel skjult"></div>
+        <form id="soknad-form">
+          <input type="hidden" id="soknad-laerplass-id" />
+          <div class="form-gruppe">
+            <label class="etikett" for="soknad-motivasjon">Motivasjon <span style="color:var(--olkv-red);">*</span></label>
+            <textarea id="soknad-motivasjon" class="input" rows="5" placeholder="Fortell hvorfor du ønsker denne læreplassen og hva du kan bidra med (minst 50 tegn)…" required></textarea>
+            <div class="hint" id="motivasjon-tegnteller">0 tegn</div>
+          </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="soknad-erfaring">Relevant erfaring</label>
+            <textarea id="soknad-erfaring" class="input" rows="3" placeholder="Deltidsjobb, prosjekter, frivillighet, osv. (valgfritt)…"></textarea>
+          </div>
+          <div class="rutenett-2" style="gap:0.75rem;">
+            <div class="form-gruppe">
+              <label class="etikett" for="soknad-vg1">VG1-kurs</label>
+              <input type="text" id="soknad-vg1" class="input" placeholder="f.eks. Service og samferdsel" />
+            </div>
+            <div class="form-gruppe">
+              <label class="etikett" for="soknad-vg2">VG2-kurs</label>
+              <input type="text" id="soknad-vg2" class="input" placeholder="f.eks. Salg, service og reiseliv" />
+            </div>
+          </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="soknad-telefon">Telefonnummer</label>
+            <input type="tel" id="soknad-telefon" class="input" placeholder="f.eks. 99887766" />
+          </div>
+          <button type="submit" class="btn btn-primary" id="soknad-send-btn" style="width:100%;margin-top:0.5rem;">Send søknad</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      krevInnlogging, loggUt, hentLaereplasser, sendSoknadFull,
+      statusTekst, formaterDato, initScrollReveal, fagomraader,
+      visFeilmelding, visBekreftelse, initVarselBjelle
+    } from '../app.js';
+
+    let bruker = null;
+    let allePlasser = [];
+    let minneSoknaderIds = new Set();
+
+    bruker = await krevInnlogging('laerling');
+    if (!bruker) { window.location.href = '/login.html'; }
+
+    document.getElementById('nav-navn').textContent = bruker.navn || '';
+    document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
+
+    // Fyll fagomraade-filter
+    const fagSelect = document.getElementById('fagomraade-filter');
+    fagomraader.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f; opt.textContent = f;
+      fagSelect.appendChild(opt);
+    });
+
+    // Hent mine søknader (for å vise "Allerede søkt"-badge)
+    try {
+      const { getToken } = await import('../app.js');
+      const token = await getToken();
+      const res = await fetch('/api/soknader/mine', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const mine = await res.json();
+        mine.forEach(s => minneSoknaderIds.add(s.laerplass_id));
+      }
+    } catch {}
+
+    allePlasser = await hentLaereplasser();
+    visPlasser(allePlasser);
+
+    document.getElementById('sok-input').addEventListener('input', filtrer);
+    document.getElementById('fagomraade-filter').addEventListener('change', filtrer);
+    document.getElementById('sted-filter').addEventListener('input', filtrer);
+
+    function filtrer() {
+      const sok = document.getElementById('sok-input').value.toLowerCase();
+      const fag = document.getElementById('fagomraade-filter').value;
+      const sted = document.getElementById('sted-filter').value.toLowerCase();
+      const filtrert = allePlasser.filter(p => {
+        const matchSok = !sok || p.tittel?.toLowerCase().includes(sok) || p.bedrift_navn?.toLowerCase().includes(sok);
+        const matchFag = !fag || p.fagomraade === fag || p.bransje === fag;
+        const matchSted = !sted || p.sted?.toLowerCase().includes(sted);
+        return matchSok && matchFag && matchSted;
+      });
+      visPlasser(filtrert);
+    }
+
+    function dagertilFrist(fristStr) {
+      if (!fristStr) return null;
+      const frist = new Date(fristStr + 'T00:00:00');
+      const naa = new Date();
+      naa.setHours(0,0,0,0);
+      return Math.ceil((frist - naa) / (1000 * 60 * 60 * 24));
+    }
+
+    function fristBadge(fristStr) {
+      const dager = dagertilFrist(fristStr);
+      if (dager === null) return '';
+      if (dager < 0) return `<span class="frist-badge utlopt">Utløpt</span>`;
+      if (dager === 0) return `<span class="frist-badge snart">Frist i dag!</span>`;
+      if (dager <= 7) return `<span class="frist-badge snart">${dager} dager igjen</span>`;
+      return `<span class="frist-badge ok">Frist: ${formaterDato(fristStr)}</span>`;
+    }
+
+    function visPlasser(plasser) {
+      const container = document.getElementById('laereplasser-liste');
+      document.getElementById('antall-tekst').textContent = `${plasser.length} læreplasser funnet`;
+
+      if (!plasser.length) {
+        container.innerHTML = `
+          <div class="tom-tilstand" style="grid-column:1/-1;">
+            <div class="tom-tilstand-ikon">🔍</div>
+            <h3>Ingen læreplasser funnet</h3>
+            <p>Prøv å endre søk eller filter.</p>
+          </div>`;
+        return;
+      }
+
+      const dager = (p) => dagertilFrist(p.frist);
+
+      container.innerHTML = plasser.map(p => {
+        const utlopt = dager(p) !== null && dager(p) < 0;
+        const harSokt = minneSoknaderIds.has(p.id);
+        const fagBadge = (p.fagomraade || p.bransje) ? `<span class="badge badge-blaa">${p.fagomraade || p.bransje}</span>` : '';
+        return `
+          <div class="kort reveal${utlopt ? ' opacity-50' : ''}">
+            <div class="kort-header">
+              <div>
+                <div class="kort-tittel">${p.tittel}</div>
+                <div class="kort-undertittel">${p.bedrift_navn || '—'}</div>
+              </div>
+              ${fagBadge}
+            </div>
+            <p style="font-size:0.88rem;margin:0.75rem 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--farge-tekst-sekundaer);">${p.beskrivelse || 'Ingen beskrivelse tilgjengelig.'}</p>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+              ${p.sted ? `<span style="font-size:0.82rem;color:var(--olkv-gray);">📍 ${p.sted}</span>` : ''}
+              ${fristBadge(p.frist)}
+            </div>
+            <div class="kort-footer">
+              <div></div>
+              ${harSokt
+                ? `<span class="badge badge-godkjent">Allerede søkt ✓</span>`
+                : utlopt
+                  ? `<span class="badge badge-trukket">Utløpt</span>`
+                  : `<button class="btn btn-primary btn-liten" onclick="apneSoknadModal(${p.id}, '${p.tittel.replace(/'/g, "\\'")}')">Søk nå →</button>`
+              }
+            </div>
+          </div>`;
+      }).join('');
+
+      initScrollReveal();
+    }
+
+    // Modal
+    window.apneSoknadModal = function(id, tittel) {
+      document.getElementById('soknad-laerplass-id').value = id;
+      document.getElementById('modal-laereplasstitle').textContent = `Søk på: ${tittel}`;
+      document.getElementById('soknad-form').reset();
+      document.getElementById('motivasjon-tegnteller').textContent = '0 tegn';
+      document.getElementById('soknad-varsel').classList.add('skjult');
+      if (bruker?.telefon) document.getElementById('soknad-telefon').value = bruker.telefon;
+      if (bruker?.utdanningsprogram) document.getElementById('soknad-vg2').value = bruker.utdanningsprogram;
+      document.getElementById('soknad-modal').classList.remove('skjult');
+    };
+
+    document.getElementById('soknad-motivasjon').addEventListener('input', (e) => {
+      document.getElementById('motivasjon-tegnteller').textContent = `${e.target.value.length} tegn`;
+    });
+
+    document.getElementById('modal-lukk-btn').addEventListener('click', () => {
+      document.getElementById('soknad-modal').classList.add('skjult');
+    });
+    document.getElementById('soknad-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('soknad-modal').classList.add('skjult');
+    });
+
+    document.getElementById('soknad-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('soknad-send-btn');
+      const motivasjon = document.getElementById('soknad-motivasjon').value.trim();
+      if (motivasjon.length < 50) {
+        document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
+        document.getElementById('soknad-varsel').textContent = 'Motivasjonen må være minst 50 tegn.';
+        document.getElementById('soknad-varsel').classList.remove('skjult');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sender…';
+
+      try {
+        await sendSoknadFull({
+          laerplass_id: parseInt(document.getElementById('soknad-laerplass-id').value),
+          melding: motivasjon,
+          erfaring: document.getElementById('soknad-erfaring').value.trim(),
+          vg1: document.getElementById('soknad-vg1').value.trim(),
+          vg2: document.getElementById('soknad-vg2').value.trim(),
+          telefon: document.getElementById('soknad-telefon').value.trim()
+        });
+
+        const plassId = parseInt(document.getElementById('soknad-laerplass-id').value);
+        minneSoknaderIds.add(plassId);
+
+        document.getElementById('soknad-modal').classList.add('skjult');
+        visPlasser(allePlasser.filter(p => {
+          const sok = document.getElementById('sok-input').value.toLowerCase();
+          const fag = document.getElementById('fagomraade-filter').value;
+          const sted = document.getElementById('sted-filter').value.toLowerCase();
+          return (!sok || p.tittel?.toLowerCase().includes(sok) || p.bedrift_navn?.toLowerCase().includes(sok))
+            && (!fag || p.fagomraade === fag || p.bransje === fag)
+            && (!sted || p.sted?.toLowerCase().includes(sted));
+        }));
+
+        // Vis toast
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = '✓ Søknaden din er sendt!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+
+      } catch (err) {
+        document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
+        document.getElementById('soknad-varsel').textContent = err.message;
+        document.getElementById('soknad-varsel').classList.remove('skjult');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send søknad';
+      }
+    });
+
+    initScrollReveal();
+    initVarselBjelle();
+  </script>
+</body>
+</html>

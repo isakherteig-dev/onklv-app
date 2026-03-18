@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alle brukere — Admin OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span class="badge badge-roed">Admin</span>
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Admin</div>
+        <a href="/admin/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/admin/soknader.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Alle søknader
+        </a>
+        <a href="/admin/laereplasser.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Alle læreplasser
+        </a>
+        <a href="/admin/brukere.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Alle brukere
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+      <div class="rad reveal" style="margin-bottom:2rem;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem;">Alle brukere</h1>
+          <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster…</p>
+        </div>
+      </div>
+
+      <!-- ROLLE-FILTER TABS -->
+      <div class="reveal" style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-liten rolle-tab" data-rolle="">Alle</button>
+        <button class="btn btn-ghost btn-liten rolle-tab" data-rolle="laerling">Lærlinger</button>
+        <button class="btn btn-ghost btn-liten rolle-tab" data-rolle="bedrift">Bedrifter</button>
+        <button class="btn btn-ghost btn-liten rolle-tab" data-rolle="admin">Admin</button>
+      </div>
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <section class="reveal">
+        <div class="tabell-wrapper">
+          <table class="tabell">
+            <thead>
+              <tr>
+                <th>Navn</th>
+                <th>E-post</th>
+                <th>Rolle</th>
+                <th>Info</th>
+                <th>Registrert</th>
+                <th>Handlinger</th>
+              </tr>
+            </thead>
+            <tbody id="brukere-tbody">
+              <tr><td colspan="6" class="skeleton" style="height:200px;"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import {
+      krevInnlogging, loggUt, hentAlleBrukere, godkjennBedrift, avvisBedrift,
+      formaterDato, initScrollReveal, initVarselBjelle
+    } from '../app.js';
+
+    let bruker = null;
+    let valgtRolle = '';
+
+    bruker = await krevInnlogging('admin');
+    if (!bruker) { window.location.href = '/login.html'; }
+
+    document.getElementById('nav-navn').textContent = bruker.navn || '';
+    document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
+
+    document.querySelectorAll('.rolle-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rolle-tab').forEach(b => b.className = 'btn btn-ghost btn-liten rolle-tab');
+        btn.className = 'btn btn-primary btn-liten rolle-tab';
+        valgtRolle = btn.dataset.rolle;
+        lastBrukere();
+      });
+    });
+
+    async function lastBrukere() {
+      const brukere = await hentAlleBrukere(valgtRolle);
+      document.getElementById('antall-tekst').textContent = `${brukere.length} brukere`;
+
+      const tbody = document.getElementById('brukere-tbody');
+      if (!brukere.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="tom-tilstand"><div class="tom-tilstand-ikon">👤</div><h3>Ingen brukere funnet</h3></div></td></tr>`;
+        return;
+      }
+
+      const rolleBadge = {
+        laerling: 'badge-blaa',
+        bedrift:  'badge-oransje',
+        admin:    'badge-roed'
+      };
+      const rolleTekst = {
+        laerling: 'Lærling',
+        bedrift:  'Bedrift',
+        admin:    'Admin'
+      };
+
+      tbody.innerHTML = brukere.map(b => {
+        const info = b.rolle === 'bedrift'
+          ? `${b.orgNr ? 'Org.nr: ' + b.orgNr + ' · ' : ''}${b.bransje || ''}`
+          : (b.utdanningsprogram || '');
+
+        const status = b.rolle === 'bedrift'
+          ? `<span class="badge ${b.godkjent ? 'badge-godkjent' : 'badge-sendt'}">${b.godkjent ? 'Godkjent' : 'Venter'}</span>`
+          : '';
+
+        const handlinger = b.rolle === 'bedrift' && !b.godkjent
+          ? `<button class="btn-mini btn-mini-gronn" onclick="godkjenn('${b.uid}')">Godkjenn</button>
+             <button class="btn-mini btn-mini-roed" onclick="avvis('${b.uid}')">Avvis</button>`
+          : '';
+
+        return `
+          <tr>
+            <td><strong>${b.navn || '—'}</strong></td>
+            <td style="font-size:0.85rem;">${b.epost || '—'}</td>
+            <td>
+              <span class="badge ${rolleBadge[b.rolle] || 'badge-graa'}">${rolleTekst[b.rolle] || b.rolle}</span>
+              ${status}
+            </td>
+            <td style="font-size:0.82rem;color:var(--olkv-gray);">${info}</td>
+            <td style="font-size:0.82rem;">${formaterDato(b.opprettet?.toDate ? b.opprettet.toDate().toISOString().split('T')[0] : (b.opprettet || ''))}</td>
+            <td><div class="tabell-handlinger">${handlinger}</div></td>
+          </tr>`;
+      }).join('');
+    }
+
+    window.godkjenn = async function(uid) {
+      if (!confirm('Godkjenn denne bedriften?')) return;
+      try {
+        await godkjennBedrift(uid);
+        await lastBrukere();
+        const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = '✓ Bedrift godkjent!';
+        document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
+      } catch (err) { alert(err.message); }
+    };
+
+    window.avvis = async function(uid) {
+      if (!confirm('Avvis denne bedriften? Den vil bli deaktivert.')) return;
+      try {
+        await avvisBedrift(uid);
+        await lastBrukere();
+      } catch (err) { alert(err.message); }
+    };
+
+    await lastBrukere();
+    initScrollReveal();
+    initVarselBjelle();
+  </script>
+</body>
+</html>

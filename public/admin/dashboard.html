@@ -14,9 +14,18 @@
       <a href="/" class="nav-logo">
         <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
       </a>
-      <div class="nav-lenker">
-        <span class="badge badge-oransje">Admin</span>
-        <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer); margin-left: 0.25rem;"></span>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span class="badge badge-roed">Admin</span>
+        <span id="nav-navn" style="font-size: 0.9rem; color: var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -33,17 +42,19 @@
           <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span> Oversikt
         </a>
         <a href="#bedrifter-venter" class="sidebar-lenke" onclick="scrollTil('bedrifter-venter')">
-          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg></span> Bedrifter
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg></span> Godkjenn bedrifter
         </a>
-        <a href="#soknader" class="sidebar-lenke" onclick="scrollTil('soknader')">
-          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Søknader
+        <a href="/admin/soknader.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Alle søknader
+        </a>
+        <a href="/admin/laereplasser.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Alle læreplasser
+        </a>
+        <a href="/admin/brukere.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Alle brukere
         </a>
         <a href="#statistikk" class="sidebar-lenke" onclick="scrollTil('statistikk')">
           <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Statistikk
-        </a>
-        <div class="sidebar-seksjon-tittel">System</div>
-        <a href="#" class="sidebar-lenke">
-          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2"/></svg></span> Innstillinger
         </a>
       </nav>
     </aside>
@@ -84,9 +95,10 @@
           <select id="status-filter" style="min-height: 36px; font-size: 0.875rem; padding: 0.35rem 2rem 0.35rem 0.75rem; width: auto;">
             <option value="">Alle statuser</option>
             <option value="sendt">Sendt</option>
-            <option value="under_vurdering">Under vurdering</option>
-            <option value="akseptert">Akseptert</option>
-            <option value="avvist">Avvist</option>
+            <option value="under_behandling">Under behandling</option>
+            <option value="godkjent">Godkjent</option>
+            <option value="avslatt">Avslått</option>
+            <option value="trukket">Trukket</option>
           </select>
         </div>
         <div class="tabell-wrapper">
@@ -127,191 +139,221 @@
   <script type="module">
     import {
       krevInnlogging,
-      BEDRIFTER_VENTER,
-      LAEREPLASSER,
+      loggUt,
       formaterDato,
       statusTekst,
       statusBadgeKlasse,
-      visBekreftelse,
-      loggUt,
-      initScrollReveal
+      hentAdminStatistikk,
+      hentAllesoknader,
+      hentAlleBrukere,
+      hentAlleLaereplasser,
+      godkjennBedrift as apiBedriftGodkjenn,
+      avvisBedrift as apiBedriftAvvis,
+      initScrollReveal,
+      initVarselBjelle
     } from '../app.js';
-    initScrollReveal();
 
     // ===== AUTH GUARD =====
     const bruker = await krevInnlogging('admin');
     if (!bruker) throw new Error('redirect');
 
     document.getElementById('nav-navn').textContent = bruker.navn;
-
-    window.scrollTil = id => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Dummy admin-data
-    const ALLE_SOKNADER = [
-      { id: 1, laerling_navn: 'Marius Haugen', utdanningsprogram: 'Elektrofag', tittel: 'Elektriker-lærling', bedrift: 'Bergen Elektro AS', dato: '2026-03-10', status: 'under_vurdering' },
-      { id: 2, laerling_navn: 'Nora Kristiansen', utdanningsprogram: 'Elektrofag', tittel: 'Elektriker-lærling', bedrift: 'Bergen Elektro AS', dato: '2026-03-11', status: 'sendt' },
-      { id: 3, laerling_navn: 'Tobias Engel', utdanningsprogram: 'Elektrofag', tittel: 'Elektriker-lærling', bedrift: 'Bergen Elektro AS', dato: '2026-03-05', status: 'avvist' },
-      { id: 4, laerling_navn: 'Sara Andersen', utdanningsprogram: 'Bygg og anlegg', tittel: 'Rørlegger-lærling', bedrift: 'VVS-Service Vest AS', dato: '2026-03-12', status: 'sendt' },
-      { id: 5, laerling_navn: 'Lars Bakke', utdanningsprogram: 'IKT', tittel: 'IKT-servicefag lærling', bedrift: 'Techfirma Bergen AS', dato: '2026-02-20', status: 'akseptert' },
-      { id: 6, laerling_navn: 'Emma Thorsen', utdanningsprogram: 'Restaurant og matfag', tittel: 'Kokk-lærling', bedrift: 'Hotel Bryggen', dato: '2026-03-08', status: 'under_vurdering' }
-    ];
-
-    let bedrifterData = [...BEDRIFTER_VENTER];
-    let soknaderData = [...ALLE_SOKNADER];
-
-    // ===== STATS =====
-    function visStats() {
-      const venterGodkjenning = bedrifterData.length;
-      document.getElementById('stats-rad').innerHTML = `
-        <div class="stat-boks">
-          <div class="stat-tall">${soknaderData.length}</div>
-          <div class="stat-etikett">Totale søknader</div>
-        </div>
-        <div class="stat-boks" style="${venterGodkjenning > 0 ? 'border-color: #fde68a;' : ''}">
-          <div class="stat-tall" style="${venterGodkjenning > 0 ? 'color: var(--farge-advarsel);' : ''}">${venterGodkjenning}</div>
-          <div class="stat-etikett">Bedrifter til godkjenning</div>
-        </div>
-        <div class="stat-boks">
-          <div class="stat-tall">230</div>
-          <div class="stat-etikett">Registrerte lærlinger</div>
-        </div>
-        <div class="stat-boks">
-          <div class="stat-tall">${LAEREPLASSER.filter(p => p.aktiv).length}</div>
-          <div class="stat-etikett">Aktive læreplasser</div>
-        </div>
-      `;
-    }
-
-    // ===== BEDRIFTER =====
-    function visBedrifter() {
-      const container = document.getElementById('bedrifter-liste');
-      document.getElementById('antall-venter').textContent = `${bedrifterData.length} venter`;
-
-      if (bedrifterData.length === 0) {
-        container.innerHTML = `<div class="varsel varsel-suksess">Ingen bedrifter venter godkjenning akkurat nå.</div>`;
-        return;
-      }
-
-      container.innerHTML = `
-        <div class="tabell-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Bedrift</th><th>Org.nr</th><th>Bransje</th><th>E-post</th><th>Registrert</th><th>Handling</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${bedrifterData.map(b => `
-                <tr>
-                  <td><strong>${b.navn}</strong></td>
-                  <td style="font-family: monospace; font-size: 0.85rem;">${b.org_nr}</td>
-                  <td>${b.bransje}</td>
-                  <td style="font-size: 0.85rem;">${b.epost}</td>
-                  <td style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">${formaterDato(b.registrert_dato)}</td>
-                  <td>
-                    <div class="rad" style="gap: 0.5rem; flex-wrap: nowrap;">
-                      <button class="btn btn-suksess btn-liten" onclick="godkjennBedrift(${b.id})">Godkjenn</button>
-                      <button class="btn btn-feil btn-liten" onclick="avvisBedrift(${b.id})">Avvis</button>
-                    </div>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-    }
-
-    window.godkjennBedrift = function(id) {
-      const bedrift = bedrifterData.find(b => b.id === id);
-      if (!bedrift) return;
-      bedrifterData = bedrifterData.filter(b => b.id !== id);
-      visBekreftelse(`${bedrift.navn} er godkjent og kan nå ta imot lærlinger.`);
-      visBedrifter();
-      visStats();
-    };
-
-    window.avvisBedrift = function(id) {
-      const bedrift = bedrifterData.find(b => b.id === id);
-      if (!bedrift) return;
-      if (!confirm(`Er du sikker på at du vil avvise ${bedrift.navn}?`)) return;
-      bedrifterData = bedrifterData.filter(b => b.id !== id);
-      visBekreftelse(`${bedrift.navn} er avvist og varslet på e-post.`);
-      visBedrifter();
-      visStats();
-    };
-
-    // ===== SØKNADER =====
-    function visSoknader(filter = '') {
-      const soknader = filter ? soknaderData.filter(s => s.status === filter) : soknaderData;
-      const tbody = document.getElementById('soknader-tabell');
-
-      if (soknader.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--farge-tekst-sekundaer); padding: 2rem;">Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''}.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = soknader.map(s => `
-        <tr>
-          <td><strong>${s.laerling_navn}</strong></td>
-          <td>${s.utdanningsprogram}</td>
-          <td>${s.tittel}</td>
-          <td>${s.bedrift}</td>
-          <td style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">${formaterDato(s.dato)}</td>
-          <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    document.getElementById('status-filter').addEventListener('change', (e) => {
-      visSoknader(e.target.value);
-    });
-
-    // ===== STATISTIKK =====
-    function visStatistikk() {
-      const statuser = ['sendt', 'under_vurdering', 'akseptert', 'avvist'];
-      const total = soknaderData.length;
-
-      document.getElementById('status-fordeling').innerHTML = statuser.map(s => {
-        const antall = soknaderData.filter(x => x.status === s).length;
-        const prosent = total > 0 ? Math.round((antall / total) * 100) : 0;
-        const farge = s === 'akseptert' ? 'var(--farge-suksess)' : s === 'avvist' ? 'var(--farge-feil)' : s === 'under_vurdering' ? 'var(--farge-advarsel)' : 'var(--farge-hoved)';
-        return `
-          <div>
-            <div class="rad" style="justify-content: space-between; margin-bottom: 0.25rem;">
-              <span style="font-size: 0.875rem;">${statusTekst(s)}</span>
-              <span style="font-size: 0.875rem; font-weight: 600;">${antall} (${prosent}%)</span>
-            </div>
-            <div class="fremgang-linje">
-              <div class="fremgang-fyll" style="width: ${prosent}%; background-color: ${farge};"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      const bransjer = {};
-      LAEREPLASSER.forEach(p => { bransjer[p.bransje] = (bransjer[p.bransje] || 0) + 1; });
-
-      document.getElementById('bransje-fordeling').innerHTML = Object.entries(bransjer)
-        .sort((a, b) => b[1] - a[1])
-        .map(([bransje, antall]) => `
-          <div class="rad" style="justify-content: space-between;">
-            <span style="font-size: 0.875rem;">${bransje}</span>
-            <span class="badge badge-blaa">${antall}</span>
-          </div>
-        `).join('');
-    }
-
-    // ===== LOGG UT =====
     document.getElementById('logg-ut-btn').addEventListener('click', () => {
       if (confirm('Er du sikker på at du vil logge ut?')) loggUt();
     });
 
+    window.scrollTil = id => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // ===== COUNTING ANIMATION =====
+    function animerTall(el, maal, varighet = 600) {
+      const start = performance.now();
+      function steg(ts) {
+        const fremgang = Math.min((ts - start) / varighet, 1);
+        const eased = 1 - Math.pow(1 - fremgang, 3);
+        el.textContent = Math.round(eased * maal);
+        if (fremgang < 1) requestAnimationFrame(steg);
+      }
+      requestAnimationFrame(steg);
+    }
+
+    // ===== STATS =====
+    async function lastStats() {
+      try {
+        const s = await hentAdminStatistikk();
+        const rad = document.getElementById('stats-rad');
+        const venter = s.antallBedrifterVenter || 0;
+        rad.innerHTML = `
+          <div class="stat-boks">
+            <div class="stat-tall" id="st-soknader">0</div>
+            <div class="stat-etikett">Totale søknader</div>
+          </div>
+          <div class="stat-boks" style="${venter > 0 ? 'border-color:#fde68a;' : ''}">
+            <div class="stat-tall" id="st-venter" style="${venter > 0 ? 'color:var(--farge-advarsel);' : ''}">0</div>
+            <div class="stat-etikett">Bedrifter til godkjenning</div>
+          </div>
+          <div class="stat-boks">
+            <div class="stat-tall" id="st-laerlinger">0</div>
+            <div class="stat-etikett">Registrerte lærlinger</div>
+          </div>
+          <div class="stat-boks">
+            <div class="stat-tall" id="st-laereplasser">0</div>
+            <div class="stat-etikett">Aktive læreplasser</div>
+          </div>
+        `;
+        animerTall(document.getElementById('st-soknader'), s.soknaderTotalt || 0);
+        animerTall(document.getElementById('st-venter'), venter);
+        animerTall(document.getElementById('st-laerlinger'), s.antallLaerlinger || 0);
+        animerTall(document.getElementById('st-laereplasser'), s.aktiveLaereplasser || 0);
+      } catch (e) { console.error('Feil ved henting av statistikk:', e); }
+    }
+
+    // ===== BEDRIFTER =====
+    async function lastBedrifter() {
+      const container = document.getElementById('bedrifter-liste');
+      try {
+        const alle = await hentAlleBrukere('bedrift');
+        const venter = alle.filter(b => !b.godkjent);
+        document.getElementById('antall-venter').textContent = `${venter.length} venter`;
+
+        if (venter.length === 0) {
+          container.innerHTML = `<div class="varsel varsel-suksess">Ingen bedrifter venter godkjenning akkurat nå.</div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="tabell-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bedrift</th><th>Org.nr</th><th>Bransje</th><th>E-post</th><th>Registrert</th><th>Handling</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${venter.map(b => `
+                  <tr>
+                    <td><strong>${b.navn || '—'}</strong></td>
+                    <td style="font-family:monospace;font-size:0.85rem;">${b.orgNr || '—'}</td>
+                    <td>${b.bransje || '—'}</td>
+                    <td style="font-size:0.85rem;">${b.epost || '—'}</td>
+                    <td style="font-size:0.85rem;color:var(--farge-tekst-sekundaer);">${formaterDato(b.opprettet?.toDate ? b.opprettet.toDate().toISOString().split('T')[0] : (b.opprettet || ''))}</td>
+                    <td>
+                      <div class="rad" style="gap:0.5rem;flex-wrap:nowrap;">
+                        <button class="btn-mini btn-mini-gronn" onclick="godkjennKlikk('${b.uid}','${(b.navn||'').replace(/'/g,"\\'")}')">Godkjenn</button>
+                        <button class="btn-mini btn-mini-roed" onclick="avvisKlikk('${b.uid}','${(b.navn||'').replace(/'/g,"\\'")}')">Avvis</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = `<div class="varsel varsel-feil">Kunne ikke laste bedrifter: ${e.message}</div>`;
+      }
+    }
+
+    window.godkjennKlikk = async function(uid, navn) {
+      if (!confirm(`Godkjenn ${navn}?`)) return;
+      try {
+        await apiBedriftGodkjenn(uid);
+        const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = `✓ ${navn} er godkjent!`;
+        document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
+        await lastBedrifter();
+        await lastStats();
+      } catch (e) { alert(e.message); }
+    };
+
+    window.avvisKlikk = async function(uid, navn) {
+      if (!confirm(`Avvis ${navn}? Bedriften vil bli deaktivert.`)) return;
+      try {
+        await apiBedriftAvvis(uid);
+        await lastBedrifter();
+        await lastStats();
+      } catch (e) { alert(e.message); }
+    };
+
+    // ===== SØKNADER =====
+    let soknaderCache = [];
+
+    async function lastSoknader() {
+      const tbody = document.getElementById('soknader-tabell');
+      tbody.innerHTML = `<tr><td colspan="6" class="skeleton" style="height:100px;"></td></tr>`;
+      try {
+        soknaderCache = await hentAllesoknader();
+        visSoknaderTabell(document.getElementById('status-filter').value);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--farge-tekst-sekundaer);">Kunne ikke laste søknader.</td></tr>`;
+      }
+    }
+
+    function visSoknaderTabell(filter) {
+      const soknader = filter ? soknaderCache.filter(s => s.status === filter) : soknaderCache;
+      const tbody = document.getElementById('soknader-tabell');
+      if (soknader.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--farge-tekst-sekundaer);padding:2rem;">Ingen søknader${filter ? ` med status «${statusTekst(filter)}»` : ''}.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = soknader.map(s => `
+        <tr>
+          <td><strong>${s.laerling_navn || '—'}</strong><br><span style="font-size:0.8rem;color:var(--farge-tekst-sekundaer);">${s.laerling_epost || ''}</span></td>
+          <td style="font-size:0.85rem;">${s.utdanningsprogram || s.vg1 || '—'}</td>
+          <td>${s.laerling_tittel || s.tittel || '—'}</td>
+          <td>${s.bedrift_naam || s.bedrift_navn || '—'}</td>
+          <td style="font-size:0.85rem;color:var(--farge-tekst-sekundaer);">${formaterDato(s.opprettet || s.dato)}</td>
+          <td><span class="badge ${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('status-filter').addEventListener('change', e => visSoknaderTabell(e.target.value));
+
+    // ===== STATISTIKK =====
+    async function lastStatistikk() {
+      try {
+        const [soknader, laereplasser] = await Promise.all([
+          hentAllesoknader(),
+          hentAlleLaereplasser()
+        ]);
+        const total = soknader.length;
+        const statuser = ['sendt', 'under_behandling', 'godkjent', 'avslatt', 'trukket'];
+        const farger = { godkjent: 'var(--farge-suksess)', avslatt: 'var(--farge-feil)', under_behandling: 'var(--farge-advarsel)', sendt: 'var(--farge-hoved)', trukket: '#999' };
+
+        document.getElementById('status-fordeling').innerHTML = statuser.map(s => {
+          const antall = soknader.filter(x => x.status === s).length;
+          const prosent = total > 0 ? Math.round((antall / total) * 100) : 0;
+          return `
+            <div>
+              <div class="rad" style="justify-content:space-between;margin-bottom:0.25rem;">
+                <span style="font-size:0.875rem;">${statusTekst(s)}</span>
+                <span style="font-size:0.875rem;font-weight:600;">${antall} (${prosent}%)</span>
+              </div>
+              <div class="fremgang-linje">
+                <div class="fremgang-fyll" style="width:${prosent}%;background-color:${farger[s] || 'var(--farge-hoved)'};"></div>
+              </div>
+            </div>`;
+        }).join('');
+
+        const fagomraader = {};
+        laereplasser.forEach(p => {
+          const f = p.fagomraade || p.bransje || 'Annet';
+          fagomraader[f] = (fagomraader[f] || 0) + 1;
+        });
+        document.getElementById('bransje-fordeling').innerHTML = Object.entries(fagomraader).length
+          ? Object.entries(fagomraader).sort((a, b) => b[1] - a[1]).map(([navn, antall]) => `
+              <div class="rad" style="justify-content:space-between;">
+                <span style="font-size:0.875rem;">${navn}</span>
+                <span class="badge badge-blaa">${antall}</span>
+              </div>`).join('')
+          : '<p style="color:var(--farge-tekst-sekundaer);font-size:0.875rem;">Ingen læreplasser ennå.</p>';
+      } catch (e) { console.error('Feil ved statistikk:', e); }
+    }
+
     // ===== INIT =====
-    visStats();
-    visBedrifter();
-    visSoknader();
-    visStatistikk();
+    initScrollReveal();
+    initVarselBjelle();
+
+    await Promise.all([lastStats(), lastBedrifter(), lastSoknader(), lastStatistikk()]);
   </script>
 </body>
 </html>

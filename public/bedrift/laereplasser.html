@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine læreplasser — OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Meny</div>
+        <a href="/bedrift/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/bedrift/laereplasser.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Mine læreplasser
+        </a>
+        <a href="/bedrift/soknader.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Innkomne søknader
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+      <div class="rad reveal" style="margin-bottom:2rem;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem;">Mine læreplasser</h1>
+          <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster…</p>
+        </div>
+        <button class="btn btn-primary" id="ny-annonse-btn">+ Legg ut ny læreplass</button>
+      </div>
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <section class="reveal" id="annonser-seksjon">
+        <div class="rutenett-2" id="annonser-liste">
+          <div class="skeleton" style="height:200px;border-radius:var(--radius);"></div>
+          <div class="skeleton" style="height:200px;border-radius:var(--radius);"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- NY ANNONSE MODAL -->
+  <div class="modal-bakgrunn skjult" id="annonse-modal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-hode">
+        <h3 class="modal-tittel">Legg ut ny læreplass</h3>
+        <button class="modal-lukk" id="annonse-lukk-btn">&times;</button>
+      </div>
+      <div class="modal-kropp">
+        <div id="annonse-varsel" class="varsel skjult"></div>
+        <form id="annonse-form">
+          <div class="form-gruppe">
+            <label class="etikett" for="a-tittel">Tittel <span style="color:var(--olkv-red);">*</span></label>
+            <input type="text" id="a-tittel" class="input" placeholder="f.eks. Lærling i salgsfaget" required />
+          </div>
+          <div class="rutenett-2" style="gap:0.75rem;">
+            <div class="form-gruppe">
+              <label class="etikett" for="a-fagomraade">Fagområde</label>
+              <select id="a-fagomraade" class="input"></select>
+            </div>
+            <div class="form-gruppe">
+              <label class="etikett" for="a-sted">Sted</label>
+              <input type="text" id="a-sted" class="input" placeholder="f.eks. Bergen" />
+            </div>
+          </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="a-beskrivelse">Beskrivelse</label>
+            <textarea id="a-beskrivelse" class="input" rows="4" placeholder="Fortell om læreplassen og bedriften…"></textarea>
+          </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="a-krav">Krav til søker</label>
+            <textarea id="a-krav" class="input" rows="3" placeholder="f.eks. VG2 Salg, gode samarbeidsevner…"></textarea>
+          </div>
+          <div class="rutenett-2" style="gap:0.75rem;">
+            <div class="form-gruppe">
+              <label class="etikett" for="a-antall">Antall plasser</label>
+              <input type="number" id="a-antall" class="input" min="1" value="1" />
+            </div>
+            <div class="form-gruppe">
+              <label class="etikett" for="a-start">Startdato</label>
+              <input type="date" id="a-start" class="input" />
+            </div>
+          </div>
+          <div class="rutenett-2" style="gap:0.75rem;">
+            <div class="form-gruppe">
+              <label class="etikett" for="a-frist">Søknadsfrist <span style="color:var(--olkv-red);">*</span></label>
+              <input type="date" id="a-frist" class="input" required />
+            </div>
+            <div class="form-gruppe">
+              <label class="etikett" for="a-kontaktperson">Kontaktperson</label>
+              <input type="text" id="a-kontaktperson" class="input" placeholder="Navn på kontaktperson" />
+            </div>
+          </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="a-kontaktepost">Kontakt e-post</label>
+            <input type="email" id="a-kontaktepost" class="input" placeholder="kontakt@bedrift.no" />
+          </div>
+          <button type="submit" class="btn btn-primary" id="annonse-send-btn" style="width:100%;margin-top:0.5rem;">Publiser læreplass</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, slettAnnonse,
+      formaterDato, initScrollReveal, fagomraader, initVarselBjelle
+    } from '../app.js';
+
+    let bruker = null;
+    bruker = await krevInnlogging('bedrift');
+    if (!bruker) { window.location.href = '/login.html'; }
+
+    document.getElementById('nav-navn').textContent = bruker.navn || '';
+    document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
+
+    // Fyll fagomraade-select
+    const fagSelect = document.getElementById('a-fagomraade');
+    fagomraader.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f; opt.textContent = f;
+      fagSelect.appendChild(opt);
+    });
+
+    // Sett min-dato for frist
+    document.getElementById('a-frist').min = new Date().toISOString().split('T')[0];
+
+    async function lastAnnonser() {
+      const annonser = await hentMineAnnonser();
+      document.getElementById('antall-tekst').textContent = `${annonser.length} læreplasser registrert`;
+
+      const container = document.getElementById('annonser-liste');
+      if (!annonser.length) {
+        container.innerHTML = `
+          <div class="tom-tilstand" style="grid-column:1/-1;">
+            <div class="tom-tilstand-ikon">📢</div>
+            <h3>Ingen læreplasser ennå</h3>
+            <p>Klikk på "Legg ut ny læreplass" for å publisere din første annonse.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = annonser.map(a => `
+        <div class="kort">
+          <div class="kort-header">
+            <div>
+              <div class="kort-tittel">${a.tittel}</div>
+              <div class="kort-undertittel">${a.fagomraade || a.bransje || ''}</div>
+            </div>
+            <span class="badge ${a.aktiv ? 'badge-godkjent' : 'badge-graa'}">${a.aktiv ? 'Aktiv' : 'Inaktiv'}</span>
+          </div>
+          <div style="margin:0.75rem 0;font-size:0.85rem;color:var(--farge-tekst-sekundaer);">
+            ${a.sted ? `📍 ${a.sted} &nbsp;·&nbsp; ` : ''}Frist: ${formaterDato(a.frist)}
+          </div>
+          <div class="kort-footer">
+            <span class="badge badge-blaa">${a.antall_soknader || 0} søknader</span>
+            <button class="btn-mini btn-mini-roed" onclick="slettKlikk(${a.id})">Slett</button>
+          </div>
+        </div>`).join('');
+    }
+
+    window.slettKlikk = async function(id) {
+      if (!confirm('Er du sikker på at du vil slette denne læreplassen?')) return;
+      try {
+        await slettAnnonse(id);
+        await lastAnnonser();
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    document.getElementById('ny-annonse-btn').addEventListener('click', () => {
+      document.getElementById('annonse-form').reset();
+      document.getElementById('annonse-varsel').classList.add('skjult');
+      document.getElementById('annonse-modal').classList.remove('skjult');
+    });
+
+    document.getElementById('annonse-lukk-btn').addEventListener('click', () => {
+      document.getElementById('annonse-modal').classList.add('skjult');
+    });
+    document.getElementById('annonse-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('annonse-modal').classList.add('skjult');
+    });
+
+    document.getElementById('annonse-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('annonse-send-btn');
+      btn.disabled = true; btn.textContent = 'Publiserer…';
+
+      try {
+        await lagreAnnonseUtvidet({
+          tittel: document.getElementById('a-tittel').value.trim(),
+          fagomraade: document.getElementById('a-fagomraade').value,
+          sted: document.getElementById('a-sted').value.trim(),
+          beskrivelse: document.getElementById('a-beskrivelse').value.trim(),
+          krav: document.getElementById('a-krav').value.trim(),
+          antall_plasser: parseInt(document.getElementById('a-antall').value) || 1,
+          start_dato: document.getElementById('a-start').value || '',
+          frist: document.getElementById('a-frist').value,
+          kontaktperson: document.getElementById('a-kontaktperson').value.trim(),
+          kontakt_epost: document.getElementById('a-kontaktepost').value.trim()
+        });
+
+        document.getElementById('annonse-modal').classList.add('skjult');
+        await lastAnnonser();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = '✓ Læreplassen er publisert!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+      } catch (err) {
+        document.getElementById('annonse-varsel').className = 'varsel varsel-feil';
+        document.getElementById('annonse-varsel').textContent = err.message;
+        document.getElementById('annonse-varsel').classList.remove('skjult');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Publiser læreplass';
+      }
+    });
+
+    await lastAnnonser();
+    initScrollReveal();
+    initVarselBjelle();
+  </script>
+</body>
+</html>

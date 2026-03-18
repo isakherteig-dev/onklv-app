@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine søknader — OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Meny</div>
+        <a href="/laerling/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/laerling/laereplasser.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Finn læreplasser
+        </a>
+        <a href="/laerling/mine-soknader.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Mine søknader
+        </a>
+        <a href="/laerling/dashboard.html#profil" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Min profil
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+      <div class="rad reveal" style="margin-bottom:2rem;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem;">Mine søknader</h1>
+          <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster søknader…</p>
+        </div>
+        <a href="/laerling/laereplasser.html" class="btn btn-primary">Finn nye læreplasser →</a>
+      </div>
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <section class="reveal">
+        <div id="soknader-innhold">
+          <div class="skeleton" style="height:80px;border-radius:var(--radius);margin-bottom:0.5rem;"></div>
+          <div class="skeleton" style="height:80px;border-radius:var(--radius);margin-bottom:0.5rem;"></div>
+          <div class="skeleton" style="height:80px;border-radius:var(--radius);"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- DETALJER MODAL -->
+  <div class="modal-bakgrunn skjult" id="detaljer-modal">
+    <div class="modal" style="max-width:580px;">
+      <div class="modal-hode">
+        <h3 class="modal-tittel" id="detaljer-tittel">Søknadsdetaljer</h3>
+        <button class="modal-lukk" id="detaljer-lukk-btn">&times;</button>
+      </div>
+      <div class="modal-kropp">
+        <div id="detaljer-innhold"></div>
+        <div style="margin-top:1rem;display:flex;gap:0.75rem;justify-content:flex-end;" id="detaljer-handlinger"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      krevInnlogging, loggUt, hentSoknaderLaerling, trekkSoknad,
+      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle
+    } from '../app.js';
+
+    let bruker = null;
+    let alleSoknader = [];
+
+    bruker = await krevInnlogging('laerling');
+    if (!bruker) { window.location.href = '/login.html'; }
+
+    document.getElementById('nav-navn').textContent = bruker.navn || '';
+    document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
+
+    async function lastSoknader() {
+      alleSoknader = await hentSoknaderLaerling();
+      visSoknader(alleSoknader);
+    }
+
+    function visSoknader(soknader) {
+      const container = document.getElementById('soknader-innhold');
+      document.getElementById('antall-tekst').textContent = `${soknader.length} søknader totalt`;
+
+      if (!soknader.length) {
+        container.innerHTML = `
+          <div class="tom-tilstand">
+            <div class="tom-tilstand-ikon">📋</div>
+            <h3>Ingen søknader ennå</h3>
+            <p>Du har ikke søkt på noen læreplasser ennå.</p>
+            <a href="/laerling/laereplasser.html" class="btn btn-primary" style="margin-top:1rem;">Finn læreplasser →</a>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="tabell-wrapper">
+          <table class="tabell">
+            <thead>
+              <tr>
+                <th>Læreplass</th>
+                <th>Bedrift</th>
+                <th>Sendt</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${soknader.map(s => `
+                <tr style="cursor:pointer;" onclick="visDetaljer(${s.id})">
+                  <td><strong>${s.tittel || '—'}</strong></td>
+                  <td>${s.bedrift_navn || '—'}</td>
+                  <td>${formaterDato(s.sendt_dato)}</td>
+                  <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
+                  <td>
+                    ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-roed" onclick="event.stopPropagation();trekkSoknadKlikk(${s.id})">Trekk</button>` : ''}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    window.visDetaljer = function(id) {
+      const s = alleSoknader.find(x => x.id === id);
+      if (!s) return;
+
+      document.getElementById('detaljer-tittel').textContent = s.tittel || 'Søknadsdetaljer';
+      document.getElementById('detaljer-innhold').innerHTML = `
+        <div style="display:grid;gap:0.75rem;">
+          <div class="rad" style="gap:1rem;flex-wrap:wrap;">
+            <div style="flex:1;min-width:180px;">
+              <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Bedrift</div>
+              <strong>${s.bedrift_navn || '—'}</strong>
+            </div>
+            <div>
+              <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Status</div>
+              <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
+            </div>
+          </div>
+          <div class="rad" style="gap:1rem;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sendt</div>
+              ${formaterDato(s.sendt_dato)}
+            </div>
+            ${s.sted ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sted</div>${s.sted}</div>` : ''}
+          </div>
+          ${s.melding ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${s.melding}</p></div>` : ''}
+          ${s.erfaring ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${s.erfaring}</p></div>` : ''}
+          ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG1</div>${s.vg1 || '—'}</div><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG2</div>${s.vg2 || '—'}</div></div>` : ''}
+          ${s.admin_kommentar ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Kommentar fra OLKV</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;border-left:3px solid #B7791F;">${s.admin_kommentar}</p></div>` : ''}
+        </div>`;
+
+      document.getElementById('detaljer-handlinger').innerHTML = s.status === 'sendt'
+        ? `<button class="btn btn-secondary" onclick="trekkSoknadKlikk(${s.id})">Trekk søknad</button>`
+        : '';
+
+      document.getElementById('detaljer-modal').classList.remove('skjult');
+    };
+
+    window.trekkSoknadKlikk = async function(id) {
+      if (!confirm('Er du sikker på at du vil trekke søknaden? Dette kan ikke angres.')) return;
+      try {
+        await trekkSoknad(id);
+        document.getElementById('detaljer-modal').classList.add('skjult');
+        await lastSoknader();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = 'Søknaden er trukket.';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    document.getElementById('detaljer-lukk-btn').addEventListener('click', () => {
+      document.getElementById('detaljer-modal').classList.add('skjult');
+    });
+    document.getElementById('detaljer-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('detaljer-modal').classList.add('skjult');
+    });
+
+    await lastSoknader();
+    initScrollReveal();
+    initVarselBjelle();
+  </script>
+</body>
+</html>

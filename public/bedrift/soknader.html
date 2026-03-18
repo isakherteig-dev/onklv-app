@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Innkomne søknader — OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Meny</div>
+        <a href="/bedrift/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/bedrift/laereplasser.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Mine læreplasser
+        </a>
+        <a href="/bedrift/soknader.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Innkomne søknader
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+      <div class="rad reveal" style="margin-bottom:2rem;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem;">Innkomne søknader</h1>
+          <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster søknader…</p>
+        </div>
+        <select id="laerplass-filter" class="input" style="max-width:260px;padding:0.5rem 0.75rem;border-radius:var(--radius-pill);">
+          <option value="">Alle læreplasser</option>
+        </select>
+      </div>
+
+      <div id="varsel" class="varsel skjult"></div>
+
+      <section class="reveal" id="soknader-seksjon">
+        <div id="soknader-liste">
+          <div class="skeleton" style="height:180px;border-radius:var(--radius);margin-bottom:0.75rem;"></div>
+          <div class="skeleton" style="height:180px;border-radius:var(--radius);"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import {
+      krevInnlogging, loggUt, hentSoknaderBedriftMed, hentMineAnnonser, oppdaterSoknadStatus,
+      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle
+    } from '../app.js';
+
+    let bruker = null;
+    let alleSoknader = [];
+
+    bruker = await krevInnlogging('bedrift');
+    if (!bruker) { window.location.href = '/login.html'; }
+
+    document.getElementById('nav-navn').textContent = bruker.navn || '';
+    document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
+
+    // Fyll laerplass-filter
+    const annonser = await hentMineAnnonser();
+    const laerplassFilter = document.getElementById('laerplass-filter');
+    annonser.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id; opt.textContent = a.tittel;
+      laerplassFilter.appendChild(opt);
+    });
+
+    laerplassFilter.addEventListener('change', () => lastSoknader());
+
+    async function lastSoknader() {
+      const laerplass_id = laerplassFilter.value;
+      alleSoknader = await hentSoknaderBedriftMed(laerplass_id);
+      visSoknader(alleSoknader);
+    }
+
+    function visSoknader(soknader) {
+      document.getElementById('antall-tekst').textContent = `${soknader.length} søknader`;
+      const container = document.getElementById('soknader-liste');
+
+      if (!soknader.length) {
+        container.innerHTML = `
+          <div class="tom-tilstand">
+            <div class="tom-tilstand-ikon">📋</div>
+            <h3>Ingen søknader ennå</h3>
+            <p>Det har ikke kommet inn søknader ennå.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = soknader.map(s => `
+        <div class="kort" style="margin-bottom:1rem;">
+          <div class="kort-header">
+            <div>
+              <div class="kort-tittel">${s.laerling_naam || '—'}</div>
+              <div class="kort-undertittel">${s.laerling_epost || ''} ${s.skole ? '· ' + s.skole : ''}</div>
+            </div>
+            <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
+          </div>
+          <div style="margin:0.5rem 0;font-size:0.83rem;color:var(--olkv-gray);">
+            ${s.utdanningsprogram ? `📚 ${s.utdanningsprogram}` : ''}
+            ${s.vg1 ? ` · VG1: ${s.vg1}` : ''}
+            ${s.vg2 ? ` · VG2: ${s.vg2}` : ''}
+          </div>
+          <div style="margin-bottom:0;font-size:0.85rem;">
+            <strong style="font-size:0.8rem;color:var(--olkv-gray);display:block;margin-bottom:3px;">Motivasjon</strong>
+            <p style="margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${s.melding || '—'}</p>
+          </div>
+          ${s.erfaring ? `<div style="margin-top:0.5rem;font-size:0.85rem;"><strong style="font-size:0.8rem;color:var(--olkv-gray);display:block;margin-bottom:3px;">Erfaring</strong><p style="margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.erfaring}</p></div>` : ''}
+          <div class="kort-footer" style="margin-top:1rem;">
+            <span style="font-size:0.82rem;color:var(--olkv-gray);">Sendt: ${formaterDato(s.sendt_dato)}</span>
+            <div class="tabell-handlinger">
+              ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${s.id},'under_behandling')">Under behandling</button>` : ''}
+              ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${s.id},'godkjent')">Godkjenn</button>` : ''}
+              ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${s.id},'avslatt')">Avslå</button>` : ''}
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    window.oppdater = async function(id, status) {
+      const bekreft = {
+        godkjent: 'Er du sikker på at du vil godkjenne denne søknaden?',
+        avslatt: 'Er du sikker på at du vil avslå denne søknaden?'
+      };
+      if (bekreft[status] && !confirm(bekreft[status])) return;
+
+      try {
+        await oppdaterSoknadStatus(id, status);
+        await lastSoknader();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = `✓ Status oppdatert til "${statusTekst(status)}"`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    await lastSoknader();
+    initScrollReveal();
+    initVarselBjelle();
+  </script>
+</body>
+</html>

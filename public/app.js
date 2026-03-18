@@ -301,12 +301,32 @@ export function formaterDato(datoStreng) {
 }
 
 export function statusTekst(status) {
-  const tekster = { sendt: 'Sendt', under_vurdering: 'Under vurdering', akseptert: 'Akseptert', avvist: 'Avvist' };
+  const tekster = {
+    sendt:             'Sendt',
+    under_behandling:  'Under behandling',
+    godkjent:          'Godkjent',
+    avslatt:           'Avslått',
+    trukket:           'Trukket',
+    // bakoverkompatibilitet
+    under_vurdering:   'Under vurdering',
+    akseptert:         'Akseptert',
+    avvist:            'Avvist'
+  };
   return tekster[status] || status;
 }
 
 export function statusBadgeKlasse(status) {
-  const klasser = { sendt: 'badge badge-blaa', under_vurdering: 'badge badge-oransje', akseptert: 'badge badge-gronn', avvist: 'badge badge-roed' };
+  const klasser = {
+    sendt:             'badge badge-sendt',
+    under_behandling:  'badge badge-behandling',
+    godkjent:          'badge badge-godkjent',
+    avslatt:           'badge badge-avslatt',
+    trukket:           'badge badge-trukket',
+    // bakoverkompatibilitet
+    under_vurdering:   'badge badge-behandling',
+    akseptert:         'badge badge-godkjent',
+    avvist:            'badge badge-avslatt'
+  };
   return klasser[status] || 'badge badge-graa';
 }
 
@@ -358,6 +378,193 @@ export function initScrollReveal() {
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
   elementer.forEach(el => observer.observe(el));
+}
+
+// ===== FAGOMRÅDER =====
+export const fagomraader = [
+  'Salg, service og reiseliv',
+  'Helse- og oppvekstfag',
+  'Bygg- og anleggsteknikk',
+  'Elektro og datateknologi',
+  'Teknologi- og industrifag',
+  'Restaurant- og matfag',
+  'Naturbruk',
+  'Design og håndverk',
+  'Informasjonsteknologi og medieproduksjon',
+  'Frisør, blomster, interiør og eksponeringsdesign',
+  'Transport og logistikk',
+  'Kontor og administrasjon',
+  'Renhold',
+  'Annet'
+];
+
+// ===== UTVIDEDE API-FUNKSJONER =====
+
+export async function sendSoknadFull(data) {
+  const headers = await authHeaders();
+  const res = await fetch('/api/soknader', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Søknaden feilet');
+  return json;
+}
+
+export async function trekkSoknad(id) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/soknader/${id}`, { method: 'DELETE', headers });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Trekking feilet');
+  return json;
+}
+
+export async function hentLaereplassDetaljer(id) {
+  const res = await fetch(`/api/laereplasser/${id}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function lagreAnnonseUtvidet(data) {
+  const headers = await authHeaders();
+  const res = await fetch('/api/laereplasser', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Kunne ikke lagre annonsen');
+  return json;
+}
+
+export async function oppdaterAnnonse(id, data) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/laereplasser/${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Oppdatering feilet');
+  return json;
+}
+
+// Varsler
+export async function hentVarsler() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/varsler', { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function hentAntallUlesteVarsler() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/varsler/antall-uleste', { headers });
+  if (!res.ok) return 0;
+  const json = await res.json();
+  return json.antall || 0;
+}
+
+export async function markerVarselLest(id) {
+  const headers = await authHeaders();
+  await fetch(`/api/varsler/${id}/lest`, { method: 'PATCH', headers });
+}
+
+export async function markerAlleVarslerLest() {
+  const headers = await authHeaders();
+  await fetch('/api/varsler/les-alle', { method: 'PATCH', headers });
+}
+
+// Admin utvidet
+export async function hentAllesoknader(params = {}) {
+  const headers = await authHeaders();
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`/api/admin/alle-soknader${qs ? '?' + qs : ''}`, { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function oppdaterSoknadStatusAdmin(id, status, admin_kommentar = '') {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/admin/soknader/${id}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status, admin_kommentar })
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Statusoppdatering feilet');
+  return json;
+}
+
+export async function hentAlleLaereplasser(params = {}) {
+  const headers = await authHeaders();
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`/api/admin/alle-laereplasser${qs ? '?' + qs : ''}`, { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function hentAlleBrukere(rolle = '') {
+  const headers = await authHeaders();
+  const qs = rolle ? `?rolle=${rolle}` : '';
+  const res = await fetch(`/api/admin/brukere${qs}`, { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function hentAdminStatistikk() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/admin/statistikk', { headers });
+  if (!res.ok) return {};
+  return res.json();
+}
+
+export async function hentSoknaderBedriftMed(laerplass_id = '') {
+  const headers = await authHeaders();
+  const qs = laerplass_id ? `?laerplass_id=${laerplass_id}` : '';
+  const res = await fetch(`/api/soknader/bedrift${qs}`, { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ===== VARSEL-BJELLE INITIALISERING =====
+export async function initVarselBjelle(bjelleId = 'varsel-bjelle', dropdownId = 'varsel-dropdown') {
+  const bjelle = document.getElementById(bjelleId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!bjelle || !dropdown) return;
+
+  async function oppdaterBjelle() {
+    const antall = await hentAntallUlesteVarsler();
+    const badge = bjelle.querySelector('.varsel-bjelle-badge');
+    if (badge) {
+      badge.textContent = antall > 0 ? (antall > 9 ? '9+' : antall) : '';
+      badge.style.display = antall > 0 ? 'flex' : 'none';
+    }
+  }
+
+  bjelle.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const varsler = await hentVarsler();
+    await markerAlleVarslerLest();
+    await oppdaterBjelle();
+
+    dropdown.innerHTML = varsler.length === 0
+      ? '<div style="padding:1rem;color:var(--olkv-gray);text-align:center;">Ingen varsler</div>'
+      : varsler.slice(0, 10).map(v => `
+        <div class="varsel-item ${v.lest ? '' : 'varsel-item-ulest'}" onclick="window.location='${v.lenke || '#'}'">
+          <div class="varsel-item-tittel">${v.tittel}</div>
+          <div class="varsel-item-melding">${v.melding || ''}</div>
+          <div class="varsel-item-tid">${formaterDato(v.opprettet?.split('T')[0] || v.opprettet)}</div>
+        </div>
+      `).join('');
+
+    dropdown.classList.toggle('skjult');
+  });
+
+  document.addEventListener('click', () => dropdown.classList.add('skjult'));
+
+  await oppdaterBjelle();
 }
 
 // ===== DUMMY-DATA (beholdt for bakoverkompatibilitet) =====

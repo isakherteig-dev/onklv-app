@@ -7,6 +7,7 @@ import authRuter from './routes/auth.js';
 import laereplasserRuter from './routes/laereplasser.js';
 import soknadRuter from './routes/soknader.js';
 import adminRuter from './routes/admin.js';
+import varslerRuter from './routes/varsler.js';
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -21,8 +22,9 @@ app.use('/api/auth', authRuter);
 app.use('/api/laereplasser', laereplasserRuter);
 app.use('/api/soknader', soknadRuter);
 app.use('/api/admin', adminRuter);
+app.use('/api/varsler', varslerRuter);
 
-// Start SQLite (kun for laereplasser + soknader)
+// Start SQLite (laereplasser, soknader, varsler)
 initDB();
 
 app.listen(port, () => {
