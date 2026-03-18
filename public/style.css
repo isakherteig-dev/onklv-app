@@ -1177,3 +1177,101 @@ tr:hover td {
   .footer-innhold { flex-direction: column; gap: 1.5rem; }
   .kort-footer { flex-direction: column; align-items: flex-start; }
 }
+
+/* ===== SIDE-OVERGANG (PAGE LOAD) ===== */
+.page-content {
+  animation: pageIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== REVEAL-VARIANTER ===== */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===== IKON-HOVER BOUNCE ===== */
+.icon-hover:hover svg {
+  animation: iconBounce 0.4s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* ===== GOOGLE-KNAPP ===== */
+.btn-google {
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #ddd;
+  font-weight: 500;
+}
+
+.btn-google:hover {
+  border-color: #4285F4;
+  box-shadow: var(--olkv-shadow-sm);
+  transform: translateY(-1px);
+}
+
+/* ===== TOAST-MELDING ===== */
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  background: #fff;
+  border-left: 4px solid var(--farge-suksess);
+  box-shadow: var(--olkv-shadow-md);
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--olkv-dark);
+  max-width: 320px;
+}
+
+.toast-feil { border-left-color: var(--olkv-red); }
+
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* ===== SKELETON LOADING ===== */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s infinite;
+  border-radius: var(--radius);
+  color: transparent;
+}
+
+@keyframes skeletonPulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

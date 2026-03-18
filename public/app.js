@@ -345,7 +345,7 @@ export function oversettFirebaseFeil(kode) {
 
 // ===== SCROLL REVEAL =====
 export function initScrollReveal() {
-  const elementer = document.querySelectorAll('.reveal');
+  const elementer = document.querySelectorAll('.reveal, .reveal-left, .reveal-scale');
   if (!elementer.length) return;
 
   const observer = new IntersectionObserver((entries) => {
