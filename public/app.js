@@ -1,16 +1,43 @@
-// Perfect Match — app.js (API-versjon)
+// Perfect Match — app.js
+// Bruker Firebase Authentication via CDN-importert Client SDK
+
+import { auth } from './firebase-config.js';
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+
+// ===== HJELPEFUNKSJON: HENT TOKEN =====
+
+/** Returnerer Firebase ID-token for innlogget bruker, eller null */
+export async function getToken() {
+  const user = auth.currentUser;
+  if (!user) return null;
+  return user.getIdToken();
+}
+
+/** Returnerer Authorization-header for API-kall */
+async function authHeaders() {
+  const token = await getToken();
+  return token
+    ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    : { 'Content-Type': 'application/json' };
+}
 
 // ===== AUTENTISERING =====
 
 export function erInnlogget() {
-  // Sjekkes server-side via /api/auth/meg — returner true optimistisk,
-  // krevInnlogging() gjør den ekte sjekken asynkront
-  return document.cookie.includes('pm_token');
+  return auth.currentUser !== null;
 }
 
 export async function hentBruker() {
   try {
-    const res = await fetch('/api/auth/meg', { credentials: 'include' });
+    const headers = await authHeaders();
+    if (!headers.Authorization) return null;
+    const res = await fetch('/api/auth/meg', { headers });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -18,36 +45,76 @@ export async function hentBruker() {
   }
 }
 
+/**
+ * Logg inn med e-post + passord via Firebase Auth.
+ * Kaller /api/auth/login-update for å oppdatere sist innlogget og hente rolle.
+ */
 export async function loggInn(epost, passord) {
-  const res = await fetch('/api/auth/login', {
+  const result = await signInWithEmailAndPassword(auth, epost, passord);
+  const token = await result.user.getIdToken();
+
+  const res = await fetch('/api/auth/login-update', {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ epost, passord })
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
   });
+
   const data = await res.json();
-  if (!res.ok) throw new Error(data.feil || 'Feil e-post eller passord');
-  return data;
+  if (!res.ok) throw new Error(data.feil || 'Innlogging feilet');
+  return data.bruker;
 }
 
-export async function registrerLaerling(data) {
-  const res = await fetch('/api/auth/register/laerling', {
+/**
+ * Logg inn med Google via popup.
+ * Hvis brukeren ikke finnes i Firestore, sendes de til registreringssiden.
+ */
+export async function loggInnMedGoogle() {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  const token = await result.user.getIdToken();
+
+  const res = await fetch('/api/auth/login-update', {
     method: 'POST',
-    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+  });
+
+  if (res.status === 404) {
+    // Ny bruker via Google — send til registrering
+    const params = new URLSearchParams({
+      uid:   result.user.uid,
+      epost: result.user.email || '',
+      navn:  result.user.displayName || ''
+    });
+    window.location.href = `/register.html?${params.toString()}`;
+    return null;
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.feil || 'Innlogging feilet');
+  return data.bruker;
+}
+
+/**
+ * Registrer lærling via Firebase Auth + backend Firestore.
+ */
+export async function registrerLaerling(data) {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: JSON.stringify({ ...data, rolle: 'laerling' })
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.feil || 'Registrering feilet');
   return json;
 }
 
+/**
+ * Registrer bedrift via Firebase Auth + backend Firestore.
+ */
 export async function registrerBedrift(data) {
-  const res = await fetch('/api/auth/register/bedrift', {
+  const res = await fetch('/api/auth/register', {
     method: 'POST',
-    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: JSON.stringify({ ...data, rolle: 'bedrift' })
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.feil || 'Registrering feilet');
@@ -55,10 +122,10 @@ export async function registrerBedrift(data) {
 }
 
 export async function oppdaterBruker(oppdateringer) {
+  const headers = await authHeaders();
   const res = await fetch('/api/auth/profil', {
     method: 'PATCH',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(oppdateringer)
   });
   const json = await res.json();
@@ -67,55 +134,76 @@ export async function oppdaterBruker(oppdateringer) {
 }
 
 export async function loggUt() {
-  await fetch('/api/auth/logg-ut', { method: 'POST', credentials: 'include' });
+  await signOut(auth);
   window.location.href = '/';
 }
 
-/** Krev innlogging — omdirigerer til /login.html hvis ikke innlogget */
-export async function krevInnlogging(rolle) {
-  const bruker = await hentBruker();
-  if (!bruker) {
-    window.location.href = '/login.html';
-    return null;
-  }
-  if (rolle && bruker.rolle !== rolle) {
-    window.location.href = '/login.html';
-    return null;
-  }
-  return bruker;
+/**
+ * Krev innlogging — omdirigerer til /login.html hvis ikke innlogget.
+ * Returnerer brukerobjektet ved suksess.
+ */
+export function krevInnlogging(rolle) {
+  return new Promise((resolve) => {
+    const avregistrer = onAuthStateChanged(auth, async (firebaseUser) => {
+      avregistrer(); // Kjør kun én gang
+      if (!firebaseUser) {
+        window.location.href = '/login.html';
+        resolve(null);
+        return;
+      }
+
+      const bruker = await hentBruker();
+      if (!bruker) {
+        window.location.href = '/login.html';
+        resolve(null);
+        return;
+      }
+
+      if (rolle && bruker.rolle !== rolle && bruker.rolle !== 'admin') {
+        window.location.href = '/login.html';
+        resolve(null);
+        return;
+      }
+
+      resolve(bruker);
+    });
+  });
 }
 
 // ===== DATAFUNKSJONER =====
 
 export async function hentLaereplasser() {
-  const res = await fetch('/api/laereplasser', { credentials: 'include' });
+  const res = await fetch('/api/laereplasser');
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function hentMineAnnonser() {
-  const res = await fetch('/api/laereplasser/mine', { credentials: 'include' });
+  const headers = await authHeaders();
+  const res = await fetch('/api/laereplasser/mine', { headers });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function hentSoknaderLaerling() {
-  const res = await fetch('/api/soknader/mine', { credentials: 'include' });
+  const headers = await authHeaders();
+  const res = await fetch('/api/soknader/mine', { headers });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function hentSoknaderBedrift() {
-  const res = await fetch('/api/soknader/bedrift', { credentials: 'include' });
+  const headers = await authHeaders();
+  const res = await fetch('/api/soknader/bedrift', { headers });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function sendSoknad(laerplass_id, melding) {
+  const headers = await authHeaders();
   const res = await fetch('/api/soknader', {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ laerplass_id, melding })
   });
   const json = await res.json();
@@ -124,10 +212,10 @@ export async function sendSoknad(laerplass_id, melding) {
 }
 
 export async function lagreAnnonse(annonseData) {
+  const headers = await authHeaders();
   const res = await fetch('/api/laereplasser', {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(annonseData)
   });
   const json = await res.json();
@@ -136,10 +224,8 @@ export async function lagreAnnonse(annonseData) {
 }
 
 export async function slettAnnonse(id) {
-  const res = await fetch(`/api/laereplasser/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
-  });
+  const headers = await authHeaders();
+  const res = await fetch(`/api/laereplasser/${id}`, { method: 'DELETE', headers });
   if (!res.ok) {
     const json = await res.json();
     throw new Error(json.feil || 'Sletting feilet');
@@ -147,14 +233,41 @@ export async function slettAnnonse(id) {
   return hentMineAnnonser();
 }
 
-// ===== DUMMY-DATA (beholdt for admin-dashbordet som ikke har API ennå) =====
+// Admin: hent ventende bedrifter fra Firestore via backend
+export async function hentBedrifterVenter() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/admin/bedrifter-venter', { headers });
+  if (!res.ok) return [];
+  return res.json();
+}
 
-export const BEDRIFTER_VENTER = [
-  { id: 10, navn: 'Nordnes Rørlegger AS', org_nr: '923456789', bransje: 'Bygg og anlegg', epost: 'post@nordnesror.no', registrert_dato: '2026-03-14' },
-  { id: 11, navn: 'Fana Mat & Catering', org_nr: '934567890', bransje: 'Restaurant og matfag', epost: 'kontakt@fanamat.no', registrert_dato: '2026-03-15' }
-];
+export async function godkjennBedrift(uid) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/admin/bedrifter/${uid}/godkjenn`, { method: 'PATCH', headers });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Godkjenning feilet');
+  return json;
+}
 
-export const LAEREPLASSER = [];
+export async function avvisBedrift(uid) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/admin/bedrifter/${uid}/avvis`, { method: 'PATCH', headers });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Avvisning feilet');
+  return json;
+}
+
+export async function oppdaterSoknadStatus(id, status) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/soknader/${id}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status })
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Statusoppdatering feilet');
+  return json;
+}
 
 // ===== HJELPEFUNKSJONER =====
 
@@ -212,7 +325,25 @@ export function beregnProfilkomplettering(bruker) {
   return score;
 }
 
-// ===== SCROLL REVEAL (IntersectionObserver) =====
+/** Oversett Firebase-feilkoder til norsk tekst */
+export function oversettFirebaseFeil(kode) {
+  const feil = {
+    'auth/invalid-email':          'Ugyldig e-postadresse',
+    'auth/user-disabled':          'Denne kontoen er deaktivert',
+    'auth/user-not-found':         'Ingen konto funnet med denne e-posten',
+    'auth/wrong-password':         'Feil passord',
+    'auth/invalid-credential':     'Feil e-post eller passord',
+    'auth/email-already-in-use':   'Denne e-postadressen er allerede registrert',
+    'auth/weak-password':          'Passordet må være minst 6 tegn',
+    'auth/too-many-requests':      'For mange forsøk. Prøv igjen om litt.',
+    'auth/network-request-failed': 'Nettverksfeil — sjekk internettforbindelsen',
+    'auth/popup-closed-by-user':   'Innloggingsvinduet ble lukket',
+    'auth/operation-not-allowed':  'Denne innloggingsmetoden er ikke aktivert'
+  };
+  return feil[kode] || 'Noe gikk galt. Prøv igjen.';
+}
+
+// ===== SCROLL REVEAL =====
 export function initScrollReveal() {
   const elementer = document.querySelectorAll('.reveal');
   if (!elementer.length) return;
@@ -228,3 +359,7 @@ export function initScrollReveal() {
 
   elementer.forEach(el => observer.observe(el));
 }
+
+// ===== DUMMY-DATA (beholdt for bakoverkompatibilitet) =====
+export const BEDRIFTER_VENTER = [];
+export const LAEREPLASSER = [];

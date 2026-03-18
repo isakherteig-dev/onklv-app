@@ -8,11 +8,11 @@ const ruter = Router();
 ruter.get('/', (req, res) => {
   const db = getDB();
   const plasser = db.prepare(`
-    SELECT l.*, u.navn AS bedrift_navn
-    FROM laereplasser l
-    JOIN users u ON u.id = l.bedrift_user_id
-    WHERE l.aktiv = 1
-    ORDER BY l.opprettet DESC
+    SELECT id, bedrift_user_id, bedrift_naam AS bedrift_navn,
+           tittel, beskrivelse, sted, bransje, frist, antall_plasser, opprettet
+    FROM laereplasser
+    WHERE aktiv = 1
+    ORDER BY opprettet DESC
   `).all();
   res.json(plasser);
 });
@@ -27,7 +27,7 @@ ruter.get('/mine', krevAuth, krevRolle('bedrift'), (req, res) => {
     WHERE l.bedrift_user_id = ?
     GROUP BY l.id
     ORDER BY l.opprettet DESC
-  `).all(req.user.id);
+  `).all(req.user.uid);
   res.json(plasser);
 });
 
@@ -39,12 +39,24 @@ ruter.post('/', krevAuth, krevRolle('bedrift'), (req, res) => {
   }
 
   const db = getDB();
-  const bransjeRad = db.prepare('SELECT bransje FROM bedrifter WHERE user_id = ?').get(req.user.id);
+
+  // Bransje og bedriftsnavn hentes fra Firestore-profilen (via middleware)
+  const bransje = req.user.bransje || null;
+  const bedriftNaam = req.user.navn || null;
 
   const id = db.prepare(`
-    INSERT INTO laereplasser (bedrift_user_id, tittel, beskrivelse, sted, bransje, frist, antall_plasser)
-    VALUES (?,?,?,?,?,?,?)
-  `).run(req.user.id, tittel, beskrivelse || null, sted || null, bransjeRad?.bransje || null, frist, antall_plasser || 1).lastInsertRowid;
+    INSERT INTO laereplasser (bedrift_user_id, bedrift_naam, tittel, beskrivelse, sted, bransje, frist, antall_plasser)
+    VALUES (?,?,?,?,?,?,?,?)
+  `).run(
+    req.user.uid,
+    bedriftNaam,
+    tittel,
+    beskrivelse || null,
+    sted || null,
+    bransje,
+    frist,
+    antall_plasser || 1
+  ).lastInsertRowid;
 
   res.status(201).json({ ok: true, id });
 });
@@ -52,10 +64,14 @@ ruter.post('/', krevAuth, krevRolle('bedrift'), (req, res) => {
 // DELETE /api/laereplasser/:id — slett annonse (bedrift, sin egen)
 ruter.delete('/:id', krevAuth, krevRolle('bedrift'), (req, res) => {
   const db = getDB();
-  const annonse = db.prepare('SELECT * FROM laereplasser WHERE id = ? AND bedrift_user_id = ?').get(req.params.id, req.user.id);
+  const annonse = db.prepare(
+    'SELECT * FROM laereplasser WHERE id = ? AND bedrift_user_id = ?'
+  ).get(req.params.id, req.user.uid);
+
   if (!annonse) {
     return res.status(404).json({ feil: 'Annonse ikke funnet' });
   }
+
   db.prepare('DELETE FROM laereplasser WHERE id = ?').run(req.params.id);
   res.json({ ok: true });
 });

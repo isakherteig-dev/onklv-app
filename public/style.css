@@ -805,7 +805,11 @@ tr:hover td {
 
 /* ===== HERO (landing) ===== */
 .hero {
-  background: linear-gradient(135deg, var(--olkv-blue) 0%, var(--olkv-blue-light) 60%, #3b6fcf 100%);
+  background:
+    linear-gradient(135deg, rgba(27, 58, 107, 0.93) 0%, rgba(42, 82, 152, 0.87) 60%, rgba(59, 111, 207, 0.82) 100%),
+    url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=70');
+  background-size: cover;
+  background-position: center;
   color: #fff;
   padding: 7rem var(--avstand) 6rem;
   text-align: center;
@@ -878,6 +882,118 @@ tr:hover td {
 .kort:hover .steg-ikon {
   transform: scale(1.08) rotate(-3deg);
   box-shadow: 0 8px 24px rgba(42,82,152,0.2);
+}
+
+/* ===== BILDEKOMPONENTER ===== */
+
+/* Bilde-kort — brukes i "For bedrifter"-seksjonen */
+.bilde-fremhev {
+  border-radius: var(--radius-stor);
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  box-shadow: var(--olkv-shadow-lg);
+}
+
+.bilde-fremhev img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.bilde-fremhev:hover img {
+  transform: scale(1.04);
+}
+
+.bilde-fremhev-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(15, 25, 35, 0.78) 0%, transparent 100%);
+}
+
+.bilde-fremhev-overlay p {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Bildebanner — full bredde fotoseksjon */
+.bildebanner {
+  position: relative;
+  height: 340px;
+  overflow: hidden;
+}
+
+.bildebanner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+
+.bildebanner-deksel {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(27, 58, 107, 0.7) 0%, rgba(42, 82, 152, 0.5) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.bildebanner-sitat {
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-style: italic;
+  font-weight: 700;
+  max-width: 680px;
+  line-height: 1.4;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* CTA-seksjon med foto-bakgrunn */
+.cta-seksjon {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem var(--avstand);
+  text-align: center;
+}
+
+.cta-seksjon-bilde {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+.cta-seksjon-deksel {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(42, 82, 152, 0.92) 0%, rgba(27, 58, 107, 0.95) 100%);
+  z-index: 1;
+}
+
+.cta-seksjon-innhold {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .bildebanner { height: 220px; }
+  .bilde-fremhev { aspect-ratio: 16 / 9; }
+  .cta-seksjon { padding: 4rem var(--avstand); }
 }
 
 /* ===== SCROLL REVEAL ANIMASJONER ===== */

@@ -1,18 +1,41 @@
-import jwt from 'jsonwebtoken';
+import { adminAuth, adminDB } from '../firebase/config.js';
 
-export function krevAuth(req, res, next) {
-  const token = req.cookies?.pm_token;
+/**
+ * Verifiserer Firebase ID-token fra Authorization-header.
+ * Putter { uid, navn, epost, rolle, ...resten av Firestore-profil } på req.user.
+ */
+export async function krevAuth(req, res, next) {
+  const token = req.headers.authorization?.split('Bearer ')[1];
   if (!token) {
     return res.status(401).json({ feil: 'Ikke innlogget' });
   }
+
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = await adminAuth.verifyIdToken(token);
+    const userDoc = await adminDB.collection('users').doc(decoded.uid).get();
+
+    if (!userDoc.exists) {
+      return res.status(403).json({ feil: 'Brukerprofil ikke funnet' });
+    }
+
+    const userData = userDoc.data();
+
+    // Bedrifter som ikke er godkjent blokkeres
+    if (userData.rolle === 'bedrift' && userData.godkjent === false) {
+      return res.status(403).json({ feil: 'Kontoen venter godkjenning fra Opplæringskontoret' });
+    }
+
+    req.user = { uid: decoded.uid, ...userData };
     next();
   } catch {
     return res.status(401).json({ feil: 'Ugyldig sesjon — logg inn på nytt' });
   }
 }
 
+/**
+ * Krever at innlogget bruker har en av de angitte rollene.
+ * Må brukes etter krevAuth.
+ */
 export function krevRolle(...roller) {
   return (req, res, next) => {
     if (!roller.includes(req.user?.rolle)) {

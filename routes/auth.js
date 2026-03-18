@@ -1,146 +1,162 @@
 import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { getDB } from '../db/init.js';
+import { adminAuth, adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 
 const ruter = Router();
 
-const COOKIE_INNSTILLINGER = {
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dager
-};
+/**
+ * POST /api/auth/register
+ * Oppretter brukerprofil i Firestore etter at Firebase Auth er gjort på frontend.
+ * Setter custom claim { rolle } for rask tilgangssjekk.
+ */
+ruter.post('/register', async (req, res) => {
+  const { uid, navn, epost, telefon, rolle, utdanningsprogram, skole, bio,
+          orgNr, bransje, bedriftBeskrivelse, samtykkeVersjon } = req.body;
 
-// POST /api/auth/login
-ruter.post('/login', (req, res) => {
-  const { epost, passord } = req.body;
-  if (!epost || !passord) {
-    return res.status(400).json({ feil: 'Fyll ut e-post og passord' });
+  if (!uid || !navn || !epost || !rolle) {
+    return res.status(400).json({ feil: 'Mangler påkrevde felt (uid, navn, epost, rolle)' });
   }
 
-  const db = getDB();
-  const bruker = db.prepare('SELECT * FROM users WHERE epost = ?').get(epost.toLowerCase().trim());
-  if (!bruker || !bcrypt.compareSync(passord, bruker.passord_hash)) {
-    return res.status(401).json({ feil: 'Feil e-post eller passord' });
+  if (!['laerling', 'bedrift'].includes(rolle)) {
+    return res.status(400).json({ feil: 'Ugyldig rolle' });
   }
 
-  const token = jwt.sign(
-    { id: bruker.id, rolle: bruker.rolle, navn: bruker.navn, epost: bruker.epost },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  res.cookie('pm_token', token, COOKIE_INNSTILLINGER);
-  res.json({ ok: true, rolle: bruker.rolle, navn: bruker.navn });
-});
-
-// POST /api/auth/register/laerling
-ruter.post('/register/laerling', (req, res) => {
-  const { navn, epost, passord, utdanningsprogram, skole, bio } = req.body;
-  if (!navn || !epost || !passord || !utdanningsprogram) {
-    return res.status(400).json({ feil: 'Fyll ut alle påkrevde felter' });
-  }
-  if (passord.length < 8) {
-    return res.status(400).json({ feil: 'Passordet må være minst 8 tegn' });
+  if (rolle === 'bedrift' && !orgNr) {
+    return res.status(400).json({ feil: 'Organisasjonsnummer er påkrevd for bedrifter' });
   }
 
-  const db = getDB();
-  const finnes = db.prepare('SELECT id FROM users WHERE epost = ?').get(epost.toLowerCase().trim());
-  if (finnes) {
-    return res.status(409).json({ feil: 'Denne e-postadressen er allerede i bruk' });
-  }
-
-  const hash = bcrypt.hashSync(passord, 10);
-  const userId = db.prepare(
-    'INSERT INTO users (epost, passord_hash, rolle, navn) VALUES (?,?,?,?)'
-  ).run(epost.toLowerCase().trim(), hash, 'laerling', navn.trim()).lastInsertRowid;
-
-  db.prepare(
-    'INSERT INTO laerlinger (user_id, utdanningsprogram, skole, bio) VALUES (?,?,?,?)'
-  ).run(userId, utdanningsprogram, skole || null, bio || null);
-
-  const token = jwt.sign(
-    { id: userId, rolle: 'laerling', navn: navn.trim(), epost: epost.toLowerCase().trim() },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  res.cookie('pm_token', token, COOKIE_INNSTILLINGER);
-  res.status(201).json({ ok: true, rolle: 'laerling', navn: navn.trim() });
-});
-
-// POST /api/auth/register/bedrift
-ruter.post('/register/bedrift', (req, res) => {
-  const { navn, epost, passord, orgNr, bransje, beskrivelse } = req.body;
-  if (!navn || !epost || !passord || !orgNr || !bransje) {
-    return res.status(400).json({ feil: 'Fyll ut alle påkrevde felter' });
-  }
-  if (!/^\d{9}$/.test(orgNr)) {
+  if (rolle === 'bedrift' && !/^\d{9}$/.test(orgNr)) {
     return res.status(400).json({ feil: 'Organisasjonsnummeret må være nøyaktig 9 siffer' });
   }
-  if (passord.length < 8) {
-    return res.status(400).json({ feil: 'Passordet må være minst 8 tegn' });
+
+  try {
+    // Sjekk at UID faktisk finnes i Firebase Auth
+    await adminAuth.getUser(uid);
+
+    const now = new Date();
+
+    const userData = {
+      uid,
+      navn: navn.trim(),
+      epost: epost.toLowerCase().trim(),
+      telefon: telefon || null,
+      rolle,
+      opprettet: now,
+      sistInnlogget: now,
+      samtykkeGitt: now,
+      samtykkeVersjon: samtykkeVersjon || '1.0',
+      aktiv: true,
+      // Lærling-felt
+      utdanningsprogram: rolle === 'laerling' ? (utdanningsprogram || null) : null,
+      skole: rolle === 'laerling' ? (skole || null) : null,
+      bio: rolle === 'laerling' ? (bio || null) : null,
+      cv_filnavn: null,
+      // Bedrift-felt
+      orgNr: rolle === 'bedrift' ? orgNr : null,
+      bransje: rolle === 'bedrift' ? (bransje || null) : null,
+      bedriftBeskrivelse: rolle === 'bedrift' ? (bedriftBeskrivelse || null) : null,
+      godkjent: rolle === 'bedrift' ? false : true  // Bedrifter venter godkjenning
+    };
+
+    await adminDB.collection('users').doc(uid).set(userData);
+
+    // Sett custom claim (brukes i frontend for rollehåndtering)
+    await adminAuth.setCustomUserClaims(uid, { rolle });
+
+    const svar = { ok: true, rolle };
+    if (rolle === 'bedrift') {
+      svar.venterGodkjenning = true;
+    }
+
+    res.status(201).json(svar);
+  } catch (err) {
+    console.error('Registreringsfeil:', err);
+    if (err.code === 'auth/user-not-found') {
+      return res.status(400).json({ feil: 'Firebase Auth-bruker ikke funnet' });
+    }
+    res.status(500).json({ feil: 'Kunne ikke registrere bruker' });
   }
-
-  const db = getDB();
-  const finnes = db.prepare('SELECT id FROM users WHERE epost = ?').get(epost.toLowerCase().trim());
-  if (finnes) {
-    return res.status(409).json({ feil: 'Denne e-postadressen er allerede i bruk' });
-  }
-
-  const hash = bcrypt.hashSync(passord, 10);
-  const userId = db.prepare(
-    'INSERT INTO users (epost, passord_hash, rolle, navn, godkjent) VALUES (?,?,?,?,0)'
-  ).run(epost.toLowerCase().trim(), hash, 'bedrift', navn.trim()).lastInsertRowid;
-
-  db.prepare(
-    'INSERT INTO bedrifter (user_id, org_nr, bransje, beskrivelse, godkjent) VALUES (?,?,?,?,0)'
-  ).run(userId, orgNr, bransje, beskrivelse || null);
-
-  // Bedrift logger IKKE inn — venter på godkjenning
-  res.status(201).json({ ok: true, venterGodkjenning: true });
 });
 
-// GET /api/auth/meg — hent innlogget bruker (brukes av krevInnlogging i app.js)
-ruter.get('/meg', krevAuth, (req, res) => {
-  const db = getDB();
-  const bruker = db.prepare('SELECT id, epost, rolle, navn, godkjent FROM users WHERE id = ?').get(req.user.id);
-  if (!bruker) return res.status(404).json({ feil: 'Bruker ikke funnet' });
+/**
+ * POST /api/auth/login-update
+ * Oppdaterer sist innlogget og returnerer full brukerprofil.
+ * Kalles av frontend etter vellykket Firebase Auth-innlogging.
+ */
+ruter.post('/login-update', async (req, res) => {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) return res.status(401).json({ feil: 'Ikke innlogget' });
 
-  let ekstra = {};
-  if (bruker.rolle === 'laerling') {
-    ekstra = db.prepare('SELECT utdanningsprogram, skole, bio, cv_filnavn FROM laerlinger WHERE user_id = ?').get(bruker.id) || {};
-  } else if (bruker.rolle === 'bedrift') {
-    ekstra = db.prepare('SELECT org_nr, bransje, beskrivelse, godkjent FROM bedrifter WHERE user_id = ?').get(bruker.id) || {};
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+    const ref = adminDB.collection('users').doc(decoded.uid);
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ feil: 'Brukerprofil ikke funnet' });
+    }
+
+    const data = doc.data();
+
+    // Blokker ikke-godkjente bedrifter
+    if (data.rolle === 'bedrift' && data.godkjent === false) {
+      return res.status(403).json({ feil: 'Kontoen venter godkjenning fra Opplæringskontoret' });
+    }
+
+    await ref.update({ sistInnlogget: new Date() });
+
+    res.json({ bruker: { ...data, sistInnlogget: new Date() } });
+  } catch (err) {
+    console.error('Login-update feil:', err);
+    res.status(401).json({ feil: 'Ugyldig token' });
   }
-
-  res.json({ ...bruker, ...ekstra });
 });
 
-// POST /api/auth/logg-ut
+/**
+ * GET /api/auth/meg
+ * Returnerer innlogget brukers fulle profil fra Firestore.
+ */
+ruter.get('/meg', krevAuth, async (req, res) => {
+  res.json(req.user);
+});
+
+/**
+ * POST /api/auth/logg-ut
+ * Firebase håndterer selve utloggingen på klientsiden.
+ * Ruten beholdes for bakoverkompatibilitet.
+ */
 ruter.post('/logg-ut', (req, res) => {
-  res.clearCookie('pm_token');
   res.json({ ok: true });
 });
 
-// PATCH /api/auth/profil — oppdater eget navn/bio
-ruter.patch('/profil', krevAuth, (req, res) => {
-  const { navn, bio, cv_filnavn } = req.body;
-  const db = getDB();
-  if (navn) {
-    db.prepare('UPDATE users SET navn = ? WHERE id = ?').run(navn.trim(), req.user.id);
-  }
+/**
+ * PATCH /api/auth/profil
+ * Oppdaterer brukerprofil i Firestore (navn, bio, cv_filnavn, utdanningsprogram, skole).
+ */
+ruter.patch('/profil', krevAuth, async (req, res) => {
+  const { navn, bio, cv_filnavn, utdanningsprogram, skole } = req.body;
+  const oppdateringer = {};
+
+  if (navn) oppdateringer.navn = navn.trim();
+
   if (req.user.rolle === 'laerling') {
-    if (bio !== undefined) {
-      db.prepare('UPDATE laerlinger SET bio = ? WHERE user_id = ?').run(bio, req.user.id);
-    }
-    if (cv_filnavn) {
-      db.prepare('UPDATE laerlinger SET cv_filnavn = ? WHERE user_id = ?').run(cv_filnavn, req.user.id);
-    }
+    if (bio !== undefined) oppdateringer.bio = bio;
+    if (cv_filnavn)        oppdateringer.cv_filnavn = cv_filnavn;
+    if (utdanningsprogram) oppdateringer.utdanningsprogram = utdanningsprogram;
+    if (skole)             oppdateringer.skole = skole;
   }
-  res.json({ ok: true });
+
+  if (Object.keys(oppdateringer).length === 0) {
+    return res.status(400).json({ feil: 'Ingen felt å oppdatere' });
+  }
+
+  try {
+    await adminDB.collection('users').doc(req.user.uid).update(oppdateringer);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Profiloppdatering feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke oppdatere profil' });
+  }
 });
 
 export default ruter;
