@@ -638,6 +638,7 @@ tr:hover td {
 .dashboard-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
+  align-items: start;
   flex: 1;
   min-height: calc(100vh - 68px);
 }
@@ -646,10 +647,7 @@ tr:hover td {
   background-color: #fff;
   border-right: 1px solid var(--olkv-border);
   padding: 1.75rem 1rem;
-  position: sticky;
-  top: 68px;
-  height: calc(100vh - 68px);
-  overflow-y: auto;
+  min-height: calc(100vh - 68px);
 }
 
 .sidebar-seksjon-tittel {
@@ -663,7 +661,13 @@ tr:hover td {
   font-family: 'DM Sans', sans-serif;
 }
 
-.sidebar-nav { display: flex; flex-direction: column; gap: 0.2rem; }
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  position: sticky;
+  top: calc(68px + 1rem);
+}
 
 .sidebar-lenke {
   display: flex;
@@ -1146,6 +1150,7 @@ tr:hover td {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.25rem;
+    position: static;
   }
 
   .sidebar-lenke {

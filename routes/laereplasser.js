@@ -138,7 +138,7 @@ ruter.patch('/:id', krevAuth, krevRolle('bedrift', 'admin'), (req, res) => {
     WHERE id = ?
   `).run(
     tittel ?? null, beskrivelse ?? null, sted ?? null, frist ?? null,
-    antall_plasser ?? null, fagomraade ?? null, fagomraade ?? null,
+    antall_plasser ?? null, fagomraade ?? null, bransje ?? null,
     krav ?? null, start_dato ?? null, kontaktperson ?? null, kontakt_epost ?? null,
     aktiv !== undefined ? (aktiv ? 1 : 0) : null,
     req.params.id

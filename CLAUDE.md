@@ -23,6 +23,15 @@ You're working inside the **WAT framework** (Workflows, Agents, Tools). This arc
 
 **Why this matters:** When AI tries to handle every step directly, accuracy drops fast. If each step is 90% accurate, you're down to 59% success after just five steps. By offloading execution to deterministic scripts, you stay focused on orchestration and decision-making where you excel.
 
+## Skills (Les alltid disse)
+
+Ved start av hver samtale, les alle filer i `skills/` før du begynner å jobbe:
+- `skills/PERFECTMATCH_STACK.md` — tech stack, arkitektur og databaseskjema
+- `skills/PERFECTMATCH_AUTH_UX.md` — auth-implementasjon og UX-prinsipper
+- `skills/PERFECTMATCH_AI.md` — AI-integrasjon og matching-logikk
+
+Disse filene gir deg konteksten du trenger for å ta gode beslutninger.
+
 ## How to Operate
 
 **1. Look for existing tools first**

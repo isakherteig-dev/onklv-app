@@ -33,6 +33,12 @@ ruter.post('/register', async (req, res) => {
     // Sjekk at UID faktisk finnes i Firebase Auth
     await adminAuth.getUser(uid);
 
+    // Sjekk at brukeren ikke allerede er registrert
+    const eksisterende = await adminDB.collection('users').doc(uid).get();
+    if (eksisterende.exists) {
+      return res.status(400).json({ feil: 'Bruker allerede registrert' });
+    }
+
     const now = new Date();
 
     const userData = {

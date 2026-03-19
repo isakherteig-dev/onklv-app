@@ -18,7 +18,7 @@ ruter.get('/', krevAuth, (req, res) => {
   if (req.user.rolle === 'admin') {
     const adminVarsler = db.prepare(`
       SELECT * FROM varsler
-      WHERE mottaker_id = 'admin' AND mottaker_id != ?
+      WHERE mottaker_id = 'admin'
       ORDER BY opprettet DESC
       LIMIT 50
     `).all(req.user.uid);

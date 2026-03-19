@@ -13,6 +13,10 @@ const app = express();
 const port = process.env.PORT ?? 3000;
 
 // Middleware
+app.use((_req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));

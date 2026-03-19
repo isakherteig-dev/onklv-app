@@ -549,15 +549,31 @@ export async function initVarselBjelle(bjelleId = 'varsel-bjelle', dropdownId = 
     await markerAlleVarslerLest();
     await oppdaterBjelle();
 
-    dropdown.innerHTML = varsler.length === 0
-      ? '<div style="padding:1rem;color:var(--olkv-gray);text-align:center;">Ingen varsler</div>'
-      : varsler.slice(0, 10).map(v => `
-        <div class="varsel-item ${v.lest ? '' : 'varsel-item-ulest'}" onclick="window.location='${v.lenke || '#'}'">
-          <div class="varsel-item-tittel">${v.tittel}</div>
-          <div class="varsel-item-melding">${v.melding || ''}</div>
-          <div class="varsel-item-tid">${formaterDato(v.opprettet?.split('T')[0] || v.opprettet)}</div>
-        </div>
-      `).join('');
+    if (varsler.length === 0) {
+      dropdown.innerHTML = '<div style="padding:1rem;color:var(--olkv-gray);text-align:center;">Ingen varsler</div>';
+    } else {
+      dropdown.innerHTML = '';
+      varsler.slice(0, 10).forEach(v => {
+        const el = document.createElement('div');
+        el.className = `varsel-item ${v.lest ? '' : 'varsel-item-ulest'}`;
+        el.addEventListener('click', () => { window.location.href = v.lenke || '#'; });
+
+        const tittel = document.createElement('div');
+        tittel.className = 'varsel-item-tittel';
+        tittel.textContent = v.tittel;
+
+        const melding = document.createElement('div');
+        melding.className = 'varsel-item-melding';
+        melding.textContent = v.melding || '';
+
+        const tid = document.createElement('div');
+        tid.className = 'varsel-item-tid';
+        tid.textContent = formaterDato(v.opprettet?.split('T')[0] || v.opprettet);
+
+        el.append(tittel, melding, tid);
+        dropdown.appendChild(el);
+      });
+    }
 
     dropdown.classList.toggle('skjult');
   });

@@ -4,12 +4,12 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebas
 import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
 const firebaseConfig = {
-  apiKey:            'AIzaSyBkyxrGzc9Unt25PoXxFmMvdMNZA84VbyU',
-  authDomain:        'olkv-app-e906d.firebaseapp.com',
-  projectId:         'olkv-app-e906d',
-  storageBucket:     'olkv-app-e906d.firebasestorage.app',
-  messagingSenderId: '598255443710',
-  appId:             '1:598255443710:web:dd9089c0b6f5df3dd2cfaf'
+  apiKey:            'AIzaSyBojMaQLu8x6HYW0llxP6UsLIRcZZoWMYs',
+  authDomain:        'onklv-app.firebaseapp.com',
+  projectId:         'onklv-app',
+  storageBucket:     'onklv-app.firebasestorage.app',
+  messagingSenderId: '316757651135',
+  appId:             '1:316757651135:web:cd559792ab7388c6e8e00a'
 };
 
 const app = initializeApp(firebaseConfig);
