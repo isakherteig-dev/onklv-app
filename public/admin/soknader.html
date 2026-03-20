@@ -198,6 +198,14 @@
           ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div class="hint">VG1</div>${s.vg1 || '—'}</div><div><div class="hint">VG2</div>${s.vg2 || '—'}</div></div>` : ''}
           ${s.melding ? `<div><div class="hint">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${s.melding}</p></div>` : ''}
           ${s.erfaring ? `<div><div class="hint">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${s.erfaring}</p></div>` : ''}
+          ${s.vedlegg ? `
+            <div>
+              <div class="hint">Vedlegg</div>
+              <button class="btn btn-liten" style="margin-top:0.35rem;" onclick="lastNedVedlegg(${s.id})">
+                Last ned CV${s.vedlegg_originalnavn ? ` (${s.vedlegg_originalnavn})` : ''}
+              </button>
+            </div>
+          ` : ''}
           ${s.admin_kommentar ? `<div><div class="hint">Admin-kommentar</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;border-left:3px solid #B7791F;">${s.admin_kommentar}</p></div>` : ''}
           <div class="rad" style="gap:2rem;margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
             <div><div class="hint">Sendt</div>${formaterDato(s.sendt_dato)}</div>
@@ -214,6 +222,33 @@
           </div>
         </div>`;
       document.getElementById('detaljer-modal').classList.remove('skjult');
+      };
+
+    window.lastNedVedlegg = async function(id) {
+      const soknad = alleSoknader.find(x => x.id === id);
+      if (!soknad?.vedlegg) return;
+
+      try {
+        const token = await getToken();
+        const res = await fetch(`/api/soknader/${id}/vedlegg`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          throw new Error(json.feil || 'Kunne ikke laste ned CV.');
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = soknad.vedlegg_originalnavn || 'cv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(err.message || 'Kunne ikke laste ned CV.');
+      }
     };
 
     window.settStatus = function(id, status, tekst) {
@@ -279,5 +314,6 @@
     initScrollReveal();
     initVarselBjelle();
   </script>
+  <script src="/cookie-banner.js" defer></script>
 </body>
 </html>

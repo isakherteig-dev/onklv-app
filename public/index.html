@@ -207,6 +207,16 @@
         });
       } catch { /* brukeren er ikke innlogget */ }
     });
+
+    if (sessionStorage.getItem('olkv-konto-slettet') === 'true') {
+      sessionStorage.removeItem('olkv-konto-slettet');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = 'Kontoen din er slettet.';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
     initScrollReveal();
 
     async function visLaereplasser() {
@@ -236,5 +246,6 @@
 
     visLaereplasser();
   </script>
+  <script src="/cookie-banner.js" defer></script>
 </body>
 </html>

@@ -75,6 +75,8 @@ export function initDB() {
       vg1               TEXT,
       vg2               TEXT,
       telefon           TEXT,
+      vedlegg           TEXT,
+      vedlegg_originalnavn TEXT,
       admin_kommentar   TEXT,
       behandlet_av      TEXT,
       behandlet_dato    TEXT,
@@ -84,6 +86,14 @@ export function initDB() {
       UNIQUE(laerling_user_id, laerplass_id)
     );
   `);
+
+  const sColsEtterCreate = db.pragma('table_info(soknader)').map(c => c.name);
+  if (!sColsEtterCreate.includes('vedlegg')) {
+    db.exec('ALTER TABLE soknader ADD COLUMN vedlegg TEXT');
+  }
+  if (!sColsEtterCreate.includes('vedlegg_originalnavn')) {
+    db.exec('ALTER TABLE soknader ADD COLUMN vedlegg_originalnavn TEXT');
+  }
 
   return db;
 }

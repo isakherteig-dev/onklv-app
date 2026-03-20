@@ -57,12 +57,34 @@
       </div>
 
       <!-- FILTER -->
-      <div class="filter-rad reveal">
-        <input type="search" id="sok-input" placeholder="Søk på tittel eller bedrift…" />
-        <select id="fagomraade-filter">
-          <option value="">Alle fagområder</option>
-        </select>
-        <input type="text" id="sted-filter" placeholder="By / sted…" style="max-width:160px;" />
+      <div class="filter-bar reveal">
+        <div class="search-field">
+          <input
+            type="text"
+            id="search-input"
+            class="input"
+            placeholder="Søk etter læreplass, bedrift eller fag..."
+          />
+        </div>
+
+        <div class="filter-group">
+          <select id="filter-fagomraade" class="input">
+            <option value="">Alle fagområder</option>
+          </select>
+
+          <select id="filter-sted" class="input">
+            <option value="">Alle steder</option>
+          </select>
+
+          <select id="filter-bransje" class="input">
+            <option value="">Alle bransjer</option>
+          </select>
+        </div>
+
+        <div class="filter-results">
+          <span id="result-count">Viser alle læreplasser</span>
+          <button type="button" id="reset-filters-btn" class="btn-text">Nullstill filtre</button>
+        </div>
       </div>
 
       <!-- VARSELMELDINGER -->
@@ -112,6 +134,20 @@
             <label class="etikett" for="soknad-telefon">Telefonnummer</label>
             <input type="tel" id="soknad-telefon" class="input" placeholder="f.eks. 99887766" />
           </div>
+          <div class="form-gruppe">
+            <label class="etikett" for="soknad-cv">CV</label>
+            <label for="soknad-cv" class="btn btn-ghost btn-liten" style="display:inline-flex;width:max-content;">
+              Last opp CV (valgfritt)
+            </label>
+            <input
+              type="file"
+              id="soknad-cv"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              style="position:absolute;left:-9999px;"
+            />
+            <div class="hint" id="soknad-cv-navn">Ingen fil valgt</div>
+            <div class="hint">Kun PDF eller DOCX. Maks 5 MB.</div>
+          </div>
           <button type="submit" class="btn btn-primary" id="soknad-send-btn" style="width:100%;margin-top:0.5rem;">Send søknad</button>
         </form>
       </div>
@@ -128,6 +164,23 @@
     let bruker = null;
     let allePlasser = [];
     let minneSoknaderIds = new Set();
+    let filterRenderTimeout = null;
+    const MAKS_CV_STORRELSE = 5 * 1024 * 1024;
+    const TILLATTE_CV_TYPER = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const TILLATTE_CV_ENDINGER = ['.pdf', '.docx'];
+    const KJENTE_STEDER = ['Bergen', 'Voss', 'Stord', 'Odda', 'Førde', 'Sogndal'];
+    const FAGOMRAADE_ALIASER = {
+      Elektrofag: 'Elektro og datateknologi',
+      Helsefag: 'Helse- og oppvekstfag',
+      Byggfag: 'Bygg- og anleggsteknikk',
+      Restaurantfag: 'Restaurant- og matfag',
+      'Salg og service': 'Salg, service og reiseliv',
+      'Teknologi og industrifag': 'Teknologi- og industrifag',
+      'IT og medieproduksjon': 'Informasjonsteknologi og medieproduksjon'
+    };
 
     bruker = await krevInnlogging('laerling');
     if (!bruker) { window.location.href = '/login.html'; }
@@ -136,11 +189,19 @@
     document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
 
     // Fyll fagomraade-filter
-    const fagSelect = document.getElementById('fagomraade-filter');
+    const fagSelect = document.getElementById('filter-fagomraade');
     fagomraader.forEach(f => {
       const opt = document.createElement('option');
       opt.value = f; opt.textContent = f;
       fagSelect.appendChild(opt);
+    });
+
+    const stedSelect = document.getElementById('filter-sted');
+    [...KJENTE_STEDER, 'Annet'].forEach(sted => {
+      const opt = document.createElement('option');
+      opt.value = sted;
+      opt.textContent = sted === 'Annet' ? 'Annet sted' : sted;
+      stedSelect.appendChild(opt);
     });
 
     // Hent mine søknader (for å vise "Allerede søkt"-badge)
@@ -155,23 +216,115 @@
     } catch {}
 
     allePlasser = await hentLaereplasser();
-    visPlasser(allePlasser);
-
-    document.getElementById('sok-input').addEventListener('input', filtrer);
-    document.getElementById('fagomraade-filter').addEventListener('change', filtrer);
-    document.getElementById('sted-filter').addEventListener('input', filtrer);
-
-    function filtrer() {
-      const sok = document.getElementById('sok-input').value.toLowerCase();
-      const fag = document.getElementById('fagomraade-filter').value;
-      const sted = document.getElementById('sted-filter').value.toLowerCase();
-      const filtrert = allePlasser.filter(p => {
-        const matchSok = !sok || p.tittel?.toLowerCase().includes(sok) || p.bedrift_navn?.toLowerCase().includes(sok);
-        const matchFag = !fag || p.fagomraade === fag || p.bransje === fag;
-        const matchSted = !sted || p.sted?.toLowerCase().includes(sted);
-        return matchSok && matchFag && matchSted;
+    const bransjeSelect = document.getElementById('filter-bransje');
+    [...new Set(allePlasser.map((plass) => (plass.bransje || '').trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'nb'))
+      .forEach((bransje) => {
+        const opt = document.createElement('option');
+        opt.value = bransje;
+        opt.textContent = bransje;
+        bransjeSelect.appendChild(opt);
       });
-      visPlasser(filtrert);
+    visPlasser(allePlasser);
+    oppdaterResultatTekst(allePlasser.length, allePlasser.length);
+
+    document.getElementById('search-input').addEventListener('input', filterLaereplasser);
+    document.getElementById('filter-fagomraade').addEventListener('change', filterLaereplasser);
+    document.getElementById('filter-sted').addEventListener('change', filterLaereplasser);
+    document.getElementById('filter-bransje').addEventListener('change', filterLaereplasser);
+    document.getElementById('reset-filters-btn').addEventListener('click', resetFilters);
+
+    function hentFagtekst(plass) {
+      return (plass.fagomraade || plass.bransje || 'Annet').trim();
+    }
+
+    function hentStedtekst(plass) {
+      return (plass.sted || '').trim();
+    }
+
+    function hentFagFilterVerdi(plass) {
+      const fagtekst = hentFagtekst(plass);
+      return FAGOMRAADE_ALIASER[fagtekst] || fagtekst;
+    }
+
+    function normaliserTekst(tekst) {
+      return (tekst || '')
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/æ/g, 'ae')
+        .replace(/ø/g, 'o')
+        .replace(/å/g, 'a');
+    }
+
+    function oppdaterResultatTekst(antall, totalt) {
+      const countEl = document.getElementById('result-count');
+      if (antall === totalt) {
+        countEl.textContent = `Viser alle læreplasser (${antall})`;
+        return;
+      }
+      countEl.textContent = `Viser ${antall} av ${totalt} læreplasser`;
+    }
+
+    function animertVisPlasser(plasser) {
+      const container = document.getElementById('laereplasser-liste');
+      const eksisterendeKort = container.querySelectorAll('.laereplass-kort, .tom-tilstand');
+
+      if (!eksisterendeKort.length) {
+        visPlasser(plasser, { animer: true });
+        return;
+      }
+
+      eksisterendeKort.forEach((kort) => kort.classList.add('kort-filter-ut'));
+      clearTimeout(filterRenderTimeout);
+      filterRenderTimeout = setTimeout(() => {
+        visPlasser(plasser, { animer: true });
+      }, 180);
+    }
+
+    function filterLaereplasser() {
+      const soketekst = normaliserTekst(document.getElementById('search-input').value.trim());
+      const fagomraade = document.getElementById('filter-fagomraade').value;
+      const sted = document.getElementById('filter-sted').value;
+      const bransje = document.getElementById('filter-bransje').value;
+
+      const filtrert = allePlasser.filter((plass) => {
+        const fagtekst = hentFagtekst(plass);
+        const fagFilterVerdi = hentFagFilterVerdi(plass);
+        const stedtekst = hentStedtekst(plass);
+        const matcherSok = !soketekst
+          || normaliserTekst(plass.tittel).includes(soketekst)
+          || normaliserTekst(plass.bedrift_navn).includes(soketekst)
+          || normaliserTekst(fagtekst).includes(soketekst)
+          || normaliserTekst(fagFilterVerdi).includes(soketekst)
+          || normaliserTekst(plass.bransje).includes(soketekst)
+          || normaliserTekst(plass.beskrivelse).includes(soketekst);
+
+        const matcherFag = !fagomraade
+          || (fagomraade === 'Annet'
+            ? !fagomraader.includes(fagFilterVerdi)
+            : fagFilterVerdi === fagomraade);
+
+        const matcherSted = !sted
+          || (sted === 'Annet'
+            ? !!stedtekst && !KJENTE_STEDER.includes(stedtekst)
+            : stedtekst === sted);
+
+        const matcherBransje = !bransje || (plass.bransje || '').trim() === bransje;
+
+        return matcherSok && matcherFag && matcherSted && matcherBransje;
+      });
+
+      oppdaterResultatTekst(filtrert.length, allePlasser.length);
+      animertVisPlasser(filtrert);
+    }
+
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('filter-fagomraade').value = '';
+      document.getElementById('filter-sted').value = '';
+      document.getElementById('filter-bransje').value = '';
+      filterLaereplasser();
     }
 
     function dagertilFrist(fristStr) {
@@ -191,16 +344,16 @@
       return `<span class="frist-badge ok">Frist: ${formaterDato(fristStr)}</span>`;
     }
 
-    function visPlasser(plasser) {
+    function visPlasser(plasser, { animer = false } = {}) {
       const container = document.getElementById('laereplasser-liste');
-      document.getElementById('antall-tekst').textContent = `${plasser.length} læreplasser funnet`;
+      document.getElementById('antall-tekst').textContent = `${allePlasser.length} læreplasser tilgjengelig`;
 
       if (!plasser.length) {
         container.innerHTML = `
-          <div class="tom-tilstand" style="grid-column:1/-1;">
+          <div class="tom-tilstand kort-filter-inn" style="grid-column:1/-1;">
             <div class="tom-tilstand-ikon">🔍</div>
-            <h3>Ingen læreplasser funnet</h3>
-            <p>Prøv å endre søk eller filter.</p>
+            <h3>Ingen læreplasser matcher søket ditt</h3>
+            <p>Prøv å endre søket eller nullstille filtrene.</p>
           </div>`;
         return;
       }
@@ -210,9 +363,10 @@
       container.innerHTML = plasser.map(p => {
         const utlopt = dager(p) !== null && dager(p) < 0;
         const harSokt = minneSoknaderIds.has(p.id);
-        const fagBadge = (p.fagomraade || p.bransje) ? `<span class="badge badge-blaa">${p.fagomraade || p.bransje}</span>` : '';
+        const fagtekst = hentFagtekst(p);
+        const fagBadge = fagtekst ? `<span class="badge badge-blaa">${fagtekst}</span>` : '';
         return `
-          <div class="kort reveal${utlopt ? ' opacity-50' : ''}">
+          <div class="kort laereplass-kort${animer ? ' kort-filter-inn' : ''}${utlopt ? ' opacity-50' : ''}">
             <div class="kort-header">
               <div>
                 <div class="kort-tittel">${p.tittel}</div>
@@ -236,8 +390,33 @@
             </div>
           </div>`;
       }).join('');
+    }
 
-      initScrollReveal();
+    function oppdaterCvTekst(fil) {
+      document.getElementById('soknad-cv-navn').textContent = fil ? `Valgt fil: ${fil.name}` : 'Ingen fil valgt';
+    }
+
+    function nullstillCvFelt() {
+      const input = document.getElementById('soknad-cv');
+      input.value = '';
+      oppdaterCvTekst(null);
+    }
+
+    function validerCvFil(fil) {
+      if (!fil) return null;
+
+      const filnavn = fil.name || '';
+      const ext = filnavn.slice(filnavn.lastIndexOf('.')).toLowerCase();
+      const gyldigType = TILLATTE_CV_TYPER.includes(fil.type) && TILLATTE_CV_ENDINGER.includes(ext);
+
+      if (!gyldigType) {
+        return 'Kun PDF og DOCX-filer er tillatt.';
+      }
+      if (fil.size > MAKS_CV_STORRELSE) {
+        return 'CV-en er for stor. Maks filstørrelse er 5 MB.';
+      }
+
+      return null;
     }
 
     // Modal
@@ -245,6 +424,7 @@
       document.getElementById('soknad-laerplass-id').value = id;
       document.getElementById('modal-laereplasstitle').textContent = `Søk på: ${tittel}`;
       document.getElementById('soknad-form').reset();
+      nullstillCvFelt();
       document.getElementById('motivasjon-tegnteller').textContent = '0 tegn';
       document.getElementById('soknad-varsel').classList.add('skjult');
       if (bruker?.telefon) document.getElementById('soknad-telefon').value = bruker.telefon;
@@ -254,6 +434,24 @@
 
     document.getElementById('soknad-motivasjon').addEventListener('input', (e) => {
       document.getElementById('motivasjon-tegnteller').textContent = `${e.target.value.length} tegn`;
+    });
+
+    document.getElementById('soknad-cv').addEventListener('change', (e) => {
+      const fil = e.target.files[0] || null;
+      const feil = validerCvFil(fil);
+      if (feil) {
+        e.target.value = '';
+        oppdaterCvTekst(null);
+        document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
+        document.getElementById('soknad-varsel').textContent = feil;
+        document.getElementById('soknad-varsel').classList.remove('skjult');
+        return;
+      }
+
+      oppdaterCvTekst(fil);
+      if (fil) {
+        document.getElementById('soknad-varsel').classList.add('skjult');
+      }
     });
 
     document.getElementById('modal-lukk-btn').addEventListener('click', () => {
@@ -267,9 +465,17 @@
       e.preventDefault();
       const btn = document.getElementById('soknad-send-btn');
       const motivasjon = document.getElementById('soknad-motivasjon').value.trim();
+      const cvFil = document.getElementById('soknad-cv').files[0] || null;
       if (motivasjon.length < 50) {
         document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
         document.getElementById('soknad-varsel').textContent = 'Motivasjonen må være minst 50 tegn.';
+        document.getElementById('soknad-varsel').classList.remove('skjult');
+        return;
+      }
+      const vedleggFeil = validerCvFil(cvFil);
+      if (vedleggFeil) {
+        document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
+        document.getElementById('soknad-varsel').textContent = vedleggFeil;
         document.getElementById('soknad-varsel').classList.remove('skjult');
         return;
       }
@@ -278,32 +484,30 @@
       btn.textContent = 'Sender…';
 
       try {
-        await sendSoknadFull({
-          laerplass_id: parseInt(document.getElementById('soknad-laerplass-id').value),
-          melding: motivasjon,
-          erfaring: document.getElementById('soknad-erfaring').value.trim(),
-          vg1: document.getElementById('soknad-vg1').value.trim(),
-          vg2: document.getElementById('soknad-vg2').value.trim(),
-          telefon: document.getElementById('soknad-telefon').value.trim()
-        });
+        const formData = new FormData();
+        formData.append('laerplass_id', document.getElementById('soknad-laerplass-id').value);
+        formData.append('melding', motivasjon);
+        formData.append('erfaring', document.getElementById('soknad-erfaring').value.trim());
+        formData.append('vg1', document.getElementById('soknad-vg1').value.trim());
+        formData.append('vg2', document.getElementById('soknad-vg2').value.trim());
+        formData.append('telefon', document.getElementById('soknad-telefon').value.trim());
+        if (cvFil) {
+          formData.append('vedlegg', cvFil);
+        }
+
+        await sendSoknadFull(formData);
 
         const plassId = parseInt(document.getElementById('soknad-laerplass-id').value);
         minneSoknaderIds.add(plassId);
 
         document.getElementById('soknad-modal').classList.add('skjult');
-        visPlasser(allePlasser.filter(p => {
-          const sok = document.getElementById('sok-input').value.toLowerCase();
-          const fag = document.getElementById('fagomraade-filter').value;
-          const sted = document.getElementById('sted-filter').value.toLowerCase();
-          return (!sok || p.tittel?.toLowerCase().includes(sok) || p.bedrift_navn?.toLowerCase().includes(sok))
-            && (!fag || p.fagomraade === fag || p.bransje === fag)
-            && (!sted || p.sted?.toLowerCase().includes(sted));
-        }));
+        nullstillCvFelt();
+        filterLaereplasser();
 
         // Vis toast
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.textContent = '✓ Søknaden din er sendt!';
+        toast.textContent = cvFil ? '✓ Søknaden din med CV er sendt!' : '✓ Søknaden din er sendt!';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
 
@@ -320,5 +524,6 @@
     initScrollReveal();
     initVarselBjelle();
   </script>
+  <script src="/cookie-banner.js" defer></script>
 </body>
 </html>

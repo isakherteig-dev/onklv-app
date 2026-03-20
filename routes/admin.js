@@ -125,7 +125,7 @@ ruter.get('/alle-soknader', (req, res) => {
 
   let query = `
     SELECT s.id, s.status, s.sendt_dato, s.melding, s.erfaring,
-           s.vg1, s.vg2, s.telefon, s.admin_kommentar,
+           s.vg1, s.vg2, s.telefon, s.vedlegg, s.vedlegg_originalnavn, s.admin_kommentar,
            s.behandlet_dato, s.laerplass_id,
            s.laerling_user_id, s.laerling_naam, s.laerling_epost,
            s.utdanningsprogram, s.skole,

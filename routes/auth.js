@@ -1,8 +1,51 @@
 import { Router } from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { adminAuth, adminDB } from '../firebase/config.js';
+import { getDB } from '../db/init.js';
 import { krevAuth } from '../middleware/auth.js';
 
 const ruter = Router();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PROSJEKTROT = path.join(__dirname, '..');
+
+function slettFilHvisDenFinnes(relativSti) {
+  if (!relativSti) return;
+  const fullSti = path.isAbsolute(relativSti)
+    ? relativSti
+    : path.join(PROSJEKTROT, relativSti);
+
+  if (fs.existsSync(fullSti)) {
+    fs.unlinkSync(fullSti);
+  }
+}
+
+function hentVedleggstierForBruker(db, uid, profilCvFilnavnIntern) {
+  const filstier = new Set();
+
+  if (profilCvFilnavnIntern) {
+    filstier.add(path.posix.join('uploads', profilCvFilnavnIntern));
+  }
+
+  const laerlingVedlegg = db.prepare(`
+    SELECT vedlegg FROM soknader
+    WHERE laerling_user_id = ? AND vedlegg IS NOT NULL
+  `).all(uid);
+
+  const bedriftVedlegg = db.prepare(`
+    SELECT s.vedlegg
+    FROM soknader s
+    JOIN laereplasser l ON l.id = s.laerplass_id
+    WHERE l.bedrift_user_id = ? AND s.vedlegg IS NOT NULL
+  `).all(uid);
+
+  [...laerlingVedlegg, ...bedriftVedlegg].forEach(({ vedlegg }) => {
+    if (vedlegg) filstier.add(vedlegg);
+  });
+
+  return [...filstier];
+}
 
 /**
  * POST /api/auth/register
@@ -162,6 +205,36 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
   } catch (err) {
     console.error('Profiloppdatering feil:', err);
     res.status(500).json({ feil: 'Kunne ikke oppdatere profil' });
+  }
+});
+
+/**
+ * DELETE /api/auth/slett-konto
+ * Sletter innlogget bruker, tilhørende data og opplastede filer.
+ */
+ruter.delete('/slett-konto', krevAuth, async (req, res) => {
+  const db = getDB();
+  const vedleggstier = hentVedleggstierForBruker(db, req.user.uid, req.user.cv_filnavn_intern);
+  const slettSqliteData = db.transaction((uid) => {
+    db.prepare('DELETE FROM varsler WHERE mottaker_id = ?').run(uid);
+    db.prepare('DELETE FROM soknader WHERE laerling_user_id = ?').run(uid);
+    db.prepare('DELETE FROM laereplasser WHERE bedrift_user_id = ?').run(uid);
+  });
+
+  try {
+    slettSqliteData(req.user.uid);
+    await adminDB.collection('users').doc(req.user.uid).delete();
+
+    vedleggstier.forEach((relativSti) => {
+      slettFilHvisDenFinnes(relativSti);
+    });
+
+    await adminAuth.deleteUser(req.user.uid);
+
+    res.json({ ok: true, melding: 'Kontoen din er slettet.' });
+  } catch (err) {
+    console.error('Sletting av konto feilet:', err);
+    res.status(500).json({ feil: 'Kunne ikke slette kontoen din. Prøv igjen.' });
   }
 });
 

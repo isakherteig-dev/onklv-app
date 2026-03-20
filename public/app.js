@@ -133,6 +133,21 @@ export async function oppdaterBruker(oppdateringer) {
   return hentBruker();
 }
 
+export async function slettMinKonto() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/auth/slett-konto', {
+    method: 'DELETE',
+    headers
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Sletting feilet');
+
+  sessionStorage.setItem('olkv-konto-slettet', 'true');
+  await signOut(auth).catch(() => {});
+  window.location.href = '/';
+  return json;
+}
+
 export async function loggUt() {
   await signOut(auth);
   window.location.href = '/';
@@ -404,14 +419,51 @@ export const fagomraader = [
 // ===== UTVIDEDE API-FUNKSJONER =====
 
 export async function sendSoknadFull(data) {
-  const headers = await authHeaders();
+  const token = await getToken();
+  const erFormData = data instanceof FormData;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  if (!erFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch('/api/soknader', {
     method: 'POST',
     headers,
-    body: JSON.stringify(data)
+    body: erFormData ? data : JSON.stringify(data)
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.feil || 'Søknaden feilet');
+  return json;
+}
+
+/**
+ * Last opp CV-fil til /api/cv (multipart/form-data).
+ * Returnerer { cv_filnavn, melding }.
+ */
+export async function lastOppCV(fil) {
+  const token = await getToken();
+  const formData = new FormData();
+  formData.append('cv', fil);
+
+  const res = await fetch('/api/cv', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Opplasting feilet');
+  return json;
+}
+
+/**
+ * Slett CV-fil fra /api/cv.
+ */
+export async function slettCV() {
+  const headers = await authHeaders();
+  const res = await fetch('/api/cv', { method: 'DELETE', headers });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Sletting feilet');
   return json;
 }
 
