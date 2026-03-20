@@ -98,6 +98,11 @@
             <input type="file" id="cv-input" accept=".pdf,.docx,.doc" style="display: none;" />
           </label>
           <button class="btn btn-ghost btn-liten" id="oppdater-bio-btn">Oppdater bio</button>
+          <button class="btn btn-ghost btn-liten" id="ai-tips-btn" style="color: var(--olkv-blue);">✨ AI-tips</button>
+        </div>
+        <div id="ai-tips-boks" style="display:none; margin-top:1rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:var(--radius); padding:1rem;">
+          <p style="font-size:0.8rem;font-weight:600;color:var(--olkv-blue);margin-bottom:0.75rem;">✨ Tips for å forbedre profilen din</p>
+          <div id="ai-tips-innhold" style="font-size:0.875rem;color:var(--farge-tekst-sekundaer);">Laster…</div>
         </div>
         <div id="cv-varsel" class="varsel skjult" style="margin-top: 0.75rem;"></div>
       </section>
@@ -109,7 +114,10 @@
       <section id="laereplasser" class="reveal" style="margin-bottom: 2.5rem;">
         <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <h2 style="font-size: 1.3rem;">Anbefalte læreplasser</h2>
-          <span class="badge badge-blaa" id="program-badge">Alle programmer</span>
+          <div class="rad" style="gap:0.5rem;align-items:center;">
+            <span class="badge badge-blaa" id="program-badge">Alle programmer</span>
+            <button class="btn btn-ghost btn-liten" id="ai-match-btn" style="color:var(--olkv-blue);">✨ Finn AI-match</button>
+          </div>
         </div>
         <div id="laereplasser-liste" class="rutenett-2">
           <div class="kort" style="text-align:center; padding: 2rem;">
@@ -217,7 +225,8 @@
       visBekreftelse,
       loggUt,
       initScrollReveal,
-      initVarselBjelle
+      initVarselBjelle,
+      getToken
     } from '../app.js';
     initScrollReveal();
 
@@ -254,19 +263,32 @@
     };
 
     // ===== LÆREPLASSER =====
-    async function lastLaereplasser() {
+    async function lastLaereplasser(aiScorer = {}) {
       const plasser = await hentLaereplasser();
       const container = document.getElementById('laereplasser-liste');
 
-      container.innerHTML = plasser.map(p => `
+      // Sorter etter AI-score hvis tilgjengelig
+      const harScorer = Object.keys(aiScorer).length > 0;
+      if (harScorer) {
+        plasser.sort((a, b) => (aiScorer[b.id]?.score ?? 0) - (aiScorer[a.id]?.score ?? 0));
+      }
+
+      container.innerHTML = plasser.map(p => {
+        const ai = aiScorer[p.id];
+        const scoreFarge = ai ? (ai.score >= 70 ? '#16a34a' : ai.score >= 40 ? '#d97706' : '#6b7280') : '';
+        return `
         <div class="kort">
           <div class="kort-header">
             <div>
               <div class="kort-tittel">${p.tittel}</div>
               <div class="kort-undertittel">${p.bedrift_navn}</div>
             </div>
-            <span class="badge badge-blaa">${p.antall_plasser} plass${p.antall_plasser !== 1 ? 'er' : ''}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.35rem;">
+              <span class="badge badge-blaa">${p.antall_plasser} plass${p.antall_plasser !== 1 ? 'er' : ''}</span>
+              ${ai ? `<span style="font-size:0.75rem;font-weight:700;color:${scoreFarge};">✨ ${ai.score}% match</span>` : ''}
+            </div>
           </div>
+          ${ai ? `<p style="font-size:0.78rem;color:${scoreFarge};background:#f0fdf4;border-radius:6px;padding:0.4rem 0.6rem;margin-bottom:0.75rem;">${ai.begrunnelse}</p>` : ''}
           <p style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer); margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
             ${p.beskrivelse}
           </p>
@@ -280,8 +302,8 @@
             onclick="åpneSøknadModal(${p.id}, '${p.tittel.replace(/'/g, "\\'")}', '${p.bedrift_navn.replace(/'/g, "\\'")}')"
             style="width: 100%;"
           >Søk nå →</button>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     // ===== SØKNADER =====
@@ -468,6 +490,62 @@
     });
     document.getElementById('veiledning-modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) document.getElementById('veiledning-modal').classList.add('skjult');
+    });
+
+    // ===== AI: PROFILTIPS =====
+    document.getElementById('ai-tips-btn').addEventListener('click', async () => {
+      const boks = document.getElementById('ai-tips-boks');
+      const innhold = document.getElementById('ai-tips-innhold');
+      const btn = document.getElementById('ai-tips-btn');
+
+      boks.style.display = 'block';
+      innhold.textContent = 'Analyserer profilen din…';
+      btn.disabled = true;
+
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/ai/tips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil || 'AI-tjenesten feilet');
+        innhold.innerHTML = data.tips.map((t, i) =>
+          `<p style="margin:0 0 0.5rem;"><strong>${i + 1}.</strong> ${t}</p>`
+        ).join('');
+      } catch (err) {
+        innhold.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ===== AI: MATCHING =====
+    let aiScorer = {};
+    document.getElementById('ai-match-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('ai-match-btn');
+      btn.disabled = true;
+      btn.textContent = '✨ Matcher…';
+
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/ai/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil || 'AI-matching feilet');
+
+        aiScorer = {};
+        (data.resultater || []).forEach(r => { aiScorer[r.laerplass_id] = r; });
+
+        await lastLaereplasser(aiScorer);
+        btn.textContent = '✨ AI-match oppdatert';
+      } catch (err) {
+        visFeilmelding(err.message || 'AI-matching feilet');
+        btn.disabled = false;
+        btn.textContent = '✨ Finn AI-match';
+      }
     });
 
     // ===== INIT =====

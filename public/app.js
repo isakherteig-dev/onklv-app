@@ -348,19 +348,22 @@ export function beregnProfilkomplettering(bruker) {
 /** Oversett Firebase-feilkoder til norsk tekst */
 export function oversettFirebaseFeil(kode) {
   const feil = {
-    'auth/invalid-email':          'Ugyldig e-postadresse',
-    'auth/user-disabled':          'Denne kontoen er deaktivert',
-    'auth/user-not-found':         'Ingen konto funnet med denne e-posten',
-    'auth/wrong-password':         'Feil passord',
-    'auth/invalid-credential':     'Feil e-post eller passord',
-    'auth/email-already-in-use':   'Denne e-postadressen er allerede registrert',
-    'auth/weak-password':          'Passordet må være minst 6 tegn',
-    'auth/too-many-requests':      'For mange forsøk. Prøv igjen om litt.',
-    'auth/network-request-failed': 'Nettverksfeil — sjekk internettforbindelsen',
-    'auth/popup-closed-by-user':   'Innloggingsvinduet ble lukket',
-    'auth/operation-not-allowed':  'Denne innloggingsmetoden er ikke aktivert'
+    'auth/invalid-email':              'Ugyldig e-postadresse',
+    'auth/user-disabled':              'Denne kontoen er deaktivert',
+    'auth/user-not-found':             'Ingen konto funnet med denne e-posten',
+    'auth/wrong-password':             'Feil passord',
+    'auth/invalid-credential':         'Feil e-post eller passord',
+    'auth/email-already-in-use':       'Denne e-postadressen er allerede registrert',
+    'auth/weak-password':              'Passordet må være minst 6 tegn',
+    'auth/too-many-requests':          'For mange forsøk. Prøv igjen om litt.',
+    'auth/network-request-failed':     'Nettverksfeil — sjekk internettforbindelsen',
+    'auth/popup-closed-by-user':       'Innloggingsvinduet ble lukket',
+    'auth/cancelled-popup-request':    'Innloggingsvinduet ble avbrutt',
+    'auth/popup-blocked':              'Nettleseren blokkerte innloggingsvinduet — tillat popup for denne siden',
+    'auth/operation-not-allowed':      'Denne innloggingsmetoden er ikke aktivert',
+    'auth/unauthorized-domain':        'Denne nettsiden er ikke autorisert for Google-innlogging. Sjekk Firebase Console → Authentication → Settings → Authorized domains'
   };
-  return feil[kode] || 'Noe gikk galt. Prøv igjen.';
+  return feil[kode] || null;
 }
 
 // ===== SCROLL REVEAL =====

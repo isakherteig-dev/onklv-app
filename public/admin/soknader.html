@@ -128,7 +128,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentAllesoknader, oppdaterSoknadStatusAdmin,
-      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle
+      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle, getToken
     } from '../app.js';
 
     let bruker = null;
@@ -206,6 +206,11 @@
           <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
             ${s.status !== 'godkjent' ? `<button class="btn btn-liten" style="background:#e8f5e9;color:#1B5E20;border:none;" onclick="settStatus(${s.id},'godkjent','Godkjenn denne søknaden?')">✓ Godkjenn</button>` : ''}
             ${s.status !== 'avslatt' ? `<button class="btn btn-liten" style="background:#FDECEA;color:#922B21;border:none;" onclick="settStatus(${s.id},'avslatt','Avslå denne søknaden?')">✕ Avslå</button>` : ''}
+            <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;" id="ai-oppsummer-btn" onclick="aiOppsummer(${s.id})">✨ AI-sammendrag</button>
+          </div>
+          <div id="ai-oppsummer-boks" style="display:none;margin-top:0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;">
+            <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.4rem;">✨ AI-sammendrag</span>
+            <span id="ai-oppsummer-tekst">Laster…</span>
           </div>
         </div>`;
       document.getElementById('detaljer-modal').classList.remove('skjult');
@@ -228,6 +233,31 @@
         setTimeout(() => toast.remove(), 3000);
       };
       document.getElementById('bekreft-modal').classList.remove('skjult');
+    };
+
+    window.aiOppsummer = async function(soknadId) {
+      const boks = document.getElementById('ai-oppsummer-boks');
+      const tekst = document.getElementById('ai-oppsummer-tekst');
+      const btn = document.getElementById('ai-oppsummer-btn');
+      boks.style.display = 'block';
+      tekst.textContent = 'Analyserer søknaden…';
+      if (btn) btn.disabled = true;
+
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/ai/oppsummer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ soknad_id: soknadId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil || 'AI-oppsummering feilet');
+        tekst.textContent = data.oppsummering;
+      } catch (err) {
+        tekst.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     };
 
     document.getElementById('bekreft-ok').addEventListener('click', async () => {
