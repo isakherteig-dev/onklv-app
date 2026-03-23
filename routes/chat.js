@@ -1,26 +1,44 @@
 import { Router } from 'express';
-import { getDB } from '../db/init.js';
+import { adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 
 const ruter = Router();
 
-function lagVarsel(db, mottakerId, type, tittel, melding, lenke) {
+async function lagVarsel(mottakerId, type, tittel, melding, lenke) {
   try {
-    db.prepare(`INSERT INTO varsler (mottaker_id, type, tittel, melding, lenke) VALUES (?,?,?,?,?)`)
-      .run(mottakerId, type, tittel, melding, lenke || null);
+    await adminDB.collection('varsler').add({
+      mottaker_id: mottakerId,
+      type,
+      tittel,
+      melding: melding || null,
+      lenke: lenke || null,
+      lest: false,
+      opprettet: new Date()
+    });
   } catch { /* varsler er ikke kritiske */ }
 }
 
-function hentSoknadMedTilgang(db, soknadId, uid, rolle) {
-  const soknad = db.prepare(`
-    SELECT s.id, s.laerling_user_id, s.laerling_naam, s.laerling_epost,
-           l.bedrift_user_id, l.tittel AS laerplass_tittel, l.bedrift_naam
-    FROM soknader s
-    JOIN laereplasser l ON l.id = s.laerplass_id
-    WHERE s.id = ?
-  `).get(soknadId);
+async function hentSoknadMedTilgang(soknadId, uid, rolle) {
+  const doc = await adminDB.collection('soknader').doc(soknadId).get();
+  if (!doc.exists) return null;
 
-  if (!soknad) return null;
+  const s = doc.data();
+
+  // Hent laerplass for bedrift_user_id og tittel
+  const plassDoc = await adminDB.collection('laereplasser').doc(s.laerplass_id).get();
+  if (!plassDoc.exists) return null;
+
+  const plass = plassDoc.data();
+
+  const soknad = {
+    id: doc.id,
+    laerling_user_id: s.laerling_user_id,
+    laerling_naam: s.laerling_naam,
+    laerling_epost: s.laerling_epost,
+    bedrift_user_id: plass.bedrift_user_id,
+    laerplass_tittel: plass.tittel,
+    bedrift_naam: plass.bedrift_navn
+  };
 
   const harTilgang =
     rolle === 'admin' ||
@@ -31,42 +49,53 @@ function hentSoknadMedTilgang(db, soknadId, uid, rolle) {
 }
 
 // GET /api/chat/:soknad_id — hent meldinger for en søknad
-ruter.get('/:soknad_id', krevAuth, (req, res) => {
-  const soknadId = Number.parseInt(req.params.soknad_id, 10);
-  if (!Number.isInteger(soknadId)) {
-    return res.status(400).json({ feil: 'Ugyldig søknad-id' });
+ruter.get('/:soknad_id', krevAuth, async (req, res) => {
+  try {
+    const soknadId = req.params.soknad_id;
+
+    const soknad = await hentSoknadMedTilgang(soknadId, req.user.uid, req.user.rolle);
+    if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang til denne chatten' });
+
+    const snap = await adminDB.collection('chat_meldinger')
+      .where('soknad_id', '==', soknadId)
+      .orderBy('opprettet', 'asc')
+      .get();
+
+    const meldinger = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        opprettet: data.opprettet?.toDate?.()?.toISOString?.() ?? data.opprettet ?? null
+      };
+    });
+
+    // Marker motpartens meldinger som lest (bare for laerling/bedrift, ikke admin)
+    const motpartId = req.user.rolle === 'laerling'
+      ? soknad.bedrift_user_id
+      : req.user.rolle === 'bedrift'
+        ? soknad.laerling_user_id
+        : null;
+
+    const uleste = motpartId ? snap.docs.filter(d =>
+      d.data().avsender_id === motpartId && d.data().lest === false
+    ) : [];
+    if (uleste.length > 0) {
+      const batch = adminDB.batch();
+      uleste.forEach(d => batch.update(d.ref, { lest: true }));
+      await batch.commit();
+    }
+
+    res.json({ meldinger, soknad });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente meldinger' });
   }
-
-  const db = getDB();
-  const soknad = hentSoknadMedTilgang(db, soknadId, req.user.uid, req.user.rolle);
-  if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang til denne chatten' });
-
-  const meldinger = db.prepare(`
-    SELECT id, avsender_id, tekst, lest, opprettet
-    FROM chat_meldinger
-    WHERE soknad_id = ?
-    ORDER BY opprettet ASC
-  `).all(soknadId);
-
-  // Marker motpartens meldinger som lest
-  const motpartId = req.user.rolle === 'laerling'
-    ? soknad.bedrift_user_id
-    : soknad.laerling_user_id;
-
-  db.prepare(`
-    UPDATE chat_meldinger SET lest = 1
-    WHERE soknad_id = ? AND avsender_id = ? AND lest = 0
-  `).run(soknadId, motpartId);
-
-  res.json({ meldinger, soknad });
 });
 
 // POST /api/chat/:soknad_id — send melding
-ruter.post('/:soknad_id', krevAuth, (req, res) => {
-  const soknadId = Number.parseInt(req.params.soknad_id, 10);
-  if (!Number.isInteger(soknadId)) {
-    return res.status(400).json({ feil: 'Ugyldig søknad-id' });
-  }
+ruter.post('/:soknad_id', krevAuth, async (req, res) => {
+  const soknadId = req.params.soknad_id;
 
   const tekst = (req.body.tekst || '').trim();
   if (!tekst) {
@@ -76,54 +105,62 @@ ruter.post('/:soknad_id', krevAuth, (req, res) => {
     return res.status(400).json({ feil: 'Meldingen er for lang (maks 2000 tegn)' });
   }
 
-  const db = getDB();
-  const soknad = hentSoknadMedTilgang(db, soknadId, req.user.uid, req.user.rolle);
-  if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang til denne chatten' });
+  try {
+    const soknad = await hentSoknadMedTilgang(soknadId, req.user.uid, req.user.rolle);
+    if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang til denne chatten' });
 
-  const id = db.prepare(`
-    INSERT INTO chat_meldinger (soknad_id, avsender_id, tekst)
-    VALUES (?, ?, ?)
-  `).run(soknadId, req.user.uid, tekst).lastInsertRowid;
+    const ref = await adminDB.collection('chat_meldinger').add({
+      soknad_id: soknadId,
+      avsender_id: req.user.uid,
+      tekst,
+      lest: false,
+      opprettet: new Date()
+    });
 
-  // Varsle mottakeren
-  const erLaerling = req.user.rolle === 'laerling';
-  const mottakerId = erLaerling ? soknad.bedrift_user_id : soknad.laerling_user_id;
-  const avsenderNavn = req.user.navn || (erLaerling ? 'Lærlingen' : soknad.bedrift_naam || 'Bedriften');
-  const lenke = erLaerling ? '/bedrift/soknader.html' : '/laerling/mine-soknader.html';
+    // Varsle mottakeren
+    const erLaerling = req.user.rolle === 'laerling';
+    const mottakerId = erLaerling ? soknad.bedrift_user_id : soknad.laerling_user_id;
+    const avsenderNavn = req.user.navn || (erLaerling ? 'Lærlingen' : soknad.bedrift_naam || 'Bedriften');
+    const lenke = erLaerling ? '/bedrift/soknader.html' : '/laerling/mine-soknader.html';
 
-  lagVarsel(
-    db,
-    mottakerId,
-    'ny_chat_melding',
-    `Ny melding fra ${avsenderNavn}`,
-    `Ang. "${soknad.laerplass_tittel}": ${tekst.slice(0, 80)}${tekst.length > 80 ? '…' : ''}`,
-    lenke
-  );
+    await lagVarsel(
+      mottakerId,
+      'ny_chat_melding',
+      `Ny melding fra ${avsenderNavn}`,
+      `Ang. "${soknad.laerplass_tittel}": ${tekst.slice(0, 80)}${tekst.length > 80 ? '…' : ''}`,
+      lenke
+    );
 
-  res.status(201).json({ ok: true, id });
+    res.status(201).json({ ok: true, id: ref.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke sende melding' });
+  }
 });
 
 // GET /api/chat/:soknad_id/uleste — antall uleste meldinger fra motparten
-ruter.get('/:soknad_id/uleste', krevAuth, (req, res) => {
-  const soknadId = Number.parseInt(req.params.soknad_id, 10);
-  if (!Number.isInteger(soknadId)) {
-    return res.status(400).json({ feil: 'Ugyldig søknad-id' });
+ruter.get('/:soknad_id/uleste', krevAuth, async (req, res) => {
+  const soknadId = req.params.soknad_id;
+
+  try {
+    const soknad = await hentSoknadMedTilgang(soknadId, req.user.uid, req.user.rolle);
+    if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang' });
+
+    const motpartId = req.user.rolle === 'laerling'
+      ? soknad.bedrift_user_id
+      : soknad.laerling_user_id;
+
+    const snap = await adminDB.collection('chat_meldinger')
+      .where('soknad_id', '==', soknadId)
+      .where('avsender_id', '==', motpartId)
+      .where('lest', '==', false)
+      .count().get();
+
+    res.json({ antall: snap.data().count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente uleste meldinger' });
   }
-
-  const db = getDB();
-  const soknad = hentSoknadMedTilgang(db, soknadId, req.user.uid, req.user.rolle);
-  if (!soknad) return res.status(403).json({ feil: 'Ingen tilgang' });
-
-  const motpartId = req.user.rolle === 'laerling'
-    ? soknad.bedrift_user_id
-    : soknad.laerling_user_id;
-
-  const row = db.prepare(`
-    SELECT COUNT(*) AS antall FROM chat_meldinger
-    WHERE soknad_id = ? AND avsender_id = ? AND lest = 0
-  `).get(soknadId, motpartId);
-
-  res.json({ antall: row.antall });
 });
 
 export default ruter;

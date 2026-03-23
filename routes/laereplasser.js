@@ -1,164 +1,199 @@
 import { Router } from 'express';
-import { getDB } from '../db/init.js';
+import { adminDB } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 
 const ruter = Router();
+const col = () => adminDB.collection('laereplasser');
+
+function docTilObj(doc) {
+  const d = doc.data();
+  return {
+    id: doc.id,
+    ...d,
+    // Konverter Firestore Timestamp til ISO-streng
+    opprettet: d.opprettet?.toDate?.()?.toISOString?.() ?? d.opprettet ?? null
+  };
+}
 
 // GET /api/laereplasser — alle aktive læreplasser (åpen)
-ruter.get('/', (req, res) => {
-  const db = getDB();
-  const plasser = db.prepare(`
-    SELECT id, bedrift_user_id, bedrift_naam AS bedrift_navn,
-           tittel, beskrivelse, sted, bransje, fagomraade, krav,
-           start_dato, kontaktperson, kontakt_epost,
-           frist, antall_plasser, opprettet
-    FROM laereplasser
-    WHERE aktiv = 1
-    ORDER BY opprettet DESC
-  `).all();
-  res.json(plasser);
+ruter.get('/', async (_req, res) => {
+  try {
+    const snap = await col()
+      .where('aktiv', '==', true)
+      .orderBy('opprettet', 'desc')
+      .get();
+    res.json(snap.docs.map(docTilObj));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente læreplasser' });
+  }
 });
 
-// GET /api/laereplasser/alle — alle læreplasser inkl inaktive (admin)
-ruter.get('/alle', krevAuth, krevRolle('admin'), (req, res) => {
-  const db = getDB();
-  const { status, fagomraade, sok } = req.query;
+// GET /api/laereplasser/alle — admin: alle inkl inaktive
+ruter.get('/alle', krevAuth, krevRolle('admin'), async (req, res) => {
+  try {
+    const { status, fagomraade, sok } = req.query;
+    let q = col();
+    if (status === 'aktiv')   q = q.where('aktiv', '==', true);
+    if (status === 'inaktiv') q = q.where('aktiv', '==', false);
+    if (fagomraade)           q = q.where('fagomraade', '==', fagomraade);
+    q = q.orderBy('opprettet', 'desc');
 
-  let query = `
-    SELECT l.*, COUNT(s.id) AS antall_soknader
-    FROM laereplasser l
-    LEFT JOIN soknader s ON s.laerplass_id = l.id
-  `;
-  const params = [];
-  const where = [];
+    const snap = await q.get();
+    let plasser = snap.docs.map(docTilObj);
 
-  if (status === 'aktiv')   where.push('l.aktiv = 1');
-  if (status === 'inaktiv') where.push('l.aktiv = 0');
-  if (fagomraade) { where.push('l.fagomraade = ?'); params.push(fagomraade); }
-  if (sok) { where.push('(l.tittel LIKE ? OR l.bedrift_naam LIKE ?)'); params.push(`%${sok}%`, `%${sok}%`); }
+    if (sok) {
+      const s = sok.toLowerCase();
+      plasser = plasser.filter(p =>
+        p.tittel?.toLowerCase().includes(s) ||
+        p.bedrift_navn?.toLowerCase().includes(s)
+      );
+    }
 
-  if (where.length) query += ' WHERE ' + where.join(' AND ');
-  query += ' GROUP BY l.id ORDER BY l.opprettet DESC';
+    // Hent søknadsantall for hvert oppslag
+    const med = await Promise.all(plasser.map(async p => {
+      const antSnap = await adminDB.collection('soknader')
+        .where('laerplass_id', '==', p.id)
+        .count().get();
+      return { ...p, antall_soknader: antSnap.data().count };
+    }));
 
-  res.json(db.prepare(query).all(...params));
+    res.json(med);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente læreplasser' });
+  }
 });
 
 // GET /api/laereplasser/mine — bedriftens egne annonser
-ruter.get('/mine', krevAuth, krevRolle('bedrift'), (req, res) => {
-  const db = getDB();
-  const plasser = db.prepare(`
-    SELECT l.*, COUNT(s.id) AS antall_soknader
-    FROM laereplasser l
-    LEFT JOIN soknader s ON s.laerplass_id = l.id
-    WHERE l.bedrift_user_id = ?
-    GROUP BY l.id
-    ORDER BY l.opprettet DESC
-  `).all(req.user.uid);
-  res.json(plasser);
+ruter.get('/mine', krevAuth, krevRolle('bedrift'), async (req, res) => {
+  try {
+    const snap = await col()
+      .where('bedrift_user_id', '==', req.user.uid)
+      .orderBy('opprettet', 'desc')
+      .get();
+
+    const plasser = snap.docs.map(docTilObj);
+
+    const med = await Promise.all(plasser.map(async p => {
+      const antSnap = await adminDB.collection('soknader')
+        .where('laerplass_id', '==', p.id)
+        .count().get();
+      return { ...p, antall_soknader: antSnap.data().count };
+    }));
+
+    res.json(med);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente dine læreplasser' });
+  }
 });
 
-// GET /api/laereplasser/:id — én læreplass med detaljer
-ruter.get('/:id', (req, res) => {
-  const db = getDB();
-  const plass = db.prepare(`
-    SELECT l.*, COUNT(s.id) AS antall_soknader
-    FROM laereplasser l
-    LEFT JOIN soknader s ON s.laerplass_id = l.id
-    WHERE l.id = ?
-    GROUP BY l.id
-  `).get(req.params.id);
+// GET /api/laereplasser/:id — én læreplass
+ruter.get('/:id', async (req, res) => {
+  try {
+    const doc = await col().doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ feil: 'Læreplass ikke funnet' });
 
-  if (!plass) return res.status(404).json({ feil: 'Læreplass ikke funnet' });
-  res.json(plass);
+    const antSnap = await adminDB.collection('soknader')
+      .where('laerplass_id', '==', req.params.id)
+      .count().get();
+
+    res.json({ ...docTilObj(doc), antall_soknader: antSnap.data().count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente læreplass' });
+  }
 });
 
 // POST /api/laereplasser — ny annonse (bedrift eller admin)
-ruter.post('/', krevAuth, krevRolle('bedrift', 'admin'), (req, res) => {
+ruter.post('/', krevAuth, krevRolle('bedrift', 'admin'), async (req, res) => {
   const {
     tittel, beskrivelse, sted, frist, antall_plasser,
     fagomraade, krav, start_dato, kontaktperson, kontakt_epost,
     bedrift_user_id: overrideBedriftId,
-    bedrift_naam: overrideBedriftNaam
+    bedrift_navn: overrideBedriftNavn
   } = req.body;
 
   if (!tittel || !frist) {
     return res.status(400).json({ feil: 'Tittel og frist er påkrevd' });
   }
 
-  const db = getDB();
-  const bransje     = fagomraade || req.user.bransje || null;
   const bedriftId   = req.user.rolle === 'admin' ? (overrideBedriftId || req.user.uid) : req.user.uid;
-  const bedriftNaam = req.user.rolle === 'admin' ? (overrideBedriftNaam || req.user.navn) : (req.user.navn || null);
+  const bedriftNavn = req.user.rolle === 'admin' ? (overrideBedriftNavn || req.user.navn) : (req.user.navn || null);
 
-  const id = db.prepare(`
-    INSERT INTO laereplasser
-      (bedrift_user_id, bedrift_naam, tittel, beskrivelse, sted, bransje,
-       fagomraade, krav, start_dato, kontaktperson, kontakt_epost, frist, antall_plasser)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-  `).run(
-    bedriftId, bedriftNaam, tittel,
-    beskrivelse || null, sted || null, bransje,
-    fagomraade || null, krav || null, start_dato || null,
-    kontaktperson || null, kontakt_epost || null,
-    frist, antall_plasser || 1
-  ).lastInsertRowid;
+  try {
+    const ref = await col().add({
+      bedrift_user_id: bedriftId,
+      bedrift_navn:    bedriftNavn,
+      tittel,
+      beskrivelse:     beskrivelse || null,
+      sted:            sted || null,
+      bransje:         fagomraade || req.user.bransje || null,
+      fagomraade:      fagomraade || null,
+      krav:            krav || null,
+      start_dato:      start_dato || null,
+      kontaktperson:   kontaktperson || null,
+      kontakt_epost:   kontakt_epost || null,
+      frist,
+      antall_plasser:  antall_plasser || 1,
+      aktiv:           true,
+      opprettet:       new Date()
+    });
 
-  res.status(201).json({ ok: true, id });
+    res.status(201).json({ ok: true, id: ref.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke opprette læreplassen' });
+  }
 });
 
-// PATCH /api/laereplasser/:id — oppdater annonse (bedrift-eier eller admin)
-ruter.patch('/:id', krevAuth, krevRolle('bedrift', 'admin'), (req, res) => {
-  const db = getDB();
-  const annonse = db.prepare('SELECT * FROM laereplasser WHERE id = ?').get(req.params.id);
+// PATCH /api/laereplasser/:id — oppdater annonse
+ruter.patch('/:id', krevAuth, krevRolle('bedrift', 'admin'), async (req, res) => {
+  try {
+    const ref = col().doc(req.params.id);
+    const doc = await ref.get();
 
-  if (!annonse) return res.status(404).json({ feil: 'Annonse ikke funnet' });
-  if (req.user.rolle !== 'admin' && annonse.bedrift_user_id !== req.user.uid) {
-    return res.status(403).json({ feil: 'Ikke tilgang' });
+    if (!doc.exists) return res.status(404).json({ feil: 'Annonse ikke funnet' });
+    if (req.user.rolle !== 'admin' && doc.data().bedrift_user_id !== req.user.uid) {
+      return res.status(403).json({ feil: 'Ikke tilgang' });
+    }
+
+    const felter = [
+      'tittel', 'beskrivelse', 'sted', 'frist', 'antall_plasser',
+      'fagomraade', 'bransje', 'krav', 'start_dato',
+      'kontaktperson', 'kontakt_epost', 'aktiv'
+    ];
+    const oppdatering = {};
+    for (const f of felter) {
+      if (req.body[f] !== undefined) oppdatering[f] = req.body[f];
+    }
+
+    await ref.update(oppdatering);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke oppdatere læreplassen' });
   }
-
-  const {
-    tittel, beskrivelse, sted, frist, antall_plasser,
-    fagomraade, krav, start_dato, kontaktperson, kontakt_epost, aktiv
-  } = req.body;
-
-  db.prepare(`
-    UPDATE laereplasser SET
-      tittel = COALESCE(?, tittel),
-      beskrivelse = COALESCE(?, beskrivelse),
-      sted = COALESCE(?, sted),
-      frist = COALESCE(?, frist),
-      antall_plasser = COALESCE(?, antall_plasser),
-      fagomraade = COALESCE(?, fagomraade),
-      bransje = COALESCE(?, bransje),
-      krav = COALESCE(?, krav),
-      start_dato = COALESCE(?, start_dato),
-      kontaktperson = COALESCE(?, kontaktperson),
-      kontakt_epost = COALESCE(?, kontakt_epost),
-      aktiv = COALESCE(?, aktiv)
-    WHERE id = ?
-  `).run(
-    tittel ?? null, beskrivelse ?? null, sted ?? null, frist ?? null,
-    antall_plasser ?? null, fagomraade ?? null, bransje ?? null,
-    krav ?? null, start_dato ?? null, kontaktperson ?? null, kontakt_epost ?? null,
-    aktiv !== undefined ? (aktiv ? 1 : 0) : null,
-    req.params.id
-  );
-
-  res.json({ ok: true });
 });
 
-// DELETE /api/laereplasser/:id — slett annonse (bedrift sin egen, eller admin)
-ruter.delete('/:id', krevAuth, krevRolle('bedrift', 'admin'), (req, res) => {
-  const db = getDB();
-  const annonse = db.prepare('SELECT * FROM laereplasser WHERE id = ?').get(req.params.id);
+// DELETE /api/laereplasser/:id — slett annonse
+ruter.delete('/:id', krevAuth, krevRolle('bedrift', 'admin'), async (req, res) => {
+  try {
+    const ref = col().doc(req.params.id);
+    const doc = await ref.get();
 
-  if (!annonse) return res.status(404).json({ feil: 'Annonse ikke funnet' });
-  if (req.user.rolle !== 'admin' && annonse.bedrift_user_id !== req.user.uid) {
-    return res.status(403).json({ feil: 'Ikke tilgang' });
+    if (!doc.exists) return res.status(404).json({ feil: 'Annonse ikke funnet' });
+    if (req.user.rolle !== 'admin' && doc.data().bedrift_user_id !== req.user.uid) {
+      return res.status(403).json({ feil: 'Ikke tilgang' });
+    }
+
+    await ref.delete();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke slette læreplassen' });
   }
-
-  db.prepare('DELETE FROM laereplasser WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
 });
 
 export default ruter;

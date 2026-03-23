@@ -2,7 +2,6 @@ import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 import { adminDB } from '../firebase/config.js';
-import { getDB } from '../db/init.js';
 import { matchLaerlingTilPlasser } from '../tools/ai_match.js';
 import { oppsummerSoknad } from '../tools/ai_oppsummer.js';
 import { forbedreProfil } from '../tools/ai_tips.js';
@@ -12,7 +11,6 @@ const ruter = Router();
 /**
  * POST /api/ai/match
  * Matcher innlogget lærling mot alle aktive læreplasser.
- * Returnerer læreplassene sortert etter match-score.
  */
 ruter.post('/match', krevAuth, krevRolle('laerling'), async (req, res) => {
   try {
@@ -21,12 +19,17 @@ ruter.post('/match', krevAuth, krevRolle('laerling'), async (req, res) => {
       bio: req.user.bio
     };
 
-    const db = getDB();
-    const plasser = db.prepare(`
-      SELECT id, tittel, beskrivelse, bransje, fagomraade
-      FROM laereplasser
-      WHERE aktiv = 1
-    `).all();
+    const snap = await adminDB.collection('laereplasser')
+      .where('aktiv', '==', true)
+      .get();
+
+    const plasser = snap.docs.map(d => ({
+      id: d.id,
+      tittel: d.data().tittel,
+      beskrivelse: d.data().beskrivelse,
+      bransje: d.data().bransje,
+      fagomraade: d.data().fagomraade
+    }));
 
     if (plasser.length === 0) {
       return res.status(200).json({ resultater: [], melding: 'Ingen aktive læreplasser å matche mot akkurat nå' });
@@ -46,7 +49,6 @@ ruter.post('/match', krevAuth, krevRolle('laerling'), async (req, res) => {
 /**
  * POST /api/ai/oppsummer
  * Lager AI-sammendrag av en søknad for admin.
- * Body: { soknad_id: number }
  */
 ruter.post('/oppsummer', krevAuth, krevRolle('admin'), async (req, res) => {
   const { soknad_id } = req.body;
@@ -56,20 +58,18 @@ ruter.post('/oppsummer', krevAuth, krevRolle('admin'), async (req, res) => {
   }
 
   try {
-    const db = getDB();
-    const soknad = db.prepare(`
-      SELECT s.*, l.tittel AS laerplass_tittel, l.bedrift_naam
-      FROM soknader s
-      JOIN laereplasser l ON s.laerplass_id = l.id
-      WHERE s.id = ?
-    `).get(soknad_id);
-
-    if (!soknad) {
+    const sokDoc = await adminDB.collection('soknader').doc(soknad_id).get();
+    if (!sokDoc.exists) {
       return res.status(404).json({ feil: 'Søknaden ble ikke funnet' });
     }
 
-    // Hent lærlingprofil fra Firestore
-    const userDoc = await adminDB.collection('users').doc(soknad.laerling_user_id).get();
+    const soknad = sokDoc.data();
+    const [plassDoc, userDoc] = await Promise.all([
+      adminDB.collection('laereplasser').doc(soknad.laerplass_id).get(),
+      adminDB.collection('users').doc(soknad.laerling_user_id).get()
+    ]);
+
+    const plassData = plassDoc.exists ? plassDoc.data() : {};
     const laerlingData = userDoc.exists ? userDoc.data() : {};
 
     const laerling = {
@@ -78,14 +78,11 @@ ruter.post('/oppsummer', krevAuth, krevRolle('admin'), async (req, res) => {
       utdanningsprogram: soknad.utdanningsprogram || laerlingData.utdanningsprogram || null
     };
 
-    const soknadData = {
-      melding: soknad.melding,
-      erfaring: soknad.erfaring
-    };
+    const soknadData = { melding: soknad.melding, erfaring: soknad.erfaring };
 
     const laerplass = {
-      tittel: soknad.laerplass_tittel,
-      bedrift_naam: soknad.bedrift_naam
+      tittel: plassData.tittel,
+      bedrift_naam: plassData.bedrift_navn
     };
 
     const oppsummering = await oppsummerSoknad(laerling, soknadData, laerplass);
@@ -124,8 +121,7 @@ ruter.post('/tips', krevAuth, krevRolle('laerling'), async (req, res) => {
 
 /**
  * POST /api/ai/chat
- * Fri samtale med AI-assistenten. Brukes på profilsiden.
- * Body: { system: string, messages: [{ role, content }] }
+ * Fri samtale med AI-assistenten.
  */
 ruter.post('/chat', krevAuth, async (req, res) => {
   const { system, messages } = req.body;

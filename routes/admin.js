@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { adminAuth, adminDB } from '../firebase/config.js';
-import { getDB } from '../db/init.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 
 const ruter = Router();
@@ -8,9 +7,18 @@ const ruter = Router();
 // Alle admin-ruter krever innlogging og admin-rolle
 ruter.use(krevAuth, krevRolle('admin'));
 
+async function lagVarsel(mottakerId, type, tittel, melding, lenke) {
+  try {
+    await adminDB.collection('varsler').add({
+      mottaker_id: mottakerId, type, tittel,
+      melding: melding || null, lenke: lenke || null,
+      lest: false, opprettet: new Date()
+    });
+  } catch { /* varsler er ikke kritiske */ }
+}
+
 /**
  * GET /api/admin/bedrifter-venter
- * Henter alle bedrifter som venter godkjenning.
  */
 ruter.get('/bedrifter-venter', async (req, res) => {
   try {
@@ -23,14 +31,7 @@ ruter.get('/bedrifter-venter', async (req, res) => {
 
     const bedrifter = snapshot.docs.map(doc => {
       const d = doc.data();
-      return {
-        uid: d.uid,
-        navn: d.navn,
-        epost: d.epost,
-        orgNr: d.orgNr,
-        bransje: d.bransje,
-        opprettet: d.opprettet
-      };
+      return { uid: d.uid, navn: d.navn, epost: d.epost, orgNr: d.orgNr, bransje: d.bransje, opprettet: d.opprettet };
     });
 
     res.json(bedrifter);
@@ -42,18 +43,15 @@ ruter.get('/bedrifter-venter', async (req, res) => {
 
 /**
  * PATCH /api/admin/bedrifter/:uid/godkjenn
- * Godkjenner en bedrift.
  */
 ruter.patch('/bedrifter/:uid/godkjenn', async (req, res) => {
   const { uid } = req.params;
   try {
     const ref = adminDB.collection('users').doc(uid);
     const doc = await ref.get();
-
     if (!doc.exists || doc.data().rolle !== 'bedrift') {
       return res.status(404).json({ feil: 'Bedrift ikke funnet' });
     }
-
     await ref.update({ godkjent: true });
     await adminAuth.setCustomUserClaims(uid, { rolle: 'bedrift' });
     res.json({ ok: true });
@@ -65,18 +63,15 @@ ruter.patch('/bedrifter/:uid/godkjenn', async (req, res) => {
 
 /**
  * PATCH /api/admin/bedrifter/:uid/avvis
- * Avviser / deaktiverer en bedrift.
  */
 ruter.patch('/bedrifter/:uid/avvis', async (req, res) => {
   const { uid } = req.params;
   try {
     const ref = adminDB.collection('users').doc(uid);
     const doc = await ref.get();
-
     if (!doc.exists || doc.data().rolle !== 'bedrift') {
       return res.status(404).json({ feil: 'Bedrift ikke funnet' });
     }
-
     await ref.update({ aktiv: false });
     res.json({ ok: true });
   } catch (err) {
@@ -87,27 +82,29 @@ ruter.patch('/bedrifter/:uid/avvis', async (req, res) => {
 
 /**
  * GET /api/admin/statistikk
- * Overordnet statistikk (Firestore + SQLite).
  */
 ruter.get('/statistikk', async (req, res) => {
   try {
-    const db = getDB();
-    const [laerlinger, bedrifterAktive, bedrifterVenter] = await Promise.all([
+    const statuser = ['sendt', 'under_behandling', 'godkjent', 'avslatt', 'trukket'];
+    const [laerlinger, bedrifterAktive, bedrifterVenter, soknadCounts, aktivePlass] = await Promise.all([
       adminDB.collection('users').where('rolle', '==', 'laerling').count().get(),
       adminDB.collection('users').where('rolle', '==', 'bedrift').where('godkjent', '==', true).count().get(),
-      adminDB.collection('users').where('rolle', '==', 'bedrift').where('godkjent', '==', false).count().get()
+      adminDB.collection('users').where('rolle', '==', 'bedrift').where('godkjent', '==', false).count().get(),
+      Promise.all(statuser.map(s =>
+        adminDB.collection('soknader').where('status', '==', s).count().get()
+          .then(snap => ({ status: s, antall: snap.data().count }))
+      )),
+      adminDB.collection('laereplasser').where('aktiv', '==', true).count().get()
     ]);
 
-    const soknadStats = db.prepare('SELECT status, COUNT(*) AS c FROM soknader GROUP BY status').all();
-    const soknaderTotalt = soknadStats.reduce((sum, r) => sum + r.c, 0);
-    const aktiveLaereplasser = db.prepare('SELECT COUNT(*) AS c FROM laereplasser WHERE aktiv = 1').get().c;
+    const soknaderTotalt = soknadCounts.reduce((sum, r) => sum + r.antall, 0);
 
     res.json({
       antallLaerlinger: laerlinger.data().count,
       antallBedrifterAktive: bedrifterAktive.data().count,
       antallBedrifterVenter: bedrifterVenter.data().count,
       soknaderTotalt,
-      aktiveLaereplasser
+      aktiveLaereplasser: aktivePlass.data().count
     });
   } catch (err) {
     console.error('Feil ved henting av statistikk:', err);
@@ -117,153 +114,173 @@ ruter.get('/statistikk', async (req, res) => {
 
 /**
  * GET /api/admin/alle-soknader
- * Henter alle søknader med filtrering.
  */
-ruter.get('/alle-soknader', (req, res) => {
-  const db = getDB();
-  const { status, sok } = req.query;
+ruter.get('/alle-soknader', async (req, res) => {
+  try {
+    const { status, sok } = req.query;
 
-  let query = `
-    SELECT s.id, s.status, s.sendt_dato, s.melding, s.erfaring,
-           s.vg1, s.vg2, s.telefon, s.vedlegg, s.vedlegg_originalnavn, s.admin_kommentar,
-           s.behandlet_dato, s.laerplass_id,
-           s.laerling_user_id, s.laerling_naam, s.laerling_epost,
-           s.utdanningsprogram, s.skole,
-           l.tittel AS laerplass_tittel,
-           l.bedrift_naam AS bedrift_navn,
-           l.bedrift_user_id
-    FROM soknader s
-    JOIN laereplasser l ON l.id = s.laerplass_id
-  `;
-  const params = [];
-  const where = [];
+    let q = adminDB.collection('soknader');
+    if (status && status !== 'alle') q = q.where('status', '==', status);
+    q = q.orderBy('sendt_dato', 'desc');
 
-  if (status && status !== 'alle') { where.push('s.status = ?'); params.push(status); }
-  if (sok) {
-    where.push('(s.laerling_naam LIKE ? OR l.tittel LIKE ? OR l.bedrift_naam LIKE ?)');
-    params.push(`%${sok}%`, `%${sok}%`, `%${sok}%`);
+    const snap = await q.get();
+    let soknader = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id, ...data,
+        sendt_dato: data.sendt_dato?.toDate?.()?.toISOString?.() ?? data.sendt_dato ?? null,
+        behandlet_dato: data.behandlet_dato?.toDate?.()?.toISOString?.() ?? data.behandlet_dato ?? null
+      };
+    });
+
+    // Berik med læreplassdata
+    const plassIds = [...new Set(soknader.map(s => s.laerplass_id))];
+    const plassDocs = await Promise.all(plassIds.map(id => adminDB.collection('laereplasser').doc(id).get()));
+    const plassMap = {};
+    plassDocs.forEach(d => { if (d.exists) plassMap[d.id] = d.data(); });
+
+    let resultat = soknader.map(s => {
+      const p = plassMap[s.laerplass_id] || {};
+      return { ...s, laerplass_tittel: p.tittel, bedrift_navn: p.bedrift_navn, bedrift_user_id: p.bedrift_user_id };
+    });
+
+    if (sok) {
+      const s = sok.toLowerCase();
+      resultat = resultat.filter(r =>
+        r.laerling_naam?.toLowerCase().includes(s) ||
+        r.laerplass_tittel?.toLowerCase().includes(s) ||
+        r.bedrift_navn?.toLowerCase().includes(s)
+      );
+    }
+
+    res.json(resultat);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente søknader' });
   }
-
-  if (where.length) query += ' WHERE ' + where.join(' AND ');
-  query += ' ORDER BY s.sendt_dato DESC';
-
-  res.json(db.prepare(query).all(...params));
 });
 
 /**
  * PATCH /api/admin/soknader/:id/status
- * Admin oppdaterer søknadsstatus med kommentar.
  */
-ruter.patch('/soknader/:id/status', (req, res) => {
+ruter.patch('/soknader/:id/status', async (req, res) => {
   const { status, admin_kommentar } = req.body;
   const gyldige = ['sendt', 'under_behandling', 'godkjent', 'avslatt', 'trukket'];
   if (!gyldige.includes(status)) {
     return res.status(400).json({ feil: 'Ugyldig status' });
   }
 
-  const db = getDB();
-  const soknad = db.prepare(`
-    SELECT s.*, l.tittel AS laerplass_tittel
-    FROM soknader s JOIN laereplasser l ON l.id = s.laerplass_id
-    WHERE s.id = ?
-  `).get(req.params.id);
+  try {
+    const sokDoc = await adminDB.collection('soknader').doc(req.params.id).get();
+    if (!sokDoc.exists) return res.status(404).json({ feil: 'Søknad ikke funnet' });
 
-  if (!soknad) return res.status(404).json({ feil: 'Søknad ikke funnet' });
+    const soknad = sokDoc.data();
+    const plassDoc = await adminDB.collection('laereplasser').doc(soknad.laerplass_id).get();
+    const plassTittel = plassDoc.exists ? plassDoc.data().tittel : 'ukjent stilling';
 
-  db.prepare(`
-    UPDATE soknader SET
-      status = ?,
-      admin_kommentar = COALESCE(?, admin_kommentar),
-      behandlet_av = ?,
-      behandlet_dato = date('now')
-    WHERE id = ?
-  `).run(status, admin_kommentar || null, req.user.uid, req.params.id);
+    const oppdatering = { status, behandlet_av: req.user.uid, behandlet_dato: new Date() };
+    if (admin_kommentar) oppdatering.admin_kommentar = admin_kommentar;
 
-  // Varsle lærling
-  const meldingMap = {
-    under_behandling: `Din søknad på "${soknad.laerplass_tittel}" er nå under behandling.`,
-    godkjent:         `Gratulerer! Din søknad på "${soknad.laerplass_tittel}" er godkjent!`,
-    avslatt:          `Din søknad på "${soknad.laerplass_tittel}" ble dessverre avslått.`
-  };
-  if (meldingMap[status]) {
-    try {
-      db.prepare(`INSERT INTO varsler (mottaker_id, type, tittel, melding, lenke) VALUES (?,?,?,?,?)`)
-        .run(
-          soknad.laerling_user_id,
-          `soknad_${status}`,
-          status === 'godkjent' ? 'Søknad godkjent!' : status === 'avslatt' ? 'Søknad avslått' : 'Søknad under behandling',
-          meldingMap[status],
-          '/laerling/mine-soknader.html'
-        );
-    } catch { /* varsler er ikke kritiske */ }
+    await sokDoc.ref.update(oppdatering);
+
+    const meldingMap = {
+      under_behandling: `Din søknad på "${plassTittel}" er nå under behandling.`,
+      godkjent:         `Gratulerer! Din søknad på "${plassTittel}" er godkjent!`,
+      avslatt:          `Din søknad på "${plassTittel}" ble dessverre avslått.`
+    };
+    if (meldingMap[status]) {
+      await lagVarsel(
+        soknad.laerling_user_id,
+        `soknad_${status}`,
+        status === 'godkjent' ? 'Søknad godkjent!' : status === 'avslatt' ? 'Søknad avslått' : 'Søknad under behandling',
+        meldingMap[status],
+        '/laerling/mine-soknader.html'
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke oppdatere status' });
   }
-
-  res.json({ ok: true });
 });
 
 /**
  * GET /api/admin/alle-laereplasser
- * Henter alle læreplasser (aktive og inaktive) med filtrering.
  */
-ruter.get('/alle-laereplasser', (req, res) => {
-  const db = getDB();
-  const { status, fagomraade, sok } = req.query;
+ruter.get('/alle-laereplasser', async (req, res) => {
+  try {
+    const { status, fagomraade, sok } = req.query;
 
-  let query = `
-    SELECT l.*, COUNT(s.id) AS antall_soknader
-    FROM laereplasser l
-    LEFT JOIN soknader s ON s.laerplass_id = l.id
-  `;
-  const params = [];
-  const where = [];
+    let q = adminDB.collection('laereplasser');
+    if (status === 'aktiv')   q = q.where('aktiv', '==', true);
+    if (status === 'inaktiv') q = q.where('aktiv', '==', false);
+    if (fagomraade)           q = q.where('fagomraade', '==', fagomraade);
+    q = q.orderBy('opprettet', 'desc');
 
-  if (status === 'aktiv')   where.push('l.aktiv = 1');
-  if (status === 'inaktiv') where.push('l.aktiv = 0');
-  if (fagomraade) { where.push('l.fagomraade = ?'); params.push(fagomraade); }
-  if (sok) { where.push('(l.tittel LIKE ? OR l.bedrift_naam LIKE ?)'); params.push(`%${sok}%`, `%${sok}%`); }
+    const snap = await q.get();
+    let plasser = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id, ...data,
+        opprettet: data.opprettet?.toDate?.()?.toISOString?.() ?? data.opprettet ?? null
+      };
+    });
 
-  if (where.length) query += ' WHERE ' + where.join(' AND ');
-  query += ' GROUP BY l.id ORDER BY l.opprettet DESC';
+    if (sok) {
+      const s = sok.toLowerCase();
+      plasser = plasser.filter(p =>
+        p.tittel?.toLowerCase().includes(s) ||
+        p.bedrift_navn?.toLowerCase().includes(s)
+      );
+    }
 
-  res.json(db.prepare(query).all(...params));
+    // Hent søknadsantall
+    const med = await Promise.all(plasser.map(async p => {
+      const antSnap = await adminDB.collection('soknader').where('laerplass_id', '==', p.id).count().get();
+      return { ...p, antall_soknader: antSnap.data().count };
+    }));
+
+    res.json(med);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke hente læreplasser' });
+  }
 });
 
 /**
  * DELETE /api/admin/laereplasser/:id
- * Admin sletter en læreplass.
  */
-ruter.delete('/laereplasser/:id', (req, res) => {
-  const db = getDB();
-  const annonse = db.prepare('SELECT id FROM laereplasser WHERE id = ?').get(req.params.id);
-  if (!annonse) return res.status(404).json({ feil: 'Læreplass ikke funnet' });
-  db.prepare('DELETE FROM laereplasser WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
+ruter.delete('/laereplasser/:id', async (req, res) => {
+  try {
+    const ref = adminDB.collection('laereplasser').doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ feil: 'Læreplass ikke funnet' });
+    await ref.delete();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ feil: 'Kunne ikke slette læreplassen' });
+  }
 });
 
 /**
  * GET /api/admin/brukere
- * Henter alle brukere fra Firestore.
  */
 ruter.get('/brukere', async (req, res) => {
   try {
     const { rolle } = req.query;
-    let query = adminDB.collection('users');
-    if (rolle) query = query.where('rolle', '==', rolle);
-    const snapshot = await query.orderBy('opprettet', 'desc').get();
+    let q = adminDB.collection('users');
+    if (rolle) q = q.where('rolle', '==', rolle);
+    const snapshot = await q.orderBy('opprettet', 'desc').get();
 
     const brukere = snapshot.docs.map(doc => {
       const d = doc.data();
       return {
-        uid: d.uid,
-        navn: d.navn,
-        epost: d.epost,
-        rolle: d.rolle,
-        godkjent: d.godkjent,
-        aktiv: d.aktiv,
-        orgNr: d.orgNr || null,
-        bransje: d.bransje || null,
-        utdanningsprogram: d.utdanningsprogram || null,
-        opprettet: d.opprettet
+        uid: d.uid, navn: d.navn, epost: d.epost, rolle: d.rolle,
+        godkjent: d.godkjent, aktiv: d.aktiv,
+        orgNr: d.orgNr || null, bransje: d.bransje || null,
+        utdanningsprogram: d.utdanningsprogram || null, opprettet: d.opprettet
       };
     });
 

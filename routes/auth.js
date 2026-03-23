@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { adminAuth, adminDB } from '../firebase/config.js';
-import { getDB } from '../db/init.js';
 import { krevAuth } from '../middleware/auth.js';
 
 const ruter = Router();
@@ -15,42 +14,48 @@ function slettFilHvisDenFinnes(relativSti) {
   const fullSti = path.isAbsolute(relativSti)
     ? relativSti
     : path.join(PROSJEKTROT, relativSti);
-
-  if (fs.existsSync(fullSti)) {
-    fs.unlinkSync(fullSti);
-  }
+  if (fs.existsSync(fullSti)) fs.unlinkSync(fullSti);
 }
 
-function hentVedleggstierForBruker(db, uid, profilCvFilnavnIntern) {
+async function hentVedleggstierForBruker(uid, profilCvFilnavnIntern) {
   const filstier = new Set();
 
   if (profilCvFilnavnIntern) {
     filstier.add(path.posix.join('uploads', profilCvFilnavnIntern));
   }
 
-  const laerlingVedlegg = db.prepare(`
-    SELECT vedlegg FROM soknader
-    WHERE laerling_user_id = ? AND vedlegg IS NOT NULL
-  `).all(uid);
-
-  const bedriftVedlegg = db.prepare(`
-    SELECT s.vedlegg
-    FROM soknader s
-    JOIN laereplasser l ON l.id = s.laerplass_id
-    WHERE l.bedrift_user_id = ? AND s.vedlegg IS NOT NULL
-  `).all(uid);
-
-  [...laerlingVedlegg, ...bedriftVedlegg].forEach(({ vedlegg }) => {
-    if (vedlegg) filstier.add(vedlegg);
+  // Vedlegg fra søknader sendt av lærling
+  const laerlingSnap = await adminDB.collection('soknader')
+    .where('laerling_user_id', '==', uid)
+    .get();
+  laerlingSnap.docs.forEach(d => {
+    if (d.data().vedlegg) filstier.add(d.data().vedlegg);
   });
+
+  // Vedlegg fra søknader på bedriftens egne læreplasser
+  const plassSnap = await adminDB.collection('laereplasser')
+    .where('bedrift_user_id', '==', uid)
+    .get();
+  const plassIds = plassSnap.docs.map(d => d.id);
+
+  if (plassIds.length > 0) {
+    const chunks = [];
+    for (let i = 0; i < plassIds.length; i += 30) chunks.push(plassIds.slice(i, i + 30));
+    for (const chunk of chunks) {
+      const sokSnap = await adminDB.collection('soknader')
+        .where('laerplass_id', 'in', chunk)
+        .get();
+      sokSnap.docs.forEach(d => {
+        if (d.data().vedlegg) filstier.add(d.data().vedlegg);
+      });
+    }
+  }
 
   return [...filstier];
 }
 
 /**
  * POST /api/auth/register
- * Oppretter brukerprofil i Firestore etter at Firebase Auth er gjort på frontend.
- * Setter custom claim { rolle } for rask tilgangssjekk.
  */
 ruter.post('/register', async (req, res) => {
   const { uid, navn, epost, telefon, rolle, utdanningsprogram, skole, bio,
@@ -59,31 +64,25 @@ ruter.post('/register', async (req, res) => {
   if (!uid || !navn || !epost || !rolle) {
     return res.status(400).json({ feil: 'Mangler påkrevde felt (uid, navn, epost, rolle)' });
   }
-
   if (!['laerling', 'bedrift'].includes(rolle)) {
     return res.status(400).json({ feil: 'Ugyldig rolle' });
   }
-
   if (rolle === 'bedrift' && !orgNr) {
     return res.status(400).json({ feil: 'Organisasjonsnummer er påkrevd for bedrifter' });
   }
-
   if (rolle === 'bedrift' && !/^\d{9}$/.test(orgNr)) {
     return res.status(400).json({ feil: 'Organisasjonsnummeret må være nøyaktig 9 siffer' });
   }
 
   try {
-    // Sjekk at UID faktisk finnes i Firebase Auth
     await adminAuth.getUser(uid);
 
-    // Sjekk at brukeren ikke allerede er registrert
     const eksisterende = await adminDB.collection('users').doc(uid).get();
     if (eksisterende.exists) {
       return res.status(400).json({ feil: 'Bruker allerede registrert' });
     }
 
     const now = new Date();
-
     const userData = {
       uid,
       navn: navn.trim(),
@@ -95,27 +94,21 @@ ruter.post('/register', async (req, res) => {
       samtykkeGitt: now,
       samtykkeVersjon: samtykkeVersjon || '1.0',
       aktiv: true,
-      // Lærling-felt
       utdanningsprogram: rolle === 'laerling' ? (utdanningsprogram || null) : null,
       skole: rolle === 'laerling' ? (skole || null) : null,
       bio: rolle === 'laerling' ? (bio || null) : null,
       cv_filnavn: null,
-      // Bedrift-felt
       orgNr: rolle === 'bedrift' ? orgNr : null,
       bransje: rolle === 'bedrift' ? (bransje || null) : null,
       bedriftBeskrivelse: rolle === 'bedrift' ? (bedriftBeskrivelse || null) : null,
-      godkjent: rolle === 'bedrift' ? false : true  // Bedrifter venter godkjenning
+      godkjent: rolle === 'bedrift' ? false : true
     };
 
     await adminDB.collection('users').doc(uid).set(userData);
-
-    // Sett custom claim (brukes i frontend for rollehåndtering)
     await adminAuth.setCustomUserClaims(uid, { rolle });
 
     const svar = { ok: true, rolle };
-    if (rolle === 'bedrift') {
-      svar.venterGodkjenning = true;
-    }
+    if (rolle === 'bedrift') svar.venterGodkjenning = true;
 
     res.status(201).json(svar);
   } catch (err) {
@@ -129,8 +122,6 @@ ruter.post('/register', async (req, res) => {
 
 /**
  * POST /api/auth/login-update
- * Oppdaterer sist innlogget og returnerer full brukerprofil.
- * Kalles av frontend etter vellykket Firebase Auth-innlogging.
  */
 ruter.post('/login-update', async (req, res) => {
   const token = req.headers.authorization?.split('Bearer ')[1];
@@ -146,14 +137,11 @@ ruter.post('/login-update', async (req, res) => {
     }
 
     const data = doc.data();
-
-    // Blokker ikke-godkjente bedrifter
     if (data.rolle === 'bedrift' && data.godkjent === false) {
       return res.status(403).json({ feil: 'Kontoen venter godkjenning fra Opplæringskontoret' });
     }
 
     await ref.update({ sistInnlogget: new Date() });
-
     res.json({ bruker: { ...data, sistInnlogget: new Date() } });
   } catch (err) {
     console.error('Login-update feil:', err);
@@ -163,7 +151,6 @@ ruter.post('/login-update', async (req, res) => {
 
 /**
  * GET /api/auth/meg
- * Returnerer innlogget brukers fulle profil fra Firestore.
  */
 ruter.get('/meg', krevAuth, async (req, res) => {
   res.json(req.user);
@@ -171,8 +158,6 @@ ruter.get('/meg', krevAuth, async (req, res) => {
 
 /**
  * POST /api/auth/logg-ut
- * Firebase håndterer selve utloggingen på klientsiden.
- * Ruten beholdes for bakoverkompatibilitet.
  */
 ruter.post('/logg-ut', (req, res) => {
   res.json({ ok: true });
@@ -180,14 +165,12 @@ ruter.post('/logg-ut', (req, res) => {
 
 /**
  * PATCH /api/auth/profil
- * Oppdaterer brukerprofil i Firestore (navn, bio, cv_filnavn, utdanningsprogram, skole).
  */
 ruter.patch('/profil', krevAuth, async (req, res) => {
   const { navn, bio, cv_filnavn, utdanningsprogram, skole } = req.body;
   const oppdateringer = {};
 
   if (navn) oppdateringer.navn = navn.trim();
-
   if (req.user.rolle === 'laerling') {
     if (bio !== undefined) oppdateringer.bio = bio;
     if (cv_filnavn)        oppdateringer.cv_filnavn = cv_filnavn;
@@ -210,25 +193,26 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
 
 /**
  * DELETE /api/auth/slett-konto
- * Sletter innlogget bruker, tilhørende data og opplastede filer.
  */
 ruter.delete('/slett-konto', krevAuth, async (req, res) => {
-  const db = getDB();
-  const vedleggstier = hentVedleggstierForBruker(db, req.user.uid, req.user.cv_filnavn_intern);
-  const slettSqliteData = db.transaction((uid) => {
-    db.prepare('DELETE FROM varsler WHERE mottaker_id = ?').run(uid);
-    db.prepare('DELETE FROM soknader WHERE laerling_user_id = ?').run(uid);
-    db.prepare('DELETE FROM laereplasser WHERE bedrift_user_id = ?').run(uid);
-  });
-
   try {
-    slettSqliteData(req.user.uid);
-    await adminDB.collection('users').doc(req.user.uid).delete();
+    const vedleggstier = await hentVedleggstierForBruker(req.user.uid, req.user.cv_filnavn_intern);
 
-    vedleggstier.forEach((relativSti) => {
-      slettFilHvisDenFinnes(relativSti);
-    });
+    // Slett Firestore-data i parallell
+    const [soknaderSnap, laereplasserSnap, varslerSnap] = await Promise.all([
+      adminDB.collection('soknader').where('laerling_user_id', '==', req.user.uid).get(),
+      adminDB.collection('laereplasser').where('bedrift_user_id', '==', req.user.uid).get(),
+      adminDB.collection('varsler').where('mottaker_id', '==', req.user.uid).get()
+    ]);
 
+    const batch = adminDB.batch();
+    soknaderSnap.docs.forEach(d => batch.delete(d.ref));
+    laereplasserSnap.docs.forEach(d => batch.delete(d.ref));
+    varslerSnap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(adminDB.collection('users').doc(req.user.uid));
+    await batch.commit();
+
+    vedleggstier.forEach(slettFilHvisDenFinnes);
     await adminAuth.deleteUser(req.user.uid);
 
     res.json({ ok: true, melding: 'Kontoen din er slettet.' });
