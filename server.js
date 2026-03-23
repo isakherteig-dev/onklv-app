@@ -37,6 +37,11 @@ app.use('/api/chat', chatRuter);
 // Start SQLite (laereplasser, soknader, varsler)
 initDB();
 
-app.listen(port, () => {
-  console.log(`Server kjører på http://localhost:${port}`);
-});
+// Lokal dev: start server. Vercel: eksporter app.
+if (process.env.VERCEL !== '1') {
+  app.listen(port, () => {
+    console.log(`Server kjører på http://localhost:${port}`);
+  });
+}
+
+export default app;
