@@ -95,6 +95,18 @@ export function initDB() {
     db.exec('ALTER TABLE soknader ADD COLUMN vedlegg_originalnavn TEXT');
   }
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS chat_meldinger (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      soknad_id   INTEGER NOT NULL REFERENCES soknader(id) ON DELETE CASCADE,
+      avsender_id TEXT    NOT NULL,
+      tekst       TEXT    NOT NULL CHECK(length(trim(tekst)) > 0),
+      lest        INTEGER NOT NULL DEFAULT 0,
+      opprettet   TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_chat_soknad ON chat_meldinger(soknad_id, opprettet);
+  `);
+
   return db;
 }
 

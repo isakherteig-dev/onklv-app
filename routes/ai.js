@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import Anthropic from '@anthropic-ai/sdk';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 import { adminDB } from '../firebase/config.js';
 import { getDB } from '../db/init.js';
@@ -118,6 +119,39 @@ ruter.post('/tips', krevAuth, krevRolle('laerling'), async (req, res) => {
       ? err.message
       : 'AI-tjenesten er midlertidig utilgjengelig. Prøv igjen.';
     res.status(500).json({ feil: melding });
+  }
+});
+
+/**
+ * POST /api/ai/chat
+ * Fri samtale med AI-assistenten. Brukes på profilsiden.
+ * Body: { system: string, messages: [{ role, content }] }
+ */
+ruter.post('/chat', krevAuth, async (req, res) => {
+  const { system, messages } = req.body;
+
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ feil: 'messages er påkrevd' });
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(503).json({ feil: 'AI-tjenesten er ikke satt opp ennå' });
+  }
+
+  try {
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      system: system || 'Du er OLKV sin AI-assistent. Svar alltid på norsk.',
+      messages
+    });
+
+    res.json({ svar: response.content[0].text });
+  } catch (err) {
+    console.error('AI chat feil:', err.message);
+    res.status(500).json({ feil: 'AI-assistenten er ikke tilgjengelig akkurat nå. Prøv igjen senere.' });
   }
 });
 

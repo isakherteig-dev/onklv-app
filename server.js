@@ -10,6 +10,7 @@ import adminRuter from './routes/admin.js';
 import varslerRuter from './routes/varsler.js';
 import aiRuter from './routes/ai.js';
 import cvRuter from './routes/cv.js';
+import chatRuter from './routes/chat.js';
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -31,6 +32,7 @@ app.use('/api/admin', adminRuter);
 app.use('/api/varsler', varslerRuter);
 app.use('/api/ai', aiRuter);
 app.use('/api/cv', cvRuter);
+app.use('/api/chat', chatRuter);
 
 // Start SQLite (laereplasser, soknader, varsler)
 initDB();

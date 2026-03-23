@@ -64,6 +64,7 @@
             <div class="varsel-dropdown-header">Varsler</div>
           </div>
         </div>
+        <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</div>
         <button class="btn btn-secondary btn-liten edit-owner-only" id="toggleEditBtn">✏️ Rediger profil</button>
         <button class="btn btn-ghost btn-liten" onclick="history.back()">← Tilbake</button>
       </div>
@@ -103,7 +104,7 @@
           </div>
 
           <!-- Navn og sub-info -->
-          <div style="flex:1;padding-top:1rem;">
+          <div style="flex:1;padding-top:3rem;">
             <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
               <h1 id="profil-navn" style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin:0;color:var(--olkv-dark);">—</h1>
               <span class="badge badge-gronn">✅ Verifisert av OLKV</span>
@@ -123,7 +124,6 @@
 
         <!-- Handlingsknapper -->
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.25rem;">
-          <a id="btn-send-melding" class="btn btn-primary btn-liten" href="#">✉️ Send melding</a>
           <a id="btn-last-cv" class="btn btn-secondary btn-liten skjult" href="#">📄 Last ned CV</a>
           <button class="btn btn-ghost btn-liten" onclick="alert('Bookingfunksjon kommer snart! 📅')">📅 Book intervju</button>
         </div>
@@ -134,7 +134,7 @@
     </section>
 
     <!-- SEKSJON 2: VIDEO -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🎬 Bli kjent med meg</h2>
       </div>
@@ -144,7 +144,7 @@
     </section>
 
     <!-- SEKSJON 3: REFERANSER -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🏫 Referanser fra skolen</h2>
       </div>
@@ -169,7 +169,7 @@
     </section>
 
     <!-- SEKSJON 4: FERDIGHETER -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">⚡ Ferdigheter</h2>
       </div>
@@ -178,7 +178,7 @@
     </section>
 
     <!-- SEKSJON 5: PORTEFØLJE -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🖼️ Portefølje</h2>
       </div>
@@ -203,7 +203,7 @@
     </section>
 
     <!-- SEKSJON 6: MOTIVASJON -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">💬 Hvorfor dette faget?</h2>
       </div>
@@ -220,7 +220,7 @@
     </section>
 
     <!-- SEKSJON 7: CV OG ERFARING -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header" style="justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📄 CV og erfaring</h2>
         <a id="btn-last-cv-2" class="btn btn-secondary btn-liten skjult" href="#">⬇️ Last ned CV</a>
@@ -258,7 +258,7 @@
     </section>
 
     <!-- SEKSJON 8: TILGJENGELIGHET -->
-    <section class="kort reveal" style="margin-bottom:1.5rem;">
+    <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📅 Tilgjengelighet</h2>
       </div>
@@ -286,7 +286,7 @@
     </section>
 
     <!-- SEKSJON 9: AI-ASSISTENT -->
-    <div class="ai-panel reveal">
+    <div class="ai-panel">
       <div style="background:linear-gradient(135deg,var(--olkv-blue),var(--olkv-blue-light));padding:1rem 1.5rem;">
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <span style="font-size:1.4rem;">🤖</span>
@@ -306,9 +306,9 @@
   </main>
 
   <script type="module">
-    import { krevInnlogging, hentBruker, loggUt, getToken, oppdaterBruker, initScrollReveal, initialFra, beregnProfilkomplettering, formaterDato, fagomraader, initVarselBjelle } from '../app.js';
-    import { auth, db } from '../firebase-config.js';
-    import { doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+    import { krevInnlogging, loggUt, getToken, oppdaterBruker, initScrollReveal, initialFra, beregnProfilkomplettering, formaterDato, fagomraader, initVarselBjelle } from '../app.js';
+    import { db } from '../firebase-config.js';
+    import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
     let bruker = null;
     let targetBruker = null;
@@ -321,8 +321,8 @@
     const matchScore = parseInt(params.get('match'));
 
     document.addEventListener('DOMContentLoaded', async () => {
-      await krevInnlogging();
-      bruker = await hentBruker();
+      bruker = await krevInnlogging();
+      if (!bruker) return;
 
       const erEier = !visUid || visUid === bruker.uid;
       const kanSe = erEier || bruker.rolle === 'admin' || bruker.rolle === 'bedrift';
@@ -335,20 +335,32 @@
       const targetUid = visUid && visUid !== bruker.uid ? visUid : bruker.uid;
 
       if (visUid && visUid !== bruker.uid) {
-        const targetSnap = await getDoc(doc(db, 'users', targetUid));
-        if (targetSnap.exists()) {
-          targetBruker = { uid: targetUid, ...targetSnap.data() };
-        } else {
+        try {
+          const targetSnap = await getDoc(doc(db, 'users', targetUid));
+          if (targetSnap.exists()) {
+            targetBruker = { uid: targetUid, ...targetSnap.data() };
+          } else {
+            targetBruker = { uid: targetUid, navn: 'Ukjent lærling', epost: '', utdanningsprogram: '', rolle: 'laerling' };
+          }
+        } catch (e) {
+          console.warn('Kunne ikke hente brukerdata:', e);
           targetBruker = { uid: targetUid, navn: 'Ukjent lærling', epost: '', utdanningsprogram: '', rolle: 'laerling' };
         }
       } else {
         targetBruker = bruker;
       }
 
-      const profilSnap = await getDoc(doc(db, 'users', targetUid, 'profilData', 'main'));
-      profil = profilSnap.exists() ? profilSnap.data() : {};
+      try {
+        const profilSnap = await getDoc(doc(db, 'users', targetUid, 'profilData', 'main'));
+        profil = profilSnap.exists() ? profilSnap.data() : {};
+      } catch (e) {
+        console.warn('Ingen profildata ennå:', e);
+        profil = {};
+      }
 
       document.getElementById('nav-navn').textContent = bruker.navn || '';
+      const navAvatar = document.getElementById('nav-avatar');
+      if (navAvatar) navAvatar.textContent = initialFra(bruker.navn);
 
       if (erEier) {
         initVarselBjelle('varsel-bjelle', 'varsel-dropdown');
@@ -362,7 +374,6 @@
         document.getElementById('toggleEditBtn').addEventListener('click', toggleEdit);
       }
 
-      initScrollReveal();
       renderProfilhode();
       renderVideo();
       renderReferanser();
@@ -372,7 +383,6 @@
       renderTidslinje();
       renderTilgjengelighet();
       initAiChat();
-
       setTimeout(() => {
         initSkillBarObserver();
       }, 300);
@@ -400,9 +410,6 @@
         profil.alder ? profil.alder + ' år' : ''
       ].filter(Boolean);
       document.getElementById('profil-sub').textContent = delene.join(' · ') || '—';
-
-      const sendMelding = document.getElementById('btn-send-melding');
-      sendMelding.href = tb.epost ? 'mailto:' + tb.epost : '#';
 
       if (tb.cv_filnavn) {
         ['btn-last-cv', 'btn-last-cv-2'].forEach(id => {
@@ -493,19 +500,18 @@
       } else {
         container.innerHTML = `
           <div id="video-placeholder" style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;">
-            <div style="width:64px;height:64px;background:rgba(27,58,107,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--olkv-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </div>
+            <div style="width:64px;height:64px;background:rgba(27,58,107,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">▶</div>
             <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Ingen video lastet opp ennå</p>
             <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">Klikk for å laste opp 30–60 sek selvpresentasjon</p>
           </div>`;
-        document.getElementById('video-placeholder')?.addEventListener('click', () => {
+        document.getElementById('video-placeholder').addEventListener('click', () => {
           if (editMode) document.getElementById('videoInput').click();
         });
       }
 
       const videoInput = document.getElementById('videoInput');
-      if (videoInput) {
+      if (videoInput && !videoInput.dataset.listenerAttached) {
+        videoInput.dataset.listenerAttached = 'true';
         videoInput.addEventListener('change', (e) => {
           const fil = e.target.files[0];
           if (!fil) return;
@@ -687,9 +693,7 @@
     function renderTidslinje() {
       const liste = document.getElementById('tidslinje-liste');
       const defaultTidslinje = [
-        { ikon: '🎓', tittel: 'VG1 Elektrofag', beskrivelse: 'Videregående opplæring', dato: '2022', type: 'skole' },
-        { ikon: '💼', tittel: 'Sommervikar', beskrivelse: 'Praktisk erfaring i arbeidslivet', dato: '2023', type: 'jobb' },
-        { ikon: '📚', tittel: 'HMS-kurs', beskrivelse: 'Grunnleggende HMS-opplæring bestått', dato: '2024', type: 'kurs' }
+        { ikon: '🎓', tittel: 'VG1 Elektrofag', beskrivelse: 'Fullførte VG1 med gode resultater', dato: '2023–2024', type: 'skole' }
       ];
       if (!profil.tidslinje || profil.tidslinje.length === 0) {
         profil.tidslinje = defaultTidslinje;

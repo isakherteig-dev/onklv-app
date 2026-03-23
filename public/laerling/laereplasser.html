@@ -24,6 +24,7 @@
             <div class="varsel-dropdown-header">Varsler</div>
           </div>
         </div>
+        <a href="/laerling/profil.html" id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:0.85rem;text-decoration:none;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</a>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -54,6 +55,21 @@
           <h1 style="font-size:1.75rem;">Ledige læreplasser</h1>
           <p style="color:var(--farge-tekst-sekundaer);" id="antall-tekst">Laster læreplasser…</p>
         </div>
+        <button id="ai-match-btn" class="btn btn-primary" onclick="kjorAiMatch()">
+          ✨ AI-anbefalinger for deg
+        </button>
+      </div>
+
+      <!-- AI MATCH RESULTAT -->
+      <div id="ai-match-panel" class="skjult" style="margin-bottom:2rem;background:linear-gradient(135deg,#1e3a5f,#2d5a9e);border-radius:var(--radius);padding:1.25rem 1.5rem;color:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <span style="font-size:1.2rem;">✨</span>
+            <strong style="font-size:1rem;">AI-anbefalinger basert på din profil</strong>
+          </div>
+          <button onclick="lukkAiMatch()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:0.3rem 0.8rem;border-radius:var(--radius-pill);cursor:pointer;font-size:0.82rem;">Lukk ✕</button>
+        </div>
+        <div id="ai-match-liste" style="display:flex;flex-direction:column;gap:0.6rem;"></div>
       </div>
 
       <!-- FILTER -->
@@ -158,7 +174,8 @@
     import {
       krevInnlogging, loggUt, hentLaereplasser, sendSoknadFull,
       statusTekst, formaterDato, initScrollReveal, fagomraader,
-      visFeilmelding, visBekreftelse, initVarselBjelle
+      visFeilmelding, visBekreftelse, initVarselBjelle, initialFra,
+      getToken
     } from '../app.js';
 
     let bruker = null;
@@ -186,6 +203,8 @@
     if (!bruker) { window.location.href = '/login.html'; }
 
     document.getElementById('nav-navn').textContent = bruker.navn || '';
+    const navAvatar = document.getElementById('nav-avatar');
+    if (navAvatar) navAvatar.textContent = initialFra(bruker.navn);
     document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
 
     // Fyll fagomraade-filter
@@ -520,6 +539,67 @@
         btn.textContent = 'Send søknad';
       }
     });
+
+    window.kjorAiMatch = async function() {
+      const btn = document.getElementById('ai-match-btn');
+      const panel = document.getElementById('ai-match-panel');
+      const liste = document.getElementById('ai-match-liste');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Analyserer profilen din…';
+      liste.innerHTML = `
+        <div class="skeleton" style="height:56px;border-radius:var(--radius);background:rgba(255,255,255,0.15);margin-bottom:0;"></div>
+        <div class="skeleton" style="height:56px;border-radius:var(--radius);background:rgba(255,255,255,0.15);margin-bottom:0;"></div>
+        <div class="skeleton" style="height:56px;border-radius:var(--radius);background:rgba(255,255,255,0.15);"></div>`;
+      panel.classList.remove('skjult');
+
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/ai/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.feil || 'Noe gikk galt');
+
+        const resultater = (data.resultater || []).slice(0, 5);
+        if (!resultater.length) {
+          liste.innerHTML = `<p style="opacity:0.8;margin:0;">Ingen læreplasser å matche mot akkurat nå.</p>`;
+        } else {
+          liste.innerHTML = resultater.map(r => {
+            const plass = allePlasser.find(p => p.id === r.laerplass_id);
+            if (!plass) return '';
+            const scoreFarge = r.score >= 75 ? '#4ade80' : r.score >= 50 ? '#facc15' : '#fb923c';
+            return `
+              <div style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.1);border-radius:var(--radius);padding:0.75rem 1rem;flex-wrap:wrap;">
+                <div style="text-align:center;min-width:48px;">
+                  <div style="font-size:1.2rem;font-weight:700;color:${scoreFarge};">${r.score}</div>
+                  <div style="font-size:0.65rem;opacity:0.7;">match</div>
+                </div>
+                <div style="flex:1;min-width:180px;">
+                  <div style="font-weight:600;font-size:0.9rem;">${plass.tittel}</div>
+                  <div style="font-size:0.8rem;opacity:0.75;">${plass.bedrift_navn || ''} ${plass.sted ? '· ' + plass.sted : ''}</div>
+                  <div style="font-size:0.78rem;opacity:0.7;margin-top:2px;">${r.begrunnelse || ''}</div>
+                </div>
+                ${!minneSoknaderIds.has(plass.id)
+                  ? `<button class="btn btn-primary btn-liten" style="flex-shrink:0;" onclick="apneSoknadModal(${plass.id}, '${plass.tittel.replace(/'/g, "\\'")}')">Søk nå →</button>`
+                  : `<span class="badge badge-godkjent" style="flex-shrink:0;">Søkt ✓</span>`
+                }
+              </div>`;
+          }).join('');
+        }
+      } catch (err) {
+        liste.innerHTML = `<p style="opacity:0.8;margin:0;">⚠️ ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ AI-anbefalinger for deg';
+      }
+    };
+
+    window.lukkAiMatch = function() {
+      document.getElementById('ai-match-panel').classList.add('skjult');
+    };
 
     initScrollReveal();
     initVarselBjelle();

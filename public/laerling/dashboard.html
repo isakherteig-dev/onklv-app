@@ -25,6 +25,7 @@
             <div class="varsel-dropdown-header">Varsler</div>
           </div>
         </div>
+        <a href="/laerling/profil.html" id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:0.85rem;text-decoration:none;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</a>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
     </div>
@@ -283,6 +284,8 @@
 
     // ===== PERSONALISERING =====
     document.getElementById('nav-navn').textContent = bruker.navn;
+    const navAvatar = document.getElementById('nav-avatar');
+    if (navAvatar) navAvatar.textContent = initialFra(bruker.navn);
     document.getElementById('hilsen').textContent = `Hei, ${bruker.navn.split(' ')[0]}!`;
     document.getElementById('hilsen-tekst').textContent =
       `Her er læreplasser tilpasset ${bruker.utdanningsprogram || 'deg'}.`;

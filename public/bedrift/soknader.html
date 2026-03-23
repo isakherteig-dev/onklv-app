@@ -70,11 +70,86 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentSoknaderBedriftMed, hentMineAnnonser, oppdaterSoknadStatus,
-      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle
+      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle,
+      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger
     } from '../app.js';
 
     let bruker = null;
     let alleSoknader = [];
+    const chatPolls = {};
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    window.toggleChat = async function(id) {
+      const panel = document.getElementById(`chat-panel-${id}`);
+      const erSkjult = panel.classList.contains('skjult');
+      panel.classList.toggle('skjult');
+      if (erSkjult) {
+        await lastChatBedrift(id);
+        chatPolls[id] = setInterval(() => lastChatBedrift(id), 5000);
+      } else {
+        clearInterval(chatPolls[id]);
+        delete chatPolls[id];
+      }
+    };
+
+    async function lastChatBedrift(soknadId) {
+      const { meldinger } = await hentMeldinger(soknadId);
+      const container = document.getElementById(`chat-liste-${soknadId}`);
+      if (!container) return;
+
+      if (!meldinger || meldinger.length === 0) {
+        container.innerHTML = '<div class="chat-tom">Ingen meldinger ennå.</div>';
+        return;
+      }
+
+      container.innerHTML = meldinger.map(m => {
+        const erMeg = m.avsender_id === bruker.uid;
+        const tid = new Date(m.opprettet).toLocaleString('nb-NO', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        return `
+          <div class="chat-boble-wrapper ${erMeg ? 'meg' : 'dem'}">
+            <div class="chat-boble">${escHtml(m.tekst)}</div>
+            <div class="chat-meta">${tid}</div>
+          </div>`;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+
+      const badge = document.getElementById(`chat-badge-${soknadId}`);
+      if (badge) badge.classList.add('skjult');
+    }
+
+    window.sendBedriftChatMelding = async function(soknadId) {
+      const input = document.getElementById(`chat-input-${soknadId}`);
+      const tekst = input.value.trim();
+      if (!tekst) return;
+      const btn = input.nextElementSibling;
+      if (btn) btn.disabled = true;
+      try {
+        await sendChatMelding(soknadId, tekst);
+        input.value = '';
+        input.style.height = 'auto';
+        await lastChatBedrift(soknadId);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        input.focus();
+      }
+    };
+
+    window.chatInputKeydown = function(e, soknadId) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendBedriftChatMelding(soknadId);
+      }
+    };
+
+    window.chatInputResize = function(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    };
 
     bruker = await krevInnlogging('bedrift');
     if (!bruker) { window.location.href = '/login.html'; }
@@ -138,6 +213,22 @@
               ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${s.id},'under_behandling')">Under behandling</button>` : ''}
               ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${s.id},'godkjent')">Godkjenn</button>` : ''}
               ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${s.id},'avslatt')">Avslå</button>` : ''}
+              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${s.id})">💬 Meldinger <span id="chat-badge-${s.id}" class="chat-fane-badge skjult">0</span></button>
+            </div>
+          </div>
+          <div id="chat-panel-${s.id}" class="skjult" style="margin-top:0.75rem;">
+            <div class="chat-seksjon" style="height:300px;">
+              <div class="chat-meldinger" id="chat-liste-${s.id}">
+                <div class="chat-tom">Laster…</div>
+              </div>
+              <div class="chat-skrivefelt">
+                <textarea id="chat-input-${s.id}" placeholder="Skriv en melding…" rows="1"
+                  onkeydown="chatInputKeydown(event,${s.id})"
+                  oninput="chatInputResize(this)"></textarea>
+                <button class="chat-send-btn" onclick="sendBedriftChatMelding(${s.id})" aria-label="Send melding">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>`).join('');
@@ -164,6 +255,19 @@
     };
 
     await lastSoknader();
+
+    // Oppdater chat-badges for alle søknader
+    for (const s of alleSoknader) {
+      try {
+        const { antall } = await hentUlesteChatMeldinger(s.id);
+        const badge = document.getElementById(`chat-badge-${s.id}`);
+        if (badge && antall > 0) {
+          badge.textContent = antall > 9 ? '9+' : antall;
+          badge.classList.remove('skjult');
+        }
+      } catch { /* ignorer */ }
+    }
+
     initScrollReveal();
     initVarselBjelle();
   </script>

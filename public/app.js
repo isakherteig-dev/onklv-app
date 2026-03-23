@@ -583,6 +583,34 @@ export async function hentSoknaderBedriftMed(laerplass_id = '') {
   return res.json();
 }
 
+// ===== CHAT =====
+
+export async function hentMeldinger(soknadId) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/chat/${soknadId}`, { headers });
+  if (!res.ok) return { meldinger: [], soknad: null };
+  return res.json();
+}
+
+export async function sendChatMelding(soknadId, tekst) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/chat/${soknadId}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ tekst })
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.feil || 'Sending feilet');
+  return json;
+}
+
+export async function hentUlesteChatMeldinger(soknadId) {
+  const headers = await authHeaders();
+  const res = await fetch(`/api/chat/${soknadId}/uleste`, { headers });
+  if (!res.ok) return { antall: 0 };
+  return res.json();
+}
+
 // ===== VARSEL-BJELLE INITIALISERING =====
 export async function initVarselBjelle(bjelleId = 'varsel-bjelle', dropdownId = 'varsel-dropdown') {
   const bjelle = document.getElementById(bjelleId);
