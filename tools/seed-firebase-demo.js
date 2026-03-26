@@ -4,14 +4,12 @@
  *
  * Kjøres EN gang manuelt:
  *   node tools/seed-firebase-demo.js
- *
- * Krever at .env er konfigurert med Firebase Admin SDK-variabler.
  */
 
 import 'dotenv/config';
 import '../firebase/config.js';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const adminAuth = getAuth();
 const adminDB   = getFirestore();
@@ -45,40 +43,35 @@ const brukere = [
 ];
 
 async function opprettBruker({ epost, navn, rolle, ...ekstra }) {
-  // Slett eksisterende bruker med samme e-post (for idempotent seeding)
   try {
     const eksisterende = await adminAuth.getUserByEmail(epost);
     await adminAuth.deleteUser(eksisterende.uid);
     console.log(`  Slettet eksisterende: ${epost}`);
-  } catch { /* Ingen eksisterende bruker — OK */ }
+  } catch { /* ingen eksisterende — OK */ }
 
-  // Opprett i Firebase Auth
   const authBruker = await adminAuth.createUser({
     email:         epost,
     password:      DEMO_PASSORD,
     displayName:   navn,
     emailVerified: true
   });
+  console.log(`  Auth opprettet: ${epost} (${authBruker.uid})`);
 
-  console.log(`  Opprettet i Auth: ${epost} (${authBruker.uid})`);
-
-  // Sett custom claim
   await adminAuth.setCustomUserClaims(authBruker.uid, { rolle });
 
-  // Opprett Firestore-profil
   const now = new Date();
-  const userData = {
-    uid: authBruker.uid,
+  await adminDB.collection('users').doc(authBruker.uid).set({
+    uid:               authBruker.uid,
     navn,
     epost,
-    telefon: null,
+    telefon:           null,
     rolle,
-    opprettet: now,
-    sistInnlogget: now,
-    samtykkeGitt: now,
-    samtykkeVersjon: '1.0',
-    aktiv: true,
-    godkjent: ekstra.godkjent ?? true,
+    opprettet:         now,
+    sistInnlogget:     now,
+    samtykkeGitt:      now,
+    samtykkeVersjon:   '1.0',
+    aktiv:             true,
+    godkjent:          ekstra.godkjent ?? true,
     utdanningsprogram: ekstra.utdanningsprogram || null,
     skole:             ekstra.skole || null,
     bio:               ekstra.bio || null,
@@ -86,70 +79,82 @@ async function opprettBruker({ epost, navn, rolle, ...ekstra }) {
     orgNr:             ekstra.orgNr || null,
     bransje:           ekstra.bransje || null,
     bedriftBeskrivelse: null
-  };
-
-  await adminDB.collection('users').doc(authBruker.uid).set(userData);
-  console.log(`  Firestore-profil opprettet: ${epost} (rolle: ${rolle})`);
+  });
+  console.log(`  Firestore-profil opprettet (rolle: ${rolle})`);
 
   return authBruker.uid;
 }
 
-async function seedDemoLaereplasser(bedriftUid, bedriftNavn) {
-  const db = (await import('better-sqlite3')).default;
-  const path = (await import('path')).default;
-  const { fileURLToPath } = await import('url');
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const sqlite = new db(path.join(__dirname, '..', 'data.db'));
+async function seedDemoLaereplasser(bedriftUid) {
+  // Slett eksisterende demo-læreplasser for bedriften
+  const snap = await adminDB.collection('laereplasser')
+    .where('bedrift_user_id', '==', bedriftUid).get();
+  const batch = adminDB.batch();
+  snap.docs.forEach(d => batch.delete(d.ref));
+  await batch.commit();
 
-  sqlite.pragma('journal_mode = WAL');
+  const plasser = [
+    {
+      tittel:      'Elektriker-lærling',
+      beskrivelse: 'Vi søker motiverte lærlinger til elektroarbeid på næringsbygg og boliger i Bergensregionen.',
+      sted:        'Bergen',
+      fagomraade:  'Elektrofag',
+      frist:       '2026-06-15',
+      antall:      2
+    },
+    {
+      tittel:      'Ventilasjonsmontor-lærling',
+      beskrivelse: 'Spennende stilling for lærling innen ventilasjonsmontør-faget.',
+      sted:        'Bergen',
+      fagomraade:  'Elektrofag',
+      frist:       '2026-07-01',
+      antall:      1
+    }
+  ];
 
-  // Slett eksisterende demo-data
-  sqlite.prepare("DELETE FROM laereplasser WHERE bedrift_user_id = ?").run(bedriftUid);
-
-  const insert = sqlite.prepare(`
-    INSERT INTO laereplasser (bedrift_user_id, bedrift_naam, tittel, beskrivelse, sted, bransje, frist, antall_plasser)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  insert.run(bedriftUid, bedriftNavn, 'Elektriker-lærling',
-    'Vi søker motiverte lærlinger til elektroarbeid på næringsbygg og boliger i Bergensregionen.',
-    'Bergen', 'Elektrofag', '2026-04-15', 2);
-
-  insert.run(bedriftUid, bedriftNavn, 'Ventilasjonsmontor-lærling',
-    'Spennende stilling for lærling innen ventilasjonsmontør-faget.',
-    'Bergen', 'Elektrofag', '2026-05-01', 1);
-
-  sqlite.close();
-  console.log('  Demo-læreplasser lagt inn i SQLite');
+  for (const p of plasser) {
+    await adminDB.collection('laereplasser').add({
+      bedrift_user_id: bedriftUid,
+      bedrift_navn:    'Bergen Elektro AS',
+      tittel:          p.tittel,
+      beskrivelse:     p.beskrivelse,
+      sted:            p.sted,
+      fagomraade:      p.fagomraade,
+      frist:           p.frist,
+      antall_plasser:  p.antall,
+      aktiv:           true,
+      opprettet:       new Date()
+    });
+    console.log(`  Lærlingplass opprettet: ${p.tittel}`);
+  }
 }
 
 async function main() {
-  console.log('🌱 Starter seeding av demo-kontoer…\n');
+  console.log('Starter seeding av demo-kontoer...\n');
 
   let bedriftUid;
-
   for (const bruker of brukere) {
-    console.log(`→ ${bruker.epost}`);
+    console.log(`-> ${bruker.epost}`);
     const uid = await opprettBruker(bruker);
     if (bruker.rolle === 'bedrift') bedriftUid = uid;
     console.log('');
   }
 
   if (bedriftUid) {
-    console.log('→ Demo-læreplasser i SQLite');
-    await seedDemoLaereplasser(bedriftUid, 'Bergen Elektro AS');
+    console.log('-> Demo-laereplasser i Firestore');
+    await seedDemoLaereplasser(bedriftUid);
     console.log('');
   }
 
-  console.log('✅ Seeding ferdig!\n');
+  console.log('Seeding ferdig!\n');
   console.log('Demo-kontoer:');
-  console.log('  Lærling: laerling@demo.no  / demo1234');
-  console.log('  Bedrift:  bedrift@demo.no   / demo1234');
-  console.log('  Admin:    admin@demo.no     / demo1234');
+  console.log('  Laerling: laerling@demo.no / demo1234');
+  console.log('  Bedrift:  bedrift@demo.no  / demo1234');
+  console.log('  Admin:    admin@demo.no    / demo1234');
   process.exit(0);
 }
 
 main().catch(err => {
-  console.error('❌ Seeding feilet:', err);
+  console.error('Seeding feilet:', err);
   process.exit(1);
 });

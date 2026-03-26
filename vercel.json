@@ -6,12 +6,10 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "db/**",
           "firebase/**",
           "middleware/**",
           "routes/**",
-          "public/**",
-          "uploads/**"
+          "public/**"
         ]
       }
     }

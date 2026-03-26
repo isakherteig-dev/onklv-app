@@ -1,38 +1,22 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { adminDB } from '../firebase/config.js';
+import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
-
-// Sikre at mappen finnes
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-
-const lagring = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    // Format: <uid>_<timestamp><ext> — aldri originalfilnavn direkte
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${req.user.uid}_${Date.now()}${ext}`);
-  }
-});
+const TILLATTE_EXT   = ['.pdf', '.docx', '.doc'];
+const TILLATTE_TYPER = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
 
 const upload = multer({
-  storage: lagring,
-  limits: { fileSize: 5 * 1024 * 1024 }, // maks 5 MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const tillatteExt = ['.pdf', '.docx', '.doc'];
-    const tillatteTyper = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (tillatteExt.includes(ext) && tillatteTyper.includes(file.mimetype)) {
+    if (TILLATTE_EXT.includes(ext) && TILLATTE_TYPER.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Kun PDF og Word-filer (.pdf, .docx, .doc) kan lastes opp'));
@@ -40,12 +24,31 @@ const upload = multer({
   }
 });
 
+async function lastOppCvTilStorage(buffer, originalname, uid, mimetype) {
+  const ext = path.extname(originalname).toLowerCase();
+  const filnavn = `cv/${uid}/${Date.now()}${ext}`;
+  const bucket = adminStorage.bucket();
+  const fil = bucket.file(filnavn);
+  await fil.save(buffer, { contentType: mimetype });
+  await fil.makePublic();
+  return `https://storage.googleapis.com/${bucket.name}/${filnavn}`;
+}
+
+async function slettGammelCvFraStorage(cvUrl) {
+  if (!cvUrl) return;
+  try {
+    const bucket = adminStorage.bucket();
+    const url = new URL(cvUrl);
+    const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
+    await bucket.file(filnavn).delete();
+  } catch { /* ikke kritisk */ }
+}
+
 const ruter = Router();
 
 /**
  * POST /api/cv
  * Laster opp CV-fil for innlogget lærling.
- * Sletter eventuell tidligere CV og oppdaterer Firestore-profilen.
  */
 ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
   upload.single('cv')(req, res, async (err) => {
@@ -55,33 +58,29 @@ ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
       }
       return res.status(400).json({ feil: 'Feil ved opplasting. Prøv igjen.' });
     }
-    if (err) {
-      return res.status(400).json({ feil: err.message });
-    }
-    if (!req.file) {
-      return res.status(400).json({ feil: 'Ingen fil ble lastet opp.' });
-    }
+    if (err) return res.status(400).json({ feil: err.message });
+    if (!req.file) return res.status(400).json({ feil: 'Ingen fil ble lastet opp.' });
 
     try {
       const ref = adminDB.collection('users').doc(req.user.uid);
       const doc = await ref.get();
 
-      // Slett gammel CV-fil hvis den finnes
-      if (doc.exists) {
-        const gammelFilnavn = doc.data().cv_filnavn_intern;
-        if (gammelFilnavn) {
-          const gammelSti = path.join(UPLOADS_DIR, gammelFilnavn);
-          if (fs.existsSync(gammelSti)) {
-            fs.unlinkSync(gammelSti);
-          }
-        }
+      // Slett gammel CV fra Firebase Storage
+      if (doc.exists && doc.data().cv_url) {
+        await slettGammelCvFraStorage(doc.data().cv_url);
       }
 
-      // Lagre metadata i Firestore
+      const cvUrl = await lastOppCvTilStorage(
+        req.file.buffer,
+        req.file.originalname,
+        req.user.uid,
+        req.file.mimetype
+      );
+
       await ref.update({
-        cv_filnavn:       req.file.originalname,    // Brukes til visning
-        cv_filnavn_intern: req.file.filename,        // Brukes til filhåndtering
-        cv_lastet_opp:    new Date().toISOString()
+        cv_filnavn:    req.file.originalname,
+        cv_url:        cvUrl,
+        cv_lastet_opp: new Date().toISOString()
       });
 
       res.json({
@@ -90,9 +89,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
         melding: `CV «${req.file.originalname}» er lastet opp.`
       });
     } catch (dbFeil) {
-      console.error('CV Firestore-feil:', dbFeil);
-      // Rydd opp fil hvis DB-oppdatering feilet
-      fs.unlinkSync(req.file.path);
+      console.error('CV feil:', dbFeil);
       res.status(500).json({ feil: 'Kunne ikke lagre CV. Prøv igjen.' });
     }
   });
@@ -100,26 +97,17 @@ ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
 
 /**
  * GET /api/cv/min
- * Laster ned CV-fil for innlogget lærling.
+ * Returnerer nedlastingslenke til CV for innlogget lærling.
  */
 ruter.get('/min', krevAuth, krevRolle('laerling'), async (req, res) => {
   try {
     const doc = await adminDB.collection('users').doc(req.user.uid).get();
     if (!doc.exists) return res.status(404).json({ feil: 'Brukerprofil ikke funnet.' });
 
-    const { cv_filnavn_intern, cv_filnavn } = doc.data();
-    if (!cv_filnavn_intern) return res.status(404).json({ feil: 'Du har ikke lastet opp noen CV ennå.' });
+    const { cv_url, cv_filnavn } = doc.data();
+    if (!cv_url) return res.status(404).json({ feil: 'Du har ikke lastet opp noen CV ennå.' });
 
-    const filSti = path.join(UPLOADS_DIR, cv_filnavn_intern);
-    if (!fs.existsSync(filSti)) {
-      // Fil mangler — rydd opp Firestore
-      await adminDB.collection('users').doc(req.user.uid).update({
-        cv_filnavn: null, cv_filnavn_intern: null, cv_lastet_opp: null
-      });
-      return res.status(404).json({ feil: 'CV-filen ble ikke funnet. Last opp på nytt.' });
-    }
-
-    res.download(filSti, cv_filnavn || cv_filnavn_intern);
+    res.redirect(cv_url);
   } catch (err) {
     console.error('CV nedlasting feil:', err);
     res.status(500).json({ feil: 'Kunne ikke laste ned CV. Prøv igjen.' });
@@ -128,7 +116,7 @@ ruter.get('/min', krevAuth, krevRolle('laerling'), async (req, res) => {
 
 /**
  * DELETE /api/cv
- * Sletter CV-fil og fjerner referansen fra Firestore.
+ * Sletter CV-fil fra Firebase Storage og fjerner referansen fra Firestore.
  */
 ruter.delete('/', krevAuth, krevRolle('laerling'), async (req, res) => {
   try {
@@ -136,14 +124,10 @@ ruter.delete('/', krevAuth, krevRolle('laerling'), async (req, res) => {
     const doc = await ref.get();
     if (!doc.exists) return res.status(404).json({ feil: 'Brukerprofil ikke funnet.' });
 
-    const { cv_filnavn_intern } = doc.data();
-    if (cv_filnavn_intern) {
-      const filSti = path.join(UPLOADS_DIR, cv_filnavn_intern);
-      if (fs.existsSync(filSti)) fs.unlinkSync(filSti);
-    }
+    await slettGammelCvFraStorage(doc.data().cv_url);
 
     await ref.update({
-      cv_filnavn: null, cv_filnavn_intern: null, cv_lastet_opp: null
+      cv_filnavn: null, cv_url: null, cv_lastet_opp: null
     });
 
     res.json({ ok: true, melding: 'CV er slettet.' });

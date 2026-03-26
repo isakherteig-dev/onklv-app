@@ -6,7 +6,7 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase
 
 const firebaseConfig = {
   apiKey:            'AIzaSyBojMaQLu8x6HYW0llxP6UsLIRcZZoWMYs',
-  authDomain:        'onklv-app.firebaseapp.com',
+  authDomain:        'onklv-app.vercel.app',
   projectId:         'onklv-app',
   storageBucket:     'onklv-app.firebasestorage.app',
   messagingSenderId: '316757651135',

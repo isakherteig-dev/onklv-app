@@ -2,7 +2,6 @@ import 'dotenv/config';
 import './firebase/config.js';  // Initialiser Firebase Admin SDK
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { initDB } from './db/init.js';
 import authRuter from './routes/auth.js';
 import laereplasserRuter from './routes/laereplasser.js';
 import soknadRuter from './routes/soknader.js';
@@ -33,9 +32,6 @@ app.use('/api/varsler', varslerRuter);
 app.use('/api/ai', aiRuter);
 app.use('/api/cv', cvRuter);
 app.use('/api/chat', chatRuter);
-
-// Start SQLite (laereplasser, soknader, varsler)
-initDB();
 
 // Lokal dev: start server. Vercel: eksporter app.
 if (process.env.VERCEL !== '1') {
