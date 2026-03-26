@@ -18,103 +18,247 @@
     </a>
   </nav>
 
-  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 1rem 2rem; position: relative; z-index: 10;">
-    <div style="width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; animation: stegInn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;">
+  <main style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem 1rem 2rem;position:relative;z-index:10;">
+    <div style="width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;animation:stegInn 0.4s cubic-bezier(0.16,1,0.3,1) both;">
 
-      <div style="font-size: 4rem; margin-bottom: 1.25rem; line-height: 1;">✉️</div>
+      <div style="font-size:3.5rem;margin-bottom:1.25rem;line-height:1;">✉️</div>
 
-      <h1 style="color: #fff; font-size: 1.75rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem;">
-        Sjekk e-posten din
+      <h1 style="color:#fff;font-size:1.6rem;font-weight:700;text-align:center;margin-bottom:0.5rem;">
+        Bekreft e-posten din
       </h1>
-
-      <p style="color: rgba(255,255,255,0.75); text-align: center; font-size: 0.95rem; margin-bottom: 0.5rem;">
-        Vi har sendt en verifiseringslenke til
+      <p style="color:rgba(255,255,255,0.65);text-align:center;font-size:0.9rem;margin-bottom:0.35rem;">
+        Vi har sendt en 6-sifret kode til
       </p>
-      <p id="epost-visning" style="color: #fff; font-weight: 600; text-align: center; font-size: 1rem; margin-bottom: 1.75rem; word-break: break-all;"></p>
+      <p id="epost-visning" style="color:#fff;font-weight:600;text-align:center;font-size:0.95rem;margin-bottom:2rem;word-break:break-all;"></p>
 
-      <div style="width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-stor); padding: 1.5rem; margin-bottom: 1.5rem;">
-        <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; line-height: 1.7; text-align: center;">
-          Klikk på lenken i e-posten for å aktivere kontoen din.<br>
-          <span style="color: rgba(255,255,255,0.55); font-size: 0.85rem;">Sjekk også søppelpost/spam-mappen hvis du ikke finner e-posten.</span>
-        </p>
+      <!-- PIN-input -->
+      <div id="pin-wrapper" style="display:flex;gap:0.6rem;margin-bottom:1.5rem;">
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
+        <input class="pin-felt" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" style="width:48px;height:60px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:#fff;font-size:1.75rem;font-weight:700;text-align:center;font-family:monospace;transition:border-color 0.2s,background 0.2s;outline:none;" />
       </div>
 
-      <a href="/login.html" class="btn btn-primary" style="width: 100%; text-align: center; margin-bottom: 0.875rem;">
-        Jeg har verifisert — gå til innlogging →
-      </a>
+      <div id="varsel" class="varsel skjult" style="width:100%;margin-bottom:1rem;text-align:center;"></div>
 
-      <button id="send-paa-nytt-btn" style="width: 100%; padding: 0.75rem; background: none; border: 1.5px solid rgba(255,255,255,0.25); border-radius: var(--radius); color: rgba(255,255,255,0.75); font-size: 0.9rem; font-family: inherit; cursor: pointer; transition: var(--overgang);"
-        onmouseover="this.style.borderColor='rgba(255,255,255,0.55)'; this.style.color='#fff'"
-        onmouseout="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.color='rgba(255,255,255,0.75)'">
-        Send verifiserings-e-post på nytt
+      <button id="bekreft-btn" style="width:100%;padding:0.85rem;background:var(--olkv-blue-light);border:none;border-radius:var(--radius);color:#fff;font-size:1rem;font-weight:700;font-family:inherit;cursor:pointer;transition:var(--overgang);margin-bottom:1.25rem;"
+        onmouseover="this.style.background='var(--olkv-blue)'"
+        onmouseout="this.style.background='var(--olkv-blue-light)'">
+        Bekreft kode →
       </button>
 
-      <div id="varsel" class="varsel skjult" style="margin-top: 1rem; width: 100%;"></div>
+      <p style="color:rgba(255,255,255,0.45);font-size:0.85rem;text-align:center;">
+        Fikk du ikke e-post?
+        <button id="send-paa-nytt-btn" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:0.85rem;font-family:inherit;cursor:pointer;padding:0;text-decoration:underline;"
+          onmouseover="this.style.color='#fff'"
+          onmouseout="this.style.color='rgba(255,255,255,0.75)'">
+          Send koden på nytt
+        </button>
+      </p>
 
     </div>
   </main>
 
-  <footer style="position: relative; z-index: 10; text-align: center; padding: 1.25rem; color: rgba(255,255,255,0.35); font-size: 0.78rem;">
+  <footer style="position:relative;z-index:10;text-align:center;padding:1.25rem;color:rgba(255,255,255,0.35);font-size:0.78rem;">
     © 2026 OLKV · Opplæringskontoret i Vestland &nbsp;·&nbsp;
-    <a href="/personvern.html" style="color: rgba(255,255,255,0.45);">Personvern</a>
+    <a href="/personvern.html" style="color:rgba(255,255,255,0.45);">Personvern</a>
   </footer>
 
   <style>
     @keyframes stegInn {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .pin-felt:focus {
+      border-color: rgba(255,255,255,0.7) !important;
+      background: rgba(255,255,255,0.12) !important;
+    }
+    .pin-felt.feil {
+      border-color: var(--olkv-red) !important;
     }
   </style>
 
   <script type="module">
     import { auth } from './firebase-config.js';
-    import { sendEmailVerification } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
-    const params = new URLSearchParams(window.location.search);
-    const epost = params.get('epost') || '';
+    const params  = new URLSearchParams(window.location.search);
+    const epost   = params.get('epost') || '';
+    const uid     = params.get('uid')   || '';
+
     document.getElementById('epost-visning').textContent = epost || 'e-postadressen din';
 
-    const btn    = document.getElementById('send-paa-nytt-btn');
-    const varsel = document.getElementById('varsel');
+    const felter      = Array.from(document.querySelectorAll('.pin-felt'));
+    const varselEl    = document.getElementById('varsel');
+    const bekreftBtn  = document.getElementById('bekreft-btn');
+    const sendPaaNytt = document.getElementById('send-paa-nytt-btn');
 
-    function visInfo(tekst) {
-      varsel.className = 'varsel';
-      varsel.style.background = '#eff6ff';
-      varsel.style.borderColor = 'var(--olkv-blue-light)';
-      varsel.style.color = 'var(--olkv-dark)';
-      varsel.textContent = tekst;
-      varsel.classList.remove('skjult');
+    // Hent token — enten fra innlogget bruker eller lagret fra registrering
+    let cachetToken = sessionStorage.getItem('olkv-verif-token') || null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        cachetToken = await user.getIdToken();
+        sessionStorage.setItem('olkv-verif-token', cachetToken);
+      }
+    });
+
+    async function hentToken() {
+      // Prøv å hente fersk token fra innlogget bruker
+      if (auth.currentUser) {
+        return auth.currentUser.getIdToken();
+      }
+      return cachetToken;
     }
 
-    function visFeil(tekst) {
-      varsel.className = 'varsel varsel-feil';
-      varsel.textContent = tekst;
-      varsel.classList.remove('skjult');
+    // ===== PIN-NAVIGASJON =====
+    felter.forEach((felt, i) => {
+      felt.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          if (felt.value) {
+            felt.value = '';
+          } else if (i > 0) {
+            felter[i - 1].focus();
+            felter[i - 1].value = '';
+          }
+          e.preventDefault();
+        } else if (e.key === 'ArrowLeft' && i > 0) {
+          felter[i - 1].focus();
+        } else if (e.key === 'ArrowRight' && i < felter.length - 1) {
+          felter[i + 1].focus();
+        }
+      });
+
+      felt.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        if (!val) { felt.value = ''; return; }
+        felt.value = val[0];
+        felter.forEach(f => f.classList.remove('feil'));
+        skjulVarsel();
+        if (i < felter.length - 1) {
+          felter[i + 1].focus();
+        } else {
+          // Alle felt fylt — send automatisk
+          const kode = felter.map(f => f.value).join('');
+          if (kode.length === 6) sendKode(kode);
+        }
+      });
+
+      // Håndter liming av 6-sifret kode
+      felt.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const tekst = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+        if (tekst.length >= 6) {
+          felter.forEach((f, idx) => { f.value = tekst[idx] || ''; });
+          felter[5].focus();
+          sendKode(tekst.slice(0, 6));
+        }
+      });
+    });
+
+    // Fokuser første felt ved lasting
+    felter[0].focus();
+
+    // ===== HJELPEFUNKSJONER =====
+    function visVarsel(tekst, type = 'feil') {
+      varselEl.className = type === 'suksess' ? 'varsel varsel-suksess' : 'varsel varsel-feil';
+      varselEl.textContent = tekst;
+      varselEl.classList.remove('skjult');
+    }
+    function skjulVarsel() {
+      varselEl.classList.add('skjult');
+    }
+    function markerFeil() {
+      felter.forEach(f => f.classList.add('feil'));
+    }
+    function nullstillFelter() {
+      felter.forEach(f => { f.value = ''; f.classList.remove('feil'); });
+      felter[0].focus();
     }
 
-    btn.addEventListener('click', async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        visFeil('Du må logge inn igjen for å sende e-posten på nytt. Gå til innlogging og logg inn med e-post og passord.');
+    // ===== BEKREFT KODE =====
+    async function sendKode(kode) {
+      if (!uid) {
+        visVarsel('Mangler bruker-ID. Prøv å registrere deg på nytt.');
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = 'Sender…';
+      bekreftBtn.disabled = true;
+      bekreftBtn.textContent = 'Sjekker…';
 
       try {
-        await sendEmailVerification(user);
-        visInfo('Verifiserings-e-post sendt! Sjekk innboksen din.');
-      } catch (err) {
-        console.error('sendEmailVerification feilet:', err.code, err.message);
-        if (err.code === 'auth/too-many-requests') {
-          visFeil('For mange forsøk. Vent litt og prøv igjen.');
-        } else {
-          visFeil('Kunne ikke sende e-posten. Prøv igjen om litt.');
+        const res  = await fetch('/api/auth/verifiser-kode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid, kode })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          markerFeil();
+          visVarsel(data.feil || 'Feil kode. Prøv igjen.');
+          bekreftBtn.disabled = false;
+          bekreftBtn.textContent = 'Bekreft kode →';
+          // Tøm feltene ved utløpt eller for mange forsøk
+          if (data.feil?.includes('utløpt') || data.feil?.includes('Be om en ny kode')) {
+            nullstillFelter();
+          }
+          return;
         }
+
+        // Suksess
+        sessionStorage.removeItem('olkv-verif-token');
+        visVarsel('E-posten din er bekreftet! 🎉', 'suksess');
+        bekreftBtn.textContent = 'Sender deg videre…';
+
+        setTimeout(() => { window.location.href = '/login.html'; }, 2000);
+      } catch {
+        visVarsel('Noe gikk galt. Prøv igjen om litt.');
+        bekreftBtn.disabled = false;
+        bekreftBtn.textContent = 'Bekreft kode →';
+      }
+    }
+
+    bekreftBtn.addEventListener('click', () => {
+      const kode = felter.map(f => f.value).join('');
+      if (kode.length < 6) {
+        visVarsel('Fyll inn alle 6 sifrene.');
+        return;
+      }
+      sendKode(kode);
+    });
+
+    // ===== SEND PÅ NYTT =====
+    sendPaaNytt.addEventListener('click', async () => {
+      const token = await hentToken();
+      if (!token) {
+        visVarsel('Du må logge inn igjen for å sende ny kode. Gå til innlogging.');
+        return;
+      }
+
+      sendPaaNytt.disabled = true;
+      sendPaaNytt.textContent = 'Sender…';
+
+      try {
+        const res  = await fetch('/api/auth/send-verifisering', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          visVarsel(data.feil || 'Kunne ikke sende kode. Prøv igjen.');
+        } else {
+          nullstillFelter();
+          visVarsel('Ny kode er sendt! Sjekk innboksen din.', 'suksess');
+        }
+      } catch {
+        visVarsel('Noe gikk galt. Prøv igjen om litt.');
       } finally {
-        btn.disabled = false;
-        btn.textContent = 'Send verifiserings-e-post på nytt';
+        sendPaaNytt.disabled = false;
+        sendPaaNytt.textContent = 'Send koden på nytt';
       }
     });
   </script>

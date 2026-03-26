@@ -28,8 +28,8 @@ export async function krevAuth(req, res, next) {
     // Sjekk e-postverifisering (hopp over for Google-brukere)
     const firebaseUser = await adminAuth.getUser(decoded.uid);
     const erGoogle = firebaseUser.providerData?.some(p => p.providerId === 'google.com');
-    if (!erGoogle && !firebaseUser.emailVerified) {
-      return res.status(403).json({ feil: 'Du må bekrefte e-posten din først. Sjekk innboksen.' });
+    if (!erGoogle && userData.epostVerifisert !== true) {
+      return res.status(403).json({ feil: 'Du må verifisere e-posten din først.' });
     }
 
     req.user = { uid: decoded.uid, ...userData };

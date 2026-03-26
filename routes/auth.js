@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adminAuth, adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
+import { sendVerifiseringsEpost } from '../tools/epost.js';
 
 const ruter = Router();
 
@@ -71,6 +72,92 @@ ruter.post('/register', async (req, res) => {
 });
 
 /**
+ * POST /api/auth/send-verifisering
+ * Genererer 6-sifret kode, lagrer i Firestore, sender på e-post.
+ */
+ruter.post('/send-verifisering', async (req, res) => {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) return res.status(401).json({ feil: 'Ikke innlogget' });
+
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+    const ref = adminDB.collection('users').doc(decoded.uid);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ feil: 'Bruker ikke funnet' });
+
+    const { epost } = doc.data();
+    const kode = String(Math.floor(100000 + Math.random() * 900000));
+    const utloper = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+
+    await ref.update({
+      verifiseringKode: kode,
+      verifiseringUtloper: utloper,
+      verifiseringForsok: 0,
+      epostVerifisert: false
+    });
+
+    await sendVerifiseringsEpost(epost, kode);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('send-verifisering feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke sende verifiseringskode' });
+  }
+});
+
+/**
+ * POST /api/auth/verifiser-kode
+ * Sjekker kode mot Firestore, markerer brukeren som verifisert.
+ */
+ruter.post('/verifiser-kode', async (req, res) => {
+  const { uid, kode } = req.body;
+  if (!uid || !kode) return res.status(400).json({ feil: 'Mangler uid eller kode' });
+
+  try {
+    const ref = adminDB.collection('users').doc(uid);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ feil: 'Bruker ikke funnet' });
+
+    const data = doc.data();
+
+    // Maks 5 forsøk
+    const forsok = data.verifiseringForsok || 0;
+    if (forsok >= 5) {
+      return res.status(400).json({ feil: 'For mange forsøk. Be om en ny kode.' });
+    }
+
+    // Sjekk utløp
+    const utloper = data.verifiseringUtloper?.toDate?.() ?? data.verifiseringUtloper;
+    if (!utloper || new Date() > new Date(utloper)) {
+      return res.status(400).json({ feil: 'Koden har utløpt. Be om en ny kode.' });
+    }
+
+    // Sjekk kode
+    if (String(data.verifiseringKode) !== String(kode)) {
+      await ref.update({ verifiseringForsok: forsok + 1 });
+      const gjenvaerende = 4 - forsok;
+      return res.status(400).json({
+        feil: gjenvaerende > 0
+          ? `Feil kode. Prøv igjen. (${gjenvaerende} forsøk igjen)`
+          : 'Feil kode. Be om en ny kode.'
+      });
+    }
+
+    // Korrekt — marker som verifisert og rydd opp
+    await ref.update({
+      epostVerifisert: true,
+      verifiseringKode: null,
+      verifiseringUtloper: null,
+      verifiseringForsok: null
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('verifiser-kode feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke verifisere koden' });
+  }
+});
+
+/**
  * POST /api/auth/login-update
  */
 ruter.post('/login-update', async (req, res) => {
@@ -93,9 +180,9 @@ ruter.post('/login-update', async (req, res) => {
 
     // Sjekk e-postverifisering (hopp over for Google-brukere)
     const firebaseUser = await adminAuth.getUser(decoded.uid);
-    const loggetInnMedGoogle = firebaseUser.providerData?.some(p => p.providerId === 'google.com');
-    if (!loggetInnMedGoogle && !firebaseUser.emailVerified) {
-      return res.status(403).json({ feil: 'Du må bekrefte e-posten din først. Sjekk innboksen.' });
+    const erGoogle = firebaseUser.providerData?.some(p => p.providerId === 'google.com');
+    if (!erGoogle && data.epostVerifisert !== true) {
+      return res.status(403).json({ feil: 'Du må verifisere e-posten din først.' });
     }
 
     await ref.update({ sistInnlogget: new Date() });

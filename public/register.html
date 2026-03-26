@@ -237,8 +237,7 @@
     import {
       createUserWithEmailAndPassword,
       signInWithPopup,
-      GoogleAuthProvider,
-      sendEmailVerification
+      GoogleAuthProvider
     } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
     let rolle = 'laerling';
@@ -393,19 +392,24 @@
         const result = await createUserWithEmailAndPassword(auth, epost, passord);
         const token  = await result.user.getIdToken();
 
-        try {
-          await sendEmailVerification(result.user);
-        } catch (verifErr) {
-          console.error('sendEmailVerification feilet:', verifErr.code, verifErr.message);
-        }
-
         const data = await registrer(result.user.uid, epost, navn, token);
 
+        // Send verifiseringskode via backend (vår egen SMTP, ikke Firebase)
+        try {
+          await fetch('/api/auth/send-verifisering', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          });
+        } catch (epostErr) {
+          console.error('send-verifisering feilet:', epostErr);
+        }
+
         if (data.venterGodkjenning) {
-          // Bedrift — vis ventemelding istedenfor verifiseringsside
           visBekreftelse(true);
         } else {
-          window.location.href = `/verifiser-epost.html?epost=${encodeURIComponent(epost)}`;
+          // Lagre token midlertidig så verifiseringssiden kan bruke "send på nytt"
+          sessionStorage.setItem('olkv-verif-token', token);
+          window.location.href = `/verifiser-epost.html?epost=${encodeURIComponent(epost)}&uid=${encodeURIComponent(result.user.uid)}`;
         }
       } catch (err) {
         visFeilmelding(oversettFirebaseFeil(err.code) || err.message);
