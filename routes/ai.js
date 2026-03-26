@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
+import { rateLimiter } from '../middleware/rateLimit.js';
 import { adminDB } from '../firebase/config.js';
 import { matchLaerlingTilPlasser } from '../tools/ai_match.js';
 import { oppsummerSoknad } from '../tools/ai_oppsummer.js';
 import { forbedreProfil } from '../tools/ai_tips.js';
+
+// Maks 10 AI-kall per bruker per minutt
+const aiLimit = rateLimiter(10, 60_000);
 
 const ruter = Router();
 
@@ -12,7 +16,7 @@ const ruter = Router();
  * POST /api/ai/match
  * Matcher innlogget lærling mot alle aktive læreplasser.
  */
-ruter.post('/match', krevAuth, krevRolle('laerling'), async (req, res) => {
+ruter.post('/match', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) => {
   try {
     const laerling = {
       utdanningsprogram: req.user.utdanningsprogram,
@@ -50,7 +54,7 @@ ruter.post('/match', krevAuth, krevRolle('laerling'), async (req, res) => {
  * POST /api/ai/oppsummer
  * Lager AI-sammendrag av en søknad for admin.
  */
-ruter.post('/oppsummer', krevAuth, krevRolle('admin'), async (req, res) => {
+ruter.post('/oppsummer', krevAuth, aiLimit, krevRolle('admin'), async (req, res) => {
   const { soknad_id } = req.body;
 
   if (!soknad_id) {
@@ -100,7 +104,7 @@ ruter.post('/oppsummer', krevAuth, krevRolle('admin'), async (req, res) => {
  * POST /api/ai/tips
  * Gir lærlingen 3 konkrete tips for å forbedre profilen.
  */
-ruter.post('/tips', krevAuth, krevRolle('laerling'), async (req, res) => {
+ruter.post('/tips', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) => {
   try {
     const laerling = {
       utdanningsprogram: req.user.utdanningsprogram,
@@ -123,7 +127,7 @@ ruter.post('/tips', krevAuth, krevRolle('laerling'), async (req, res) => {
  * POST /api/ai/chat
  * Fri samtale med AI-assistenten.
  */
-ruter.post('/chat', krevAuth, async (req, res) => {
+ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
   const { system, messages } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {

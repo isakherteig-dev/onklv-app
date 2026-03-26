@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
+import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
 const TILLATTE_FILTYPER = [
@@ -46,19 +47,6 @@ function haandterValgfrittVedlegg(req, res, next) {
   });
 }
 
-async function lagVarsel(mottakerId, type, tittel, melding, lenke) {
-  try {
-    await adminDB.collection('varsler').add({
-      mottaker_id: mottakerId,
-      type,
-      tittel,
-      melding: melding || null,
-      lenke: lenke || null,
-      lest: false,
-      opprettet: new Date()
-    });
-  } catch { /* varsler er ikke kritiske */ }
-}
 
 function soknadTilObj(doc) {
   const d = doc.data();

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bekreft e-posten din — OLKV</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="login-side">
+
+  <div class="login-shape login-shape-1"></div>
+  <div class="login-shape login-shape-2"></div>
+  <div class="login-shape login-shape-3"></div>
+
+  <nav class="login-nav">
+    <a href="/" class="nav-logo">
+      <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+    </a>
+  </nav>
+
+  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 1rem 2rem; position: relative; z-index: 10;">
+    <div style="width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; animation: stegInn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;">
+
+      <div style="font-size: 4rem; margin-bottom: 1.25rem; line-height: 1;">✉️</div>
+
+      <h1 style="color: #fff; font-size: 1.75rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem;">
+        Sjekk e-posten din
+      </h1>
+
+      <p style="color: rgba(255,255,255,0.75); text-align: center; font-size: 0.95rem; margin-bottom: 0.5rem;">
+        Vi har sendt en verifiseringslenke til
+      </p>
+      <p id="epost-visning" style="color: #fff; font-weight: 600; text-align: center; font-size: 1rem; margin-bottom: 1.75rem; word-break: break-all;"></p>
+
+      <div style="width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-stor); padding: 1.5rem; margin-bottom: 1.5rem;">
+        <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; line-height: 1.7; text-align: center;">
+          Klikk på lenken i e-posten for å aktivere kontoen din.<br>
+          <span style="color: rgba(255,255,255,0.55); font-size: 0.85rem;">Sjekk også søppelpost/spam-mappen hvis du ikke finner e-posten.</span>
+        </p>
+      </div>
+
+      <a href="/login.html" class="btn btn-primary" style="width: 100%; text-align: center; margin-bottom: 0.875rem;">
+        Jeg har verifisert — gå til innlogging →
+      </a>
+
+      <button id="send-paa-nytt-btn" style="width: 100%; padding: 0.75rem; background: none; border: 1.5px solid rgba(255,255,255,0.25); border-radius: var(--radius); color: rgba(255,255,255,0.75); font-size: 0.9rem; font-family: inherit; cursor: pointer; transition: var(--overgang);"
+        onmouseover="this.style.borderColor='rgba(255,255,255,0.55)'; this.style.color='#fff'"
+        onmouseout="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.color='rgba(255,255,255,0.75)'">
+        Send verifiserings-e-post på nytt
+      </button>
+
+      <div id="varsel" class="varsel skjult" style="margin-top: 1rem; width: 100%;"></div>
+
+    </div>
+  </main>
+
+  <footer style="position: relative; z-index: 10; text-align: center; padding: 1.25rem; color: rgba(255,255,255,0.35); font-size: 0.78rem;">
+    © 2026 OLKV · Opplæringskontoret i Vestland &nbsp;·&nbsp;
+    <a href="/personvern.html" style="color: rgba(255,255,255,0.45);">Personvern</a>
+  </footer>
+
+  <style>
+    @keyframes stegInn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <script type="module">
+    import { auth } from './firebase-config.js';
+    import { sendEmailVerification } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const epost = params.get('epost') || '';
+    document.getElementById('epost-visning').textContent = epost || 'e-postadressen din';
+
+    const btn    = document.getElementById('send-paa-nytt-btn');
+    const varsel = document.getElementById('varsel');
+
+    function visInfo(tekst) {
+      varsel.className = 'varsel';
+      varsel.style.background = '#eff6ff';
+      varsel.style.borderColor = 'var(--olkv-blue-light)';
+      varsel.style.color = 'var(--olkv-dark)';
+      varsel.textContent = tekst;
+      varsel.classList.remove('skjult');
+    }
+
+    function visFeil(tekst) {
+      varsel.className = 'varsel varsel-feil';
+      varsel.textContent = tekst;
+      varsel.classList.remove('skjult');
+    }
+
+    btn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        visFeil('Du må logge inn igjen for å sende e-posten på nytt. Gå til innlogging og logg inn med e-post og passord.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sender…';
+
+      try {
+        await sendEmailVerification(user);
+        visInfo('Verifiserings-e-post sendt! Sjekk innboksen din.');
+      } catch (err) {
+        console.error('sendEmailVerification feilet:', err.code, err.message);
+        if (err.code === 'auth/too-many-requests') {
+          visFeil('For mange forsøk. Vent litt og prøv igjen.');
+        } else {
+          visFeil('Kunne ikke sende e-posten. Prøv igjen om litt.');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send verifiserings-e-post på nytt';
+      }
+    });
+  </script>
+  <script src="/cookie-banner.js" defer></script>
+</body>
+</html>

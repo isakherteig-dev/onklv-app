@@ -1,22 +1,10 @@
 import { Router } from 'express';
 import { adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
+import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
 
-async function lagVarsel(mottakerId, type, tittel, melding, lenke) {
-  try {
-    await adminDB.collection('varsler').add({
-      mottaker_id: mottakerId,
-      type,
-      tittel,
-      melding: melding || null,
-      lenke: lenke || null,
-      lest: false,
-      opprettet: new Date()
-    });
-  } catch { /* varsler er ikke kritiske */ }
-}
 
 async function hentSoknadMedTilgang(soknadId, uid, rolle) {
   const doc = await adminDB.collection('soknader').doc(soknadId).get();

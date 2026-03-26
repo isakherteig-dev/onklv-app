@@ -393,12 +393,20 @@
         const result = await createUserWithEmailAndPassword(auth, epost, passord);
         const token  = await result.user.getIdToken();
 
-        if (rolle === 'laerling') {
+        try {
           await sendEmailVerification(result.user);
+        } catch (verifErr) {
+          console.error('sendEmailVerification feilet:', verifErr.code, verifErr.message);
         }
 
         const data = await registrer(result.user.uid, epost, navn, token);
-        visBekreftelse(data.venterGodkjenning);
+
+        if (data.venterGodkjenning) {
+          // Bedrift — vis ventemelding istedenfor verifiseringsside
+          visBekreftelse(true);
+        } else {
+          window.location.href = `/verifiser-epost.html?epost=${encodeURIComponent(epost)}`;
+        }
       } catch (err) {
         visFeilmelding(oversettFirebaseFeil(err.code) || err.message);
         btn.disabled = false;

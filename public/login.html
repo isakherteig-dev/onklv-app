@@ -175,9 +175,12 @@
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
-    // Redirect hvis allerede innlogget
+    // Redirect hvis allerede innlogget (og e-post er verifisert)
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
+      // Ikke redirect hvis e-post ikke er verifisert (og ikke Google-bruker)
+      const erGoogle = user.providerData?.some(p => p.providerId === 'google.com');
+      if (!erGoogle && !user.emailVerified) return;
       try {
         const token = await user.getIdToken();
         const res = await fetch('/api/auth/meg', {
@@ -240,10 +243,18 @@
         const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
         window.location.href = sider[bruker.rolle] || '/';
       } catch (err) {
-        const melding = err.message?.includes('venter godkjenning')
-          ? 'Bedriftskontoen din venter godkjenning fra Opplæringskontoret. Du får beskjed på e-post når den er klar.'
-          : (oversettFirebaseFeil(err.code) || err.message || 'Feil e-post eller passord');
-        visFeilmelding(melding);
+        if (err.message?.includes('bekrefte e-posten')) {
+          const varselEl = document.getElementById('varsel');
+          varselEl.className = 'varsel varsel-feil';
+          varselEl.innerHTML = `Du må bekrefte e-posten din før du kan logge inn. Sjekk innboksen din (og søppelpost). <a href="/verifiser-epost.html?epost=${encodeURIComponent(epost)}" style="color:inherit;font-weight:700;text-decoration:underline;">Send på nytt</a>`;
+          varselEl.classList.remove('skjult');
+          varselEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          const melding = err.message?.includes('venter godkjenning')
+            ? 'Bedriftskontoen din venter godkjenning fra Opplæringskontoret. Du får beskjed på e-post når den er klar.'
+            : (oversettFirebaseFeil(err.code) || err.message || 'Feil e-post eller passord');
+          visFeilmelding(melding);
+        }
         btn.disabled = false;
         btn.textContent = 'Logg inn →';
       }

@@ -411,11 +411,12 @@
       ].filter(Boolean);
       document.getElementById('profil-sub').textContent = delene.join(' · ') || '—';
 
-      if (tb.cv_filnavn) {
+      if (tb.cv_url) {
         ['btn-last-cv', 'btn-last-cv-2'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
-            el.href = '/uploads/' + tb.cv_filnavn;
+            el.href = tb.cv_url;
+            el.target = '_blank';
             el.classList.remove('skjult');
           }
         });

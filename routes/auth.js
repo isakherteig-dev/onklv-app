@@ -1,58 +1,8 @@
 import { Router } from 'express';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { adminAuth, adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 
 const ruter = Router();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROSJEKTROT = path.join(__dirname, '..');
-
-function slettFilHvisDenFinnes(relativSti) {
-  if (!relativSti) return;
-  const fullSti = path.isAbsolute(relativSti)
-    ? relativSti
-    : path.join(PROSJEKTROT, relativSti);
-  if (fs.existsSync(fullSti)) fs.unlinkSync(fullSti);
-}
-
-async function hentVedleggstierForBruker(uid, profilCvFilnavnIntern) {
-  const filstier = new Set();
-
-  if (profilCvFilnavnIntern) {
-    filstier.add(path.posix.join('uploads', profilCvFilnavnIntern));
-  }
-
-  // Vedlegg fra søknader sendt av lærling
-  const laerlingSnap = await adminDB.collection('soknader')
-    .where('laerling_user_id', '==', uid)
-    .get();
-  laerlingSnap.docs.forEach(d => {
-    if (d.data().vedlegg) filstier.add(d.data().vedlegg);
-  });
-
-  // Vedlegg fra søknader på bedriftens egne læreplasser
-  const plassSnap = await adminDB.collection('laereplasser')
-    .where('bedrift_user_id', '==', uid)
-    .get();
-  const plassIds = plassSnap.docs.map(d => d.id);
-
-  if (plassIds.length > 0) {
-    const chunks = [];
-    for (let i = 0; i < plassIds.length; i += 30) chunks.push(plassIds.slice(i, i + 30));
-    for (const chunk of chunks) {
-      const sokSnap = await adminDB.collection('soknader')
-        .where('laerplass_id', 'in', chunk)
-        .get();
-      sokSnap.docs.forEach(d => {
-        if (d.data().vedlegg) filstier.add(d.data().vedlegg);
-      });
-    }
-  }
-
-  return [...filstier];
-}
 
 /**
  * POST /api/auth/register
@@ -141,6 +91,13 @@ ruter.post('/login-update', async (req, res) => {
       return res.status(403).json({ feil: 'Kontoen venter godkjenning fra Opplæringskontoret' });
     }
 
+    // Sjekk e-postverifisering (hopp over for Google-brukere)
+    const firebaseUser = await adminAuth.getUser(decoded.uid);
+    const loggetInnMedGoogle = firebaseUser.providerData?.some(p => p.providerId === 'google.com');
+    if (!loggetInnMedGoogle && !firebaseUser.emailVerified) {
+      return res.status(403).json({ feil: 'Du må bekrefte e-posten din først. Sjekk innboksen.' });
+    }
+
     await ref.update({ sistInnlogget: new Date() });
     res.json({ bruker: { ...data, sistInnlogget: new Date() } });
   } catch (err) {
@@ -196,8 +153,6 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
  */
 ruter.delete('/slett-konto', krevAuth, async (req, res) => {
   try {
-    const vedleggstier = await hentVedleggstierForBruker(req.user.uid, req.user.cv_filnavn_intern);
-
     // Slett Firestore-data i parallell
     const [soknaderSnap, laereplasserSnap, varslerSnap] = await Promise.all([
       adminDB.collection('soknader').where('laerling_user_id', '==', req.user.uid).get(),
@@ -212,7 +167,6 @@ ruter.delete('/slett-konto', krevAuth, async (req, res) => {
     batch.delete(adminDB.collection('users').doc(req.user.uid));
     await batch.commit();
 
-    vedleggstier.forEach(slettFilHvisDenFinnes);
     await adminAuth.deleteUser(req.user.uid);
 
     res.json({ ok: true, melding: 'Kontoen din er slettet.' });
