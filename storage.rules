@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Profilbilder — offentlig lesing, kun Admin SDK kan skrive
+    match /avatarer/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // CV-filer — offentlig lesing, kun Admin SDK kan skrive
+    match /cv/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Videopresentasjoner — offentlig lesing etter makePublic() av backend.
+    // Skriving skjer kun via signert URL utstedt av backend (Admin SDK).
+    // Signerte URLs omgår Security Rules (opererer på GCS-nivå),
+    // men denne regelen blokkerer direkte Firebase SDK-skriving fra klienten.
+    match /profileVideos/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Standard: nekt alt annet
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

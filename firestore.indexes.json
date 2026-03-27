@@ -1,0 +1,30 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "laereplasser",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aktiv",     "order": "ASCENDING" },
+        { "fieldPath": "opprettet", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "laereplasser",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bedrift_user_id", "order": "ASCENDING" },
+        { "fieldPath": "opprettet",       "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "laereplasser",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aktiv",      "order": "ASCENDING" },
+        { "fieldPath": "fagomraade", "order": "ASCENDING" },
+        { "fieldPath": "opprettet",  "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

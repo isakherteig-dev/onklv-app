@@ -134,16 +134,51 @@
       </div>
     </section>
 
-    <!-- SEKSJON 2: VIDEO (kommer snart) -->
-    <section class="kort" style="margin-bottom:1.5rem;">
+    <!-- SEKSJON 2: VIDEOPRESENTASJON -->
+    <section class="kort" id="video-seksjon" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🎬 Bli kjent med meg</h2>
-        <span class="badge badge-graa" style="font-size:0.75rem;">Kommer snart</span>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span id="video-filnavn-vis" style="font-size:0.8rem;color:var(--olkv-gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" onclick="slettVideo()" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;">🗑️ Slett video</button>
+        </div>
       </div>
-      <div style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
-        <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">🎬</div>
-        <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Video-CV kommer snart</p>
-        <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;text-align:center;padding:0 1rem;">Vi jobber med å legge til mulighet for å laste opp en kort videopresentasjon.</p>
+
+      <!-- Tilstand: videospiller (video finnes) -->
+      <div id="video-spiller-wrapper" class="skjult">
+        <video id="video-spiller" controls preload="metadata"
+          style="width:100%;border-radius:var(--radius);background:#000;display:block;max-height:480px;"></video>
+      </div>
+
+      <!-- Tilstand: tom (ikke-eier, ingen video) -->
+      <div id="video-tom-visning" class="skjult">
+        <div style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">🎬</div>
+          <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Ingen presentasjonsvideo lagt til ennå</p>
+        </div>
+      </div>
+
+      <!-- Tilstand: opplasting (eier, redigeringsmodus) -->
+      <div id="video-opplasting-wrapper" class="edit-only skjult">
+        <div id="video-dra-slipp"
+          style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
+          onclick="document.getElementById('videoInput').click()"
+          onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
+          onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
+          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">📤</div>
+          <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Klikk for å velge video</p>
+          <p style="margin:0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;text-align:center;padding:0 1rem;">MP4, WebM eller MOV · maks 100 MB</p>
+          <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" style="display:none;" />
+        </div>
+      </div>
+
+      <!-- Tilstand: fremdrift under opplasting -->
+      <div id="video-progress-wrapper" class="skjult" style="padding:1.25rem 0 0.5rem;">
+        <p id="video-progress-tekst" style="margin:0 0 0.5rem;font-size:0.9rem;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Laster opp...</p>
+        <div style="background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden;">
+          <div id="video-progress-bar" style="height:100%;width:0%;background:var(--olkv-blue);border-radius:999px;transition:width 0.15s linear;"></div>
+        </div>
+        <p id="video-progress-prosent" style="margin:0.4rem 0 0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">0%</p>
       </div>
     </section>
 
@@ -391,6 +426,7 @@
       renderMotiveasjon();
       renderTidslinje();
       renderTilgjengelighet();
+      renderVideo();
       initAiChat();
       setTimeout(() => {
         initSkillBarObserver();
@@ -813,6 +849,172 @@
       visMelding('Tilgjengelighet lagret!', true);
     };
 
+    function renderVideo() {
+      const harVideo = !!profil.videoURL;
+      const erEierLokal = !visUid || visUid === bruker.uid;
+
+      const spillerWrapper   = document.getElementById('video-spiller-wrapper');
+      const tomVisning       = document.getElementById('video-tom-visning');
+      const opplastingWrapper = document.getElementById('video-opplasting-wrapper');
+      const sletteKnapp      = document.getElementById('btn-slett-video');
+      const filnavnVis       = document.getElementById('video-filnavn-vis');
+      const spiller          = document.getElementById('video-spiller');
+
+      // Nullstill alle tilstander
+      spillerWrapper.classList.add('skjult');
+      tomVisning.classList.add('skjult');
+
+      if (harVideo) {
+        spiller.src = profil.videoURL;
+        spillerWrapper.classList.remove('skjult');
+        filnavnVis.textContent = profil.videoFilnavn || '';
+      } else {
+        spiller.removeAttribute('src');
+        filnavnVis.textContent = '';
+        if (!erEierLokal) {
+          tomVisning.classList.remove('skjult');
+        }
+        // For eier: opplastingWrapper styres av .edit-only (toggleEdit)
+      }
+
+      // Slett-knapp: vises kun for eier (edit-only håndterer redigeringsmodus-filter)
+      if (!erEierLokal) {
+        sletteKnapp.classList.add('skjult');
+      }
+
+      // Koble fil-input til opplastingsfunksjon
+      const videoInput = document.getElementById('videoInput');
+      if (videoInput && erEierLokal) {
+        videoInput.onchange = (e) => {
+          const fil = e.target.files[0];
+          if (fil) lastOppVideo(fil);
+        };
+      }
+    }
+
+    async function lastOppVideo(fil) {
+      const TILLATTE_MIME = ['video/mp4', 'video/webm', 'video/quicktime'];
+      const TILLATTE_EXT_VIDEO = ['.mp4', '.webm', '.mov'];
+      const ext = fil.name.substring(fil.name.lastIndexOf('.')).toLowerCase();
+
+      if (!TILLATTE_MIME.includes(fil.type) && !TILLATTE_EXT_VIDEO.includes(ext)) {
+        visMelding('Kun MP4, WebM og MOV er tillatt.', false);
+        return;
+      }
+      if (fil.size > 100 * 1024 * 1024) {
+        visMelding('Videoen er for stor. Maks 100 MB er tillatt.', false);
+        return;
+      }
+
+      // Skjul opplastingsskjema, vis progress
+      document.getElementById('video-opplasting-wrapper').classList.add('skjult');
+      document.getElementById('video-spiller-wrapper').classList.add('skjult');
+      document.getElementById('video-progress-wrapper').classList.remove('skjult');
+      settVideoProgress(0, 'Klargjør opplasting...');
+
+      try {
+        // 1. Hent signert URL fra backend
+        const token = await getToken();
+        const urlRes = await fetch('/api/cv/video/signed-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ filnavn: fil.name, contentType: fil.type, size: fil.size })
+        });
+        if (!urlRes.ok) {
+          const data = await urlRes.json().catch(() => ({}));
+          throw new Error(data.feil || 'Kunne ikke klargjøre opplasting.');
+        }
+        const { signedUrl, storagePath, contentType } = await urlRes.json();
+        settVideoProgress(5, 'Laster opp video...');
+
+        // 2. Last opp direkte til Firebase Storage via XHR (for progress)
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', signedUrl);
+          xhr.setRequestHeader('Content-Type', contentType);
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const pst = Math.round((e.loaded / e.total) * 90) + 5;
+              settVideoProgress(pst, `Laster opp... ${pst}%`);
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) resolve();
+            else reject(new Error(`Opplasting feilet (HTTP ${xhr.status}). Prøv igjen.`));
+          };
+          xhr.onerror = () => reject(new Error('Nettverksfeil under opplasting. Prøv igjen.'));
+          xhr.send(fil);
+        });
+        settVideoProgress(95, 'Ferdigstiller...');
+
+        // 3. Bekreft til backend
+        const confirmToken = await getToken();
+        const confirmRes = await fetch('/api/cv/video/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${confirmToken}` },
+          body: JSON.stringify({ storagePath, filnavn: fil.name, contentType: fil.type, size: fil.size })
+        });
+        if (!confirmRes.ok) {
+          const data = await confirmRes.json().catch(() => ({}));
+          throw new Error(data.feil || 'Kunne ikke lagre videoinformasjon. Prøv igjen.');
+        }
+        const confirmData = await confirmRes.json();
+        settVideoProgress(100, 'Ferdig!');
+
+        // 4. Oppdater lokal profil og render
+        profil.videoURL     = confirmData.videoURL;
+        profil.videoFilnavn = confirmData.videoFilnavn;
+        profil.videoPath    = storagePath;
+
+        setTimeout(() => {
+          document.getElementById('video-progress-wrapper').classList.add('skjult');
+          renderVideo();
+          visMelding('Videopresentasjonen er lastet opp!', true);
+        }, 600);
+
+      } catch (err) {
+        console.error('Video opplasting feil:', err);
+        document.getElementById('video-progress-wrapper').classList.add('skjult');
+        document.getElementById('video-opplasting-wrapper').classList.remove('skjult');
+        document.getElementById('videoInput').value = '';
+        visMelding(err.message || 'Noe gikk galt. Prøv igjen.', false);
+      }
+    }
+
+    function settVideoProgress(pst, tekst) {
+      document.getElementById('video-progress-bar').style.width = pst + '%';
+      document.getElementById('video-progress-prosent').textContent = pst + '%';
+      document.getElementById('video-progress-tekst').textContent = tekst;
+    }
+
+    window.slettVideo = async function() {
+      if (!confirm('Er du sikker på at du vil slette videopresentasjonen?')) return;
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/cv/video', {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          visMelding(data.feil || 'Kunne ikke slette videoen. Prøv igjen.', false);
+          return;
+        }
+        profil.videoURL     = null;
+        profil.videoFilnavn = null;
+        profil.videoPath    = null;
+        // Tøm video-elementet for å frigjøre ressurser
+        const spiller = document.getElementById('video-spiller');
+        spiller.pause();
+        spiller.removeAttribute('src');
+        spiller.load();
+        renderVideo();
+        visMelding('Videopresentasjonen er slettet.', true);
+      } catch {
+        visMelding('Noe gikk galt. Prøv igjen.', false);
+      }
+    };
+
     function initAiChat() {
       leggTilAiBoble('Hei! Jeg er OLKV sin AI-assistent. Jeg kan hjelpe deg å vurdere denne profilen, lage intervjuspørsmål eller svare på spørsmål om lærlingen.');
     }
@@ -918,6 +1120,7 @@ Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
 
       if (!editMode) {
         initSkillBarObserver();
+        renderVideo();
       }
     }
 

@@ -208,4 +208,153 @@ ruter.post('/avatar', krevAuth, (req, res) => {
   });
 });
 
+// ─── Videopresentasjon ───────────────────────────────────────────────────────
+
+const TILLATTE_VIDEO_EXT   = ['.mp4', '.webm', '.mov'];
+const TILLATTE_VIDEO_TYPER = ['video/mp4', 'video/webm', 'video/quicktime'];
+const MAX_VIDEO_BYTES       = 100 * 1024 * 1024; // 100 MB
+
+async function slettGammelVideoFraStorage(videoPath) {
+  if (!videoPath) return;
+  try { await adminStorage.bucket().file(videoPath).delete(); } catch { /* ikke kritisk */ }
+}
+
+/**
+ * POST /api/cv/video/signed-url
+ * Utsteder en signert Firebase Storage-URL slik at klienten kan laste opp
+ * videofilen direkte (omgår Vercels 4,5 MB body-grense).
+ * Kun for lærling-eier.
+ */
+ruter.post('/video/signed-url', krevAuth, krevRolle('laerling'), async (req, res) => {
+  const { filnavn, contentType, size } = req.body;
+
+  if (!filnavn || !contentType || size == null) {
+    return res.status(400).json({ feil: 'Manglende filinfo (filnavn, contentType, size).' });
+  }
+
+  const ext = path.extname(filnavn).toLowerCase();
+  if (!TILLATTE_VIDEO_EXT.includes(ext) || !TILLATTE_VIDEO_TYPER.includes(contentType)) {
+    return res.status(400).json({ feil: 'Filformatet er ikke tillatt. Kun MP4, WebM og MOV er tillatt.' });
+  }
+  if (size > MAX_VIDEO_BYTES) {
+    return res.status(400).json({ feil: 'Videoen er for stor. Maks 100 MB er tillatt.' });
+  }
+
+  try {
+    const uid = req.user.uid;
+    const profilRef = adminDB.collection('users').doc(uid).collection('profilData').doc('main');
+    const profilDoc = await profilRef.get();
+
+    // Slett gammel video fra Storage hvis den finnes
+    if (profilDoc.exists && profilDoc.data().videoPath) {
+      await slettGammelVideoFraStorage(profilDoc.data().videoPath);
+    }
+
+    const storagePath = `profileVideos/${uid}/intro${ext}`;
+    const bucket = adminStorage.bucket();
+    const [signedUrl] = await bucket.file(storagePath).getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutter
+      contentType
+    });
+
+    // Marker at opplasting er i gang
+    await profilRef.set({
+      uploadPending: true,
+      uploadPendingAt: new Date().toISOString(),
+      uploadPendingStopath: storagePath
+    }, { merge: true });
+
+    res.json({ ok: true, signedUrl, storagePath, contentType });
+  } catch (err) {
+    console.error('Video signed-url feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke klargjøre opplasting. Prøv igjen.' });
+  }
+});
+
+/**
+ * POST /api/cv/video/confirm
+ * Bekrefter at klienten har lastet opp videofilen direkte til Storage.
+ * Backend verifiserer at filen finnes, gjør den offentlig og skriver metadata til Firestore.
+ */
+ruter.post('/video/confirm', krevAuth, krevRolle('laerling'), async (req, res) => {
+  const { storagePath, filnavn, contentType, size } = req.body;
+
+  if (!storagePath || !filnavn || !contentType || size == null) {
+    return res.status(400).json({ feil: 'Manglende feltinfo.' });
+  }
+
+  // Eiersjekk: storagePath må tilhøre denne brukeren
+  const forventetPrefix = `profileVideos/${req.user.uid}/`;
+  if (!storagePath.startsWith(forventetPrefix)) {
+    return res.status(403).json({ feil: 'Ingen tilgang til denne lagringsbanen.' });
+  }
+
+  try {
+    const bucket = adminStorage.bucket();
+    const fil = bucket.file(storagePath);
+    const [exists] = await fil.exists();
+    if (!exists) {
+      return res.status(400).json({ feil: 'Videofil ble ikke funnet etter opplasting. Prøv igjen.' });
+    }
+
+    await fil.makePublic();
+    const videoURL = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+
+    const now = new Date().toISOString();
+    await adminDB.collection('users').doc(req.user.uid)
+      .collection('profilData').doc('main')
+      .set({
+        videoPath:        storagePath,
+        videoURL,
+        videoFilnavn:     filnavn,
+        videoContentType: contentType,
+        videoSize:        size,
+        videoUploadedAt:  now,
+        videoUpdatedAt:   now,
+        uploadPending:        false,
+        uploadPendingAt:      null,
+        uploadPendingStopath: null
+      }, { merge: true });
+
+    res.json({ ok: true, videoURL, videoFilnavn: filnavn });
+  } catch (err) {
+    console.error('Video confirm feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke lagre videoinformasjon. Prøv igjen.' });
+  }
+});
+
+/**
+ * DELETE /api/cv/video
+ * Sletter videopresentasjonen fra Firebase Storage og fjerner metadata fra Firestore.
+ */
+ruter.delete('/video', krevAuth, krevRolle('laerling'), async (req, res) => {
+  try {
+    const profilRef = adminDB.collection('users').doc(req.user.uid)
+      .collection('profilData').doc('main');
+    const doc = await profilRef.get();
+
+    if (doc.exists && doc.data().videoPath) {
+      await slettGammelVideoFraStorage(doc.data().videoPath);
+    }
+
+    await profilRef.set({
+      videoPath:        null,
+      videoURL:         null,
+      videoFilnavn:     null,
+      videoContentType: null,
+      videoSize:        null,
+      videoUploadedAt:  null,
+      videoUpdatedAt:   null,
+      uploadPending:    false
+    }, { merge: true });
+
+    res.json({ ok: true, melding: 'Videopresentasjonen er slettet.' });
+  } catch (err) {
+    console.error('Video sletting feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke slette videoen. Prøv igjen.' });
+  }
+});
+
 export default ruter;
