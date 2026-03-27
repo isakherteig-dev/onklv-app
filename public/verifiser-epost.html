@@ -2,6 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bekreft e-posten din — OLKV</title>
   <link rel="stylesheet" href="style.css" />
@@ -213,7 +214,26 @@
         visVarsel('E-posten din er bekreftet! 🎉', 'suksess');
         bekreftBtn.textContent = 'Sender deg videre…';
 
-        setTimeout(() => { window.location.href = '/login.html'; }, 2000);
+        // Hent rolle fra eksisterende Firebase-sesjon og redirect til riktig dashboard
+        setTimeout(async () => {
+          try {
+            const token = await hentToken();
+            const megRes = await fetch('/api/auth/meg', {
+              headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            const meg = megRes.ok ? await megRes.json() : null;
+            const rolle = meg?.rolle;
+            if (rolle === 'bedrift') {
+              window.location.href = '/bedrift/dashboard.html';
+            } else if (rolle === 'laerling') {
+              window.location.href = '/laerling/dashboard.html';
+            } else {
+              window.location.href = '/login.html';
+            }
+          } catch {
+            window.location.href = '/login.html';
+          }
+        }, 2000);
       } catch {
         visVarsel('Noe gikk galt. Prøv igjen om litt.');
         bekreftBtn.disabled = false;

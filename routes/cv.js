@@ -137,4 +137,75 @@ ruter.delete('/', krevAuth, krevRolle('laerling'), async (req, res) => {
   }
 });
 
+// ─── Avatar-opplasting ───────────────────────────────────────────────────────
+
+const TILLATTE_BILDE_EXT   = ['.jpg', '.jpeg', '.png', '.webp'];
+const TILLATTE_BILDE_TYPER = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_AVATAR_STR = 2 * 1024 * 1024; // 2 MB
+
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_AVATAR_STR },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (TILLATTE_BILDE_EXT.includes(ext) && TILLATTE_BILDE_TYPER.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Kun JPG, PNG og WebP er tillatt som profilbilde'));
+    }
+  }
+});
+
+async function slettGammelAvatarFraStorage(avatarUrl) {
+  if (!avatarUrl || !avatarUrl.includes('storage.googleapis.com')) return;
+  try {
+    const bucket = adminStorage.bucket();
+    const url = new URL(avatarUrl);
+    const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
+    await bucket.file(filnavn).delete();
+  } catch { /* ikke kritisk */ }
+}
+
+/**
+ * POST /api/cv/avatar
+ * Laster opp profilbilde for innlogget bruker.
+ */
+ruter.post('/avatar', krevAuth, (req, res) => {
+  avatarUpload.single('avatar')(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ feil: 'Bildet er for stort. Maks 2 MB er tillatt.' });
+      }
+      return res.status(400).json({ feil: 'Feil ved opplasting. Prøv igjen.' });
+    }
+    if (err) return res.status(400).json({ feil: err.message });
+    if (!req.file) return res.status(400).json({ feil: 'Ingen fil ble lastet opp.' });
+
+    try {
+      const ref = adminDB.collection('users').doc(req.user.uid);
+      const userDoc = await ref.get();
+
+      // Slett gammelt avatar fra Firebase Storage
+      if (userDoc.exists && userDoc.data().avatar_url) {
+        await slettGammelAvatarFraStorage(userDoc.data().avatar_url);
+      }
+
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const filnavn = `avatarer/${req.user.uid}/${Date.now()}${ext}`;
+      const bucket = adminStorage.bucket();
+      const fil = bucket.file(filnavn);
+      await fil.save(req.file.buffer, { contentType: req.file.mimetype });
+      await fil.makePublic();
+
+      const avatarUrl = `https://storage.googleapis.com/${bucket.name}/${filnavn}`;
+      await ref.update({ avatar_url: avatarUrl });
+
+      res.json({ ok: true, avatar_url: avatarUrl });
+    } catch (dbFeil) {
+      console.error('Avatar opplasting feil:', dbFeil);
+      res.status(500).json({ feil: 'Kunne ikke lagre profilbilde. Prøv igjen.' });
+    }
+  });
+});
+
 export default ruter;

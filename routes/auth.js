@@ -236,6 +236,105 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/auth/bruker/:uid
+ * Henter offentlig brukerdata for en spesifikk lærling (for admin/bedrift).
+ */
+ruter.get('/bruker/:uid', krevAuth, async (req, res) => {
+  const { uid } = req.params;
+
+  // Kun admin, bedrift eller brukeren selv kan hente brukerdata
+  if (req.user.uid !== uid && !['admin', 'bedrift'].includes(req.user.rolle)) {
+    return res.status(403).json({ feil: 'Ingen tilgang' });
+  }
+
+  try {
+    const userDoc = await adminDB.collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ feil: 'Bruker ikke funnet' });
+    }
+
+    const d = userDoc.data();
+    // Returner kun det som er nødvendig — ikke sensitiv intern data
+    res.json({
+      uid: d.uid,
+      navn: d.navn,
+      utdanningsprogram: d.utdanningsprogram || null,
+      skole: d.skole || null,
+      bio: d.bio || null,
+      cv_url: d.cv_url || null,
+      cv_filnavn: d.cv_filnavn || null,
+      avatar_url: d.avatar_url || null,
+      rolle: d.rolle,
+      epost: req.user.rolle === 'admin' ? d.epost : undefined
+    });
+  } catch (err) {
+    console.error('Bruker henting feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke hente brukerdata' });
+  }
+});
+
+/**
+ * GET /api/auth/profildata
+ * Henter profilData/main for innlogget bruker (eller annen bruker hvis admin/bedrift).
+ */
+ruter.get('/profildata', krevAuth, async (req, res) => {
+  const targetUid = req.query.uid;
+
+  // Kun innlogget bruker selv, admin eller bedrift kan se profildata
+  if (targetUid && targetUid !== req.user.uid) {
+    if (!['admin', 'bedrift'].includes(req.user.rolle)) {
+      return res.status(403).json({ feil: 'Ingen tilgang' });
+    }
+  }
+
+  const uid = targetUid || req.user.uid;
+
+  try {
+    const doc = await adminDB.collection('users').doc(uid).collection('profilData').doc('main').get();
+    res.json(doc.exists ? doc.data() : {});
+  } catch (err) {
+    console.error('Profildata henting feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke hente profildata' });
+  }
+});
+
+/**
+ * PATCH /api/auth/profildata
+ * Lagrer profilData/main for innlogget bruker (kun sin egen).
+ * Tillatte felter: referanser, ferdigheter, portefolje, tidslinje, motivasjon,
+ *                  sted, alder, kanStarte, stillingsprosent, tilgjengeligeDager, harReferanse
+ */
+ruter.patch('/profildata', krevAuth, async (req, res) => {
+  if (req.user.rolle !== 'laerling') {
+    return res.status(403).json({ feil: 'Kun lærlinger kan oppdatere profildata' });
+  }
+
+  const TILLATTE_FELTER = [
+    'referanser', 'ferdigheter', 'portefolje', 'tidslinje',
+    'motivasjon', 'sted', 'alder', 'kanStarte',
+    'stillingsprosent', 'tilgjengeligeDager', 'harReferanse'
+  ];
+
+  const oppdatering = {};
+  for (const felt of TILLATTE_FELTER) {
+    if (req.body[felt] !== undefined) oppdatering[felt] = req.body[felt];
+  }
+
+  if (Object.keys(oppdatering).length === 0) {
+    return res.status(400).json({ feil: 'Ingen gyldige felt å oppdatere' });
+  }
+
+  try {
+    const ref = adminDB.collection('users').doc(req.user.uid).collection('profilData').doc('main');
+    await ref.set(oppdatering, { merge: true });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Profildata oppdatering feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke lagre profildata' });
+  }
+});
+
+/**
  * DELETE /api/auth/slett-konto
  */
 ruter.delete('/slett-konto', krevAuth, async (req, res) => {

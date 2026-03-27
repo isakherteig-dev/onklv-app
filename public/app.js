@@ -1,4 +1,4 @@
-// Perfect Match — app.js
+// OLKV — app.js
 // Bruker Firebase Authentication via CDN-importert Client SDK
 
 import { auth } from './firebase-config.js';

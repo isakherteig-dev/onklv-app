@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Brukerprofiler ──────────────────────────────────────────────────────
+    // Kun backend (Admin SDK) kan skrive til users-samlingen.
+    // Klientlesing av egen profil er tillatt (f.eks. andre komponenter som leser direkte).
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // All skriving skjer via backend Admin SDK
+    }
+
+    // Profildata (CV-detaljer, ferdigheter, referanser etc.)
+    // Kun backend (Admin SDK) skriver. Leserettigheter: eier, admin, bedrift.
+    match /users/{uid}/profilData/{document} {
+      allow read: if request.auth != null && (
+        request.auth.uid == uid ||
+        request.auth.token.rolle == 'admin' ||
+        request.auth.token.rolle == 'bedrift'
+      );
+      allow write: if false; // All skriving skjer via PATCH /api/auth/profildata
+    }
+
+    // ── Læreplasser ─────────────────────────────────────────────────────────
+    // Alle innloggede kan lese aktive læreplasser. Skriving via backend.
+    match /laereplasser/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // ── Søknader ────────────────────────────────────────────────────────────
+    // Kun backend håndterer søknader.
+    match /soknader/{id} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ── Varsler ─────────────────────────────────────────────────────────────
+    match /varsler/{id} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ── Chat-meldinger ──────────────────────────────────────────────────────
+    match /chat_meldinger/{id} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // Standard: nekt alt annet
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

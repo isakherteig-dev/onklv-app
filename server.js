@@ -2,6 +2,7 @@ import 'dotenv/config';
 import './firebase/config.js';  // Initialiser Firebase Admin SDK
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import { adminDB } from './firebase/config.js';
 import authRuter from './routes/auth.js';
 import laereplasserRuter from './routes/laereplasser.js';
 import soknadRuter from './routes/soknader.js';
@@ -22,6 +23,24 @@ app.use((_req, res, next) => {
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+
+// Offentlig statistikk for landingssiden (ingen autentisering nødvendig)
+app.get('/api/statistikk', async (_req, res) => {
+  try {
+    const [laerlinger, bedrifter, laereplasser] = await Promise.all([
+      adminDB.collection('users').where('rolle', '==', 'laerling').count().get(),
+      adminDB.collection('users').where('rolle', '==', 'bedrift').where('godkjent', '==', true).count().get(),
+      adminDB.collection('laereplasser').where('aktiv', '==', true).count().get()
+    ]);
+    res.json({
+      antallLaerlinger: laerlinger.data().count,
+      antallBedrifter:  bedrifter.data().count,
+      antallLaereplasser: laereplasser.data().count
+    });
+  } catch {
+    res.status(500).json({ feil: 'Kunne ikke hente statistikk' });
+  }
+});
 
 // API-ruter
 app.use('/api/auth', authRuter);

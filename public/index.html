@@ -2,6 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OLKV — Finn din lærlingplass</title>
   <link rel="stylesheet" href="style.css" />
@@ -29,7 +30,7 @@
   <!-- HERO -->
   <section class="hero">
     <h1>Finn din perfekte lærlingplass</h1>
-    <p>Perfect Match kobler ambisiøse lærlinger med de beste lærebedriftene i Vestland. Enklere, raskere og mer personlig enn noe annet.</p>
+    <p>OLKV kobler ambisiøse lærlinger med de beste lærebedriftene i Vestland. Enklere, raskere og mer personlig enn noe annet.</p>
     <div class="hero-knapper">
       <a href="/laerling/registrer.html" class="btn btn-stor btn-hvit">
         Jeg er lærling
@@ -44,20 +45,20 @@
   <section class="reveal" style="background: #fff; padding: 3rem 1.5rem; border-bottom: 1px solid var(--farge-kant);">
     <div class="rutenett-4 container" style="max-width: 900px;">
       <div class="stat-boks reveal stagger-1">
-        <div class="stat-tall">230+</div>
+        <div class="stat-tall" id="stat-laerlinger">—</div>
         <div class="stat-etikett">Registrerte lærlinger</div>
       </div>
       <div class="stat-boks reveal stagger-2">
-        <div class="stat-tall">85</div>
+        <div class="stat-tall" id="stat-bedrifter">—</div>
         <div class="stat-etikett">Godkjente lærebedrifter</div>
       </div>
       <div class="stat-boks reveal stagger-3">
-        <div class="stat-tall">140</div>
-        <div class="stat-etikett">Læreplasser utlyst</div>
+        <div class="stat-tall" id="stat-laereplasser">—</div>
+        <div class="stat-etikett">Aktive læreplasser</div>
       </div>
       <div class="stat-boks reveal stagger-4">
-        <div class="stat-tall">92%</div>
-        <div class="stat-etikett">Lærlinger som fant plass</div>
+        <div class="stat-tall">Vestland</div>
+        <div class="stat-etikett">Opplæringskontoret</div>
       </div>
     </div>
   </section>
@@ -245,6 +246,20 @@
     }
 
     visLaereplasser();
+
+    // Hent ekte statistikk fra API
+    fetch('/api/statistikk')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const laerlingerEl    = document.getElementById('stat-laerlinger');
+        const bedrifterEl     = document.getElementById('stat-bedrifter');
+        const laereplasserEl  = document.getElementById('stat-laereplasser');
+        if (laerlingerEl)   laerlingerEl.textContent   = data.antallLaerlinger   ?? '—';
+        if (bedrifterEl)    bedrifterEl.textContent    = data.antallBedrifter    ?? '—';
+        if (laereplasserEl) laereplasserEl.textContent = data.antallLaereplasser ?? '—';
+      })
+      .catch(() => { /* statistikk forblir — ved nettverksfeil */ });
   </script>
   <script src="/cookie-banner.js" defer></script>
 </body>

@@ -2,6 +2,7 @@
 <html lang="nb">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lærlingprofil — OLKV</title>
   <link rel="stylesheet" href="../style.css" />
@@ -125,7 +126,7 @@
         <!-- Handlingsknapper -->
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.25rem;">
           <a id="btn-last-cv" class="btn btn-secondary btn-liten skjult" href="#">📄 Last ned CV</a>
-          <button class="btn btn-ghost btn-liten" onclick="alert('Bookingfunksjon kommer snart! 📅')">📅 Book intervju</button>
+          <button class="btn btn-ghost btn-liten" disabled title="Bookingfunksjon er ikke tilgjengelig ennå" style="opacity:0.5;cursor:not-allowed;">📅 Book intervju</button>
         </div>
 
         <!-- Badge-rad -->
@@ -133,14 +134,17 @@
       </div>
     </section>
 
-    <!-- SEKSJON 2: VIDEO -->
+    <!-- SEKSJON 2: VIDEO (kommer snart) -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🎬 Bli kjent med meg</h2>
+        <span class="badge badge-graa" style="font-size:0.75rem;">Kommer snart</span>
       </div>
-      <div id="video-container"></div>
-      <input type="file" id="videoInput" accept="video/*" class="edit-only skjult" style="margin-top:0.75rem;" />
-      <p style="font-size:0.85rem;color:var(--olkv-gray);margin-top:0.75rem;margin-bottom:0;">💡 En kort video gir bedriften et mye bedre inntrykk enn CV alene.</p>
+      <div style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+        <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">🎬</div>
+        <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Video-CV kommer snart</p>
+        <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;text-align:center;padding:0 1rem;">Vi jobber med å legge til mulighet for å laste opp en kort videopresentasjon.</p>
+      </div>
     </section>
 
     <!-- SEKSJON 3: REFERANSER -->
@@ -149,22 +153,23 @@
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🏫 Referanser fra skolen</h2>
       </div>
       <div id="referanser-liste"></div>
-      <div class="edit-only skjult" id="referanse-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
-        <div class="form-gruppe">
-          <label class="etikett">Referansetekst</label>
-          <textarea id="ref-tekst" rows="3" placeholder="Hva sier referansen om deg?" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;"></textarea>
+      <div class="edit-only skjult" id="referanse-form" style="margin-top:1rem;padding:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius);">
+        <p style="margin:0 0 1rem;font-weight:600;font-size:0.9rem;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">➕ Legg til ny referanse</p>
+        <div class="form-gruppe" style="margin-bottom:0.75rem;">
+          <label style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);display:block;margin-bottom:0.3rem;">Hva sier de om deg?</label>
+          <textarea id="ref-tekst" rows="3" placeholder="F.eks. «En engasjert og pliktoppfyllende elev som alltid møter forberedt...»" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
         </div>
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-          <div class="form-gruppe" style="flex:1;min-width:140px;">
-            <label class="etikett">Navn</label>
-            <input type="text" id="ref-navn" placeholder="Lærerens navn" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;" />
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+          <div style="flex:1;min-width:140px;">
+            <label style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);display:block;margin-bottom:0.3rem;">Navn på referansen</label>
+            <input type="text" id="ref-navn" placeholder="F.eks. «Kari Nordmann»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
           </div>
-          <div class="form-gruppe" style="flex:1;min-width:140px;">
-            <label class="etikett">Rolle / skole</label>
-            <input type="text" id="ref-rolle" placeholder="Kontaktlærer, VG Øst" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;" />
+          <div style="flex:1;min-width:140px;">
+            <label style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);display:block;margin-bottom:0.3rem;">Rolle / skole</label>
+            <input type="text" id="ref-rolle" placeholder="F.eks. «Kontaktlærer, Voss vgs»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
           </div>
         </div>
-        <button class="btn btn-secondary btn-liten" onclick="leggTilReferanse()">Legg til referanse</button>
+        <button class="btn btn-primary btn-liten" onclick="leggTilReferanse()">✓ Legg til referanse</button>
       </div>
     </section>
 
@@ -307,8 +312,6 @@
 
   <script type="module">
     import { krevInnlogging, loggUt, getToken, oppdaterBruker, initScrollReveal, initialFra, beregnProfilkomplettering, formaterDato, fagomraader, initVarselBjelle } from '../app.js';
-    import { db } from '../firebase-config.js';
-    import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
     let bruker = null;
     let targetBruker = null;
@@ -333,26 +336,33 @@
       }
 
       const targetUid = visUid && visUid !== bruker.uid ? visUid : bruker.uid;
+      const token = await getToken();
 
       if (visUid && visUid !== bruker.uid) {
+        // Hent brukerdata for den vi ser på via backend API
         try {
-          const targetSnap = await getDoc(doc(db, 'users', targetUid));
-          if (targetSnap.exists()) {
-            targetBruker = { uid: targetUid, ...targetSnap.data() };
+          const res = await fetch(`/api/auth/bruker/${encodeURIComponent(targetUid)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            targetBruker = { uid: targetUid, ...await res.json() };
           } else {
             targetBruker = { uid: targetUid, navn: 'Ukjent lærling', epost: '', utdanningsprogram: '', rolle: 'laerling' };
           }
         } catch (e) {
-          console.warn('Kunne ikke hente brukerdata:', e);
           targetBruker = { uid: targetUid, navn: 'Ukjent lærling', epost: '', utdanningsprogram: '', rolle: 'laerling' };
         }
       } else {
         targetBruker = bruker;
       }
 
+      // Hent profildata via backend-API (Admin SDK — trygt og autentisert)
       try {
-        const profilSnap = await getDoc(doc(db, 'users', targetUid, 'profilData', 'main'));
-        profil = profilSnap.exists() ? profilSnap.data() : {};
+        const qs = targetUid !== bruker.uid ? `?uid=${encodeURIComponent(targetUid)}` : '';
+        const res = await fetch(`/api/auth/profildata${qs}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        profil = res.ok ? await res.json() : {};
       } catch (e) {
         console.warn('Ingen profildata ennå:', e);
         profil = {};
@@ -375,7 +385,6 @@
       }
 
       renderProfilhode();
-      renderVideo();
       renderReferanser();
       renderFerdigheter();
       renderPortefolje();
@@ -401,7 +410,22 @@
 
     function renderProfilhode() {
       const tb = targetBruker;
-      document.getElementById('profil-avatar').textContent = initialFra(tb.navn || '?');
+
+      // Vis avatar — enten bilde fra Firebase Storage eller initialer
+      const av = document.getElementById('profil-avatar');
+      if (tb.avatar_url) {
+        av.innerHTML = '';
+        av.style.overflow = 'hidden';
+        const img = document.createElement('img');
+        img.src = tb.avatar_url;
+        img.alt = tb.navn || 'Profilbilde';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        img.onerror = () => { av.innerHTML = initialFra(tb.navn || '?'); av.style.overflow = ''; };
+        av.appendChild(img);
+      } else {
+        av.textContent = initialFra(tb.navn || '?');
+      }
+
       document.getElementById('profil-navn').textContent = tb.navn || '—';
 
       const delene = [
@@ -455,17 +479,48 @@
       const avatarInput = document.getElementById('avatarInput');
       if (avatarEditBtn && avatarInput) {
         avatarEditBtn.addEventListener('click', () => avatarInput.click());
-        avatarInput.addEventListener('change', (e) => {
+        avatarInput.addEventListener('change', async (e) => {
           const fil = e.target.files[0];
           if (!fil) return;
-          const url = URL.createObjectURL(fil);
+
+          // Vis forhåndsvisning lokalt mens vi laster opp
+          const lokalUrl = URL.createObjectURL(fil);
           const av = document.getElementById('profil-avatar');
           av.innerHTML = '';
           av.style.overflow = 'hidden';
           const img = document.createElement('img');
-          img.src = url;
+          img.src = lokalUrl;
           img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
           av.appendChild(img);
+
+          // Last opp til Firebase Storage via backend
+          try {
+            const token = await getToken();
+            const formData = new FormData();
+            formData.append('avatar', fil);
+
+            const res = await fetch('/api/cv/avatar', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              targetBruker.avatar_url = data.avatar_url;
+              visMelding('Profilbilde er lagret!', true);
+            } else {
+              const data = await res.json().catch(() => ({}));
+              visMelding(data.feil || 'Kunne ikke laste opp profilbilde.', false);
+              // Tilbakestill til initialer ved feil
+              av.innerHTML = initialFra(targetBruker.navn || '?');
+              av.style.overflow = '';
+            }
+          } catch {
+            visMelding('Noe gikk galt. Prøv igjen.', false);
+          } finally {
+            URL.revokeObjectURL(lokalUrl);
+          }
         });
       }
     }
@@ -488,46 +543,21 @@
       await lagreProfil();
 
       document.getElementById('profil-navn').textContent = navn || targetBruker.navn;
-      document.getElementById('profil-avatar').textContent = initialFra(navn || targetBruker.navn);
+      // Oppdater avatar kun om ingen avatar-bilde er lastet opp
+      const avEl = document.getElementById('profil-avatar');
+      if (!targetBruker.avatar_url) {
+        avEl.textContent = initialFra(navn || targetBruker.navn);
+      }
       const delene = [fag, sted, alder ? alder + ' år' : ''].filter(Boolean);
       document.getElementById('profil-sub').textContent = delene.join(' · ') || '—';
       visMelding('Profilhode lagret!', true);
     };
 
-    function renderVideo() {
-      const container = document.getElementById('video-container');
-      if (profil.videoUrl) {
-        container.innerHTML = `<video controls src="${profil.videoUrl}" style="width:100%;border-radius:var(--radius);"></video>`;
-      } else {
-        container.innerHTML = `
-          <div id="video-placeholder" style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;">
-            <div style="width:64px;height:64px;background:rgba(27,58,107,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">▶</div>
-            <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Ingen video lastet opp ennå</p>
-            <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">Klikk for å laste opp 30–60 sek selvpresentasjon</p>
-          </div>`;
-        document.getElementById('video-placeholder').addEventListener('click', () => {
-          if (editMode) document.getElementById('videoInput').click();
-        });
-      }
-
-      const videoInput = document.getElementById('videoInput');
-      if (videoInput && !videoInput.dataset.listenerAttached) {
-        videoInput.dataset.listenerAttached = 'true';
-        videoInput.addEventListener('change', (e) => {
-          const fil = e.target.files[0];
-          if (!fil) return;
-          const url = URL.createObjectURL(fil);
-          container.innerHTML = `<video controls src="${url}" style="width:100%;border-radius:var(--radius);"></video>`;
-          visMelding('Video valgt lokalt. Kobles til Firebase Storage i produksjon.', true);
-        });
-      }
-    }
-
     function renderReferanser() {
       const liste = document.getElementById('referanser-liste');
       const refs = profil.referanser || [];
       if (refs.length === 0) {
-        liste.innerHTML = `<div class="tom-tilstand"><p>Ingen referanser lagt til ennå.</p></div>`;
+        liste.innerHTML = `<div class="tom-tilstand"><p>Ingen referanser lagt til ennå.<br><small style="color:var(--olkv-gray);">Fyll ut skjemaet nedenfor og trykk «Legg til referanse».</small></p></div>`;
         return;
       }
       liste.innerHTML = refs.map((ref) => `
@@ -552,28 +582,29 @@
       if (!tekst || !navn) { visMelding('Fyll ut referansetekst og navn.', false); return; }
       profil.referanser = profil.referanser || [];
       profil.referanser.push({ tekst, navn, rolle, verifisert: false });
-      profil.harReferanse = profil.referanser.length > 0;
-      await lagreProfil();
-      document.getElementById('ref-tekst').value = '';
-      document.getElementById('ref-navn').value = '';
-      document.getElementById('ref-rolle').value = '';
-      renderReferanser();
-      visMelding('Referanse lagt til!', true);
+      profil.harReferanse = true;
+      try {
+        await lagreProfil();
+        document.getElementById('ref-tekst').value = '';
+        document.getElementById('ref-navn').value = '';
+        document.getElementById('ref-rolle').value = '';
+        renderReferanser();
+        visMelding('Referanse lagt til!', true);
+      } catch (e) {
+        profil.referanser.pop();
+        if (profil.referanser.length === 0) profil.harReferanse = false;
+        visMelding('Noe gikk galt. Prøv igjen.', false);
+      }
     };
 
     function renderFerdigheter() {
       const liste = document.getElementById('ferdigheter-liste');
-      const defaultFerdigheter = [
-        { navn: 'Teamarbeid', prosent: 80 },
-        { navn: 'Punktlighet', prosent: 75 },
-        { navn: 'Kreativitet', prosent: 70 },
-        { navn: 'Selvstendighet', prosent: 85 },
-        { navn: 'Kommunikasjon', prosent: 78 }
-      ];
-      if (!profil.ferdigheter || profil.ferdigheter.length === 0) {
-        profil.ferdigheter = defaultFerdigheter;
+      const ferdigheter = profil.ferdigheter || [];
+
+      if (ferdigheter.length === 0) {
+        liste.innerHTML = `<div class="tom-tilstand"><p>Ingen ferdigheter lagt til ennå.<br><small style="color:var(--olkv-gray);">Aktiver redigeringsmodus for å legge til og justere ferdigheter.</small></p></div>`;
+        return;
       }
-      const ferdigheter = profil.ferdigheter;
 
       liste.innerHTML = ferdigheter.map((f, i) => {
         const antallStjerner = Math.round(f.prosent / 20);
@@ -693,13 +724,12 @@
 
     function renderTidslinje() {
       const liste = document.getElementById('tidslinje-liste');
-      const defaultTidslinje = [
-        { ikon: '🎓', tittel: 'VG1 Elektrofag', beskrivelse: 'Fullførte VG1 med gode resultater', dato: '2023–2024', type: 'skole' }
-      ];
-      if (!profil.tidslinje || profil.tidslinje.length === 0) {
-        profil.tidslinje = defaultTidslinje;
+      const tidslinje = profil.tidslinje || [];
+
+      if (tidslinje.length === 0) {
+        liste.innerHTML = `<div class="tom-tilstand"><p>Ingen erfaring eller utdanning lagt til ennå.<br><small style="color:var(--olkv-gray);">Aktiver redigeringsmodus for å legge til kurs, skole og jobb.</small></p></div>`;
+        return;
       }
-      const tidslinje = profil.tidslinje;
 
       liste.innerHTML = tidslinje.map(t => `
         <div style="display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.25rem;position:relative;">
@@ -892,8 +922,19 @@ Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
     }
 
     async function lagreProfil() {
-      const uid = targetBruker?.uid || bruker?.uid;
-      await setDoc(doc(db, 'users', uid, 'profilData', 'main'), profil, { merge: true });
+      const token = await getToken();
+      const res = await fetch('/api/auth/profildata', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(profil)
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.feil || 'Kunne ikke lagre profil');
+      }
     }
 
     function visMelding(tekst, suksess) {
