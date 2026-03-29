@@ -1415,8 +1415,36 @@ tr:hover td {
   border-radius: var(--radius-pill);
 }
 .frist-badge.ok     { background: #e8f5e9; color: #1B5E20; }
+.frist-badge.kritisk {
+  background: linear-gradient(135deg, #fff3e8, #ffe0cc);
+  color: #b93815;
+  border: 1px solid rgba(217, 73, 32, 0.28);
+  box-shadow: 0 0 0 0 rgba(217, 73, 32, 0.28);
+  animation: fristBadgePulse 1.8s ease-in-out infinite;
+}
 .frist-badge.snart  { background: #FEF3E2; color: #B7791F; }
 .frist-badge.utlopt { background: #f0f0f0; color: #999; }
+
+@keyframes fristBadgePulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(217, 73, 32, 0.22);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 8px rgba(217, 73, 32, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(217, 73, 32, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frist-badge.kritisk {
+    animation: none;
+  }
+}
 
 /* === TOM-TILSTAND === */
 .tom-tilstand {
