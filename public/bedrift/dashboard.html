@@ -195,7 +195,8 @@
       initVarselBjelle,
       slettMinKonto,
       oppdaterSoknadStatus,
-      getToken
+      getToken,
+      hentUlesteChatMeldinger
     } from '../app.js';
     initScrollReveal();
 
@@ -211,6 +212,10 @@
 
     let alleSoknader = [];
     let alleAnnonser = [];
+
+    function tilJsStr(tekst) {
+      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    }
 
     // ===== STATS =====
     function visStats() {
@@ -257,7 +262,7 @@
             <span>${a.antall_soknader} søknad${a.antall_soknader !== 1 ? 'er' : ''}</span>
           </div>
           <div class="rad" style="gap: 0.5rem;">
-            <button class="btn btn-ghost btn-liten" onclick="slettAnnonseMed(${a.id})" style="color: var(--farge-feil);">Slett</button>
+            <button class="btn btn-ghost btn-liten" onclick="slettAnnonseMed(${tilJsStr(String(a.id))})" style="color: var(--farge-feil);">Slett</button>
           </div>
         </div>
       `).join('');
@@ -284,7 +289,14 @@
         return;
       }
 
-      container.innerHTML = soknader.map(s => `
+      container.innerHTML = soknader.map(s => {
+        const soknadId = String(s.id);
+        const chatParams = new URLSearchParams({ chat: soknadId });
+        if (s.laerplass_id) {
+          chatParams.set('laerplass_id', String(s.laerplass_id));
+        }
+
+        return `
         <div class="kort" style="margin-bottom: 1rem;">
           <div class="kort-header">
             <div class="rad" style="gap: 0.75rem; align-items: center;">
@@ -303,12 +315,37 @@
             <span style="font-size: 0.8rem; color: var(--farge-tekst-sekundaer);">Sendt ${formaterDato(s.sendt_dato)}</span>
             <div class="rad" style="gap: 0.5rem;">
               <button class="btn btn-ghost btn-liten" onclick="seProfilModal('${s.laerling_user_id}', '${(s.laerling_naam || '').replace(/'/g, "\\'")}')">Se profil</button>
+              <a class="btn btn-ghost btn-liten" href="/bedrift/soknader.html?${chatParams.toString()}" style="display:inline-flex;align-items:center;">
+                💬 Meldinger <span id="dashboard-chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span>
+              </a>
               <button class="btn btn-suksess btn-liten" onclick="oppdaterStatus('${s.id}', 'godkjent')" ${s.status === 'godkjent' ? 'disabled' : ''}>Aksepter</button>
               <button class="btn btn-feil btn-liten" onclick="oppdaterStatus('${s.id}', 'avslatt')" ${s.status === 'avslatt' ? 'disabled' : ''}>Avvis</button>
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
+
+      await oppdaterDashboardChatBadges(soknader);
+    }
+
+    async function oppdaterDashboardChatBadges(soknader) {
+      await Promise.all(soknader.map(async (s) => {
+        try {
+          const soknadId = String(s.id);
+          const { antall } = await hentUlesteChatMeldinger(soknadId);
+          const badge = document.getElementById(`dashboard-chat-badge-${soknadId}`);
+          if (!badge) return;
+          if (antall > 0) {
+            badge.textContent = antall > 9 ? '9+' : antall;
+            badge.classList.remove('skjult');
+            return;
+          }
+          badge.classList.add('skjult');
+        } catch {
+          // Ignorer badge-feil på dashbordet.
+        }
+      }));
     }
 
     window.oppdaterStatus = async function(id, nyStatus) {

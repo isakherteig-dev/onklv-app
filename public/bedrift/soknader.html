@@ -78,6 +78,9 @@
     let bruker = null;
     let alleSoknader = [];
     const chatPolls = {};
+    const sideParams = new URLSearchParams(window.location.search);
+    let autoChatSoknadId = (sideParams.get('chat') || '').trim();
+    const forhandsvalgtLaerplassId = (sideParams.get('laerplass_id') || '').trim();
 
     function escHtml(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -87,16 +90,37 @@
       return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     }
 
-    window.toggleChat = async function(id) {
+    function stoppChatPolling(id) {
+      clearInterval(chatPolls[id]);
+      delete chatPolls[id];
+    }
+
+    function stoppAllChatPolling() {
+      Object.keys(chatPolls).forEach((id) => stoppChatPolling(id));
+    }
+
+    function fjernChatFraUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('chat');
+      history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+
+    window.toggleChat = async function(id, { scrollTilPanel = false } = {}) {
       const panel = document.getElementById(`chat-panel-${id}`);
+      if (!panel) return;
       const erSkjult = panel.classList.contains('skjult');
-      panel.classList.toggle('skjult');
-      if (erSkjult) {
+      const skalAapne = erSkjult || scrollTilPanel;
+
+      panel.classList.toggle('skjult', !skalAapne);
+      if (skalAapne) {
         await lastChatBedrift(id);
+        stoppChatPolling(id);
         chatPolls[id] = setInterval(() => lastChatBedrift(id), 5000);
+        if (scrollTilPanel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       } else {
-        clearInterval(chatPolls[id]);
-        delete chatPolls[id];
+        stoppChatPolling(id);
       }
     };
 
@@ -170,13 +194,19 @@
       opt.value = a.id; opt.textContent = a.tittel;
       laerplassFilter.appendChild(opt);
     });
+    if (forhandsvalgtLaerplassId) {
+      laerplassFilter.value = forhandsvalgtLaerplassId;
+    }
 
     laerplassFilter.addEventListener('change', () => lastSoknader());
 
     async function lastSoknader() {
+      stoppAllChatPolling();
       const laerplass_id = laerplassFilter.value;
       alleSoknader = await hentSoknaderBedriftMed(laerplass_id);
       visSoknader(alleSoknader);
+      await oppdaterChatBadges();
+      await haandterAutoAapnetChat();
     }
 
     function visSoknader(soknader) {
@@ -248,6 +278,34 @@
       }).join('');
     }
 
+    async function oppdaterChatBadges() {
+      await Promise.all(alleSoknader.map(async (s) => {
+        try {
+          const soknadId = String(s.id);
+          const { antall } = await hentUlesteChatMeldinger(soknadId);
+          const badge = document.getElementById(`chat-badge-${soknadId}`);
+          if (!badge) return;
+          if (antall > 0) {
+            badge.textContent = antall > 9 ? '9+' : antall;
+            badge.classList.remove('skjult');
+            return;
+          }
+          badge.classList.add('skjult');
+        } catch {
+          // Ignorer badge-feil, resten av siden skal fortsatt fungere.
+        }
+      }));
+    }
+
+    async function haandterAutoAapnetChat() {
+      if (!autoChatSoknadId) return;
+      const finnesISiden = alleSoknader.some((s) => String(s.id) === autoChatSoknadId);
+      if (!finnesISiden) return;
+      await toggleChat(autoChatSoknadId, { scrollTilPanel: true });
+      autoChatSoknadId = '';
+      fjernChatFraUrl();
+    }
+
     window.oppdater = async function(id, status) {
       const bekreft = {
         godkjent: 'Er du sikker på at du vil godkjenne denne søknaden?',
@@ -269,18 +327,6 @@
     };
 
     await lastSoknader();
-
-    // Oppdater chat-badges for alle søknader
-    for (const s of alleSoknader) {
-      try {
-        const { antall } = await hentUlesteChatMeldinger(s.id);
-        const badge = document.getElementById(`chat-badge-${s.id}`);
-        if (badge && antall > 0) {
-          badge.textContent = antall > 9 ? '9+' : antall;
-          badge.classList.remove('skjult');
-        }
-      } catch { /* ignorer */ }
-    }
 
     initScrollReveal();
     initVarselBjelle();
