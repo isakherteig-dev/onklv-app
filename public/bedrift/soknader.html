@@ -83,6 +83,10 @@
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    function tilJsStr(tekst) {
+      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    }
+
     window.toggleChat = async function(id) {
       const panel = document.getElementById(`chat-panel-${id}`);
       const erSkjult = panel.classList.contains('skjult');
@@ -189,7 +193,14 @@
         return;
       }
 
-      container.innerHTML = soknader.map(s => `
+      container.innerHTML = soknader.map(s => {
+        const soknadId = String(s.id);
+        const jsSoknadId = tilJsStr(soknadId);
+        const profilLenke = s.laerling_user_id
+          ? `<a class="btn-mini btn-mini-blaa" href="/laerling/profil.html?uid=${encodeURIComponent(s.laerling_user_id)}">Se profil</a>`
+          : '';
+
+        return `
         <div class="kort" style="margin-bottom:1rem;">
           <div class="kort-header">
             <div>
@@ -211,28 +222,30 @@
           <div class="kort-footer" style="margin-top:1rem;">
             <span style="font-size:0.82rem;color:var(--olkv-gray);">Sendt: ${formaterDato(s.sendt_dato)}</span>
             <div class="tabell-handlinger">
-              ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${s.id},'under_behandling')">Under behandling</button>` : ''}
-              ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${s.id},'godkjent')">Godkjenn</button>` : ''}
-              ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${s.id},'avslatt')">Avslå</button>` : ''}
-              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${s.id})">💬 Meldinger <span id="chat-badge-${s.id}" class="chat-fane-badge skjult">0</span></button>
+              ${profilLenke}
+              ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${jsSoknadId},'under_behandling')">Under behandling</button>` : ''}
+              ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${jsSoknadId},'godkjent')">Godkjenn</button>` : ''}
+              ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${jsSoknadId},'avslatt')">Avslå</button>` : ''}
+              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${jsSoknadId})">💬 Meldinger <span id="chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span></button>
             </div>
           </div>
-          <div id="chat-panel-${s.id}" class="skjult" style="margin-top:0.75rem;">
+          <div id="chat-panel-${soknadId}" class="skjult" style="margin-top:0.75rem;">
             <div class="chat-seksjon" style="height:300px;">
-              <div class="chat-meldinger" id="chat-liste-${s.id}">
+              <div class="chat-meldinger" id="chat-liste-${soknadId}">
                 <div class="chat-tom">Laster…</div>
               </div>
               <div class="chat-skrivefelt">
-                <textarea id="chat-input-${s.id}" placeholder="Skriv en melding…" rows="1"
-                  onkeydown="chatInputKeydown(event,${s.id})"
+                <textarea id="chat-input-${soknadId}" placeholder="Skriv en melding…" rows="1"
+                  onkeydown="chatInputKeydown(event,${jsSoknadId})"
                   oninput="chatInputResize(this)"></textarea>
-                <button class="chat-send-btn" onclick="sendBedriftChatMelding(${s.id})" aria-label="Send melding">
+                <button class="chat-send-btn" onclick="sendBedriftChatMelding(${jsSoknadId})" aria-label="Send melding">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
               </div>
             </div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
 
     window.oppdater = async function(id, status) {
