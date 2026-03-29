@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adminAuth, adminDB } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
+import { sendStatusEpost } from '../tools/epost.js';
 import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
@@ -188,6 +189,17 @@ ruter.patch('/soknader/:id/status', async (req, res) => {
         meldingMap[status],
         '/laerling/mine-soknader.html'
       );
+
+      try {
+        await sendStatusEpost(
+          soknad.laerling_epost,
+          soknad.laerling_naam,
+          plassTittel,
+          status
+        );
+      } catch (epostErr) {
+        console.error('Kunne ikke sende status-epost:', epostErr);
+      }
     }
 
     res.json({ ok: true });

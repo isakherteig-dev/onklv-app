@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
+import { sendStatusEpost } from '../tools/epost.js';
 import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
@@ -343,6 +344,17 @@ ruter.patch('/:id/status', krevAuth, krevRolle('bedrift', 'admin'), async (req, 
         meldingMap[status],
         '/laerling/mine-soknader.html'
       );
+
+      try {
+        await sendStatusEpost(
+          soknad.laerling_epost,
+          soknad.laerling_naam,
+          plass.tittel,
+          status
+        );
+      } catch (epostErr) {
+        console.error('Kunne ikke sende status-epost:', epostErr);
+      }
     }
 
     res.json({ ok: true });
