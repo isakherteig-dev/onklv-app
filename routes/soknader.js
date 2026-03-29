@@ -239,12 +239,12 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
   }
 
   try {
-    // Sjekk duplikat
+    // Unngår compound-query her, siden manglende Firestore-indeks ellers gir generisk 500-feil.
     const dupSnap = await adminDB.collection('soknader')
       .where('laerling_user_id', '==', req.user.uid)
-      .where('laerplass_id', '==', laerplassId)
-      .limit(1).get();
-    if (!dupSnap.empty) {
+      .get();
+    const harDuplikat = dupSnap.docs.some((doc) => doc.data().laerplass_id === laerplassId);
+    if (harDuplikat) {
       return res.status(409).json({ feil: 'Du har allerede søkt på denne lærlingplassen' });
     }
 
