@@ -68,9 +68,9 @@
 
   <!-- NY ANNONSE MODAL -->
   <div class="modal-bakgrunn skjult" id="annonse-modal">
-    <div class="modal" style="max-width:600px;">
+      <div class="modal" style="max-width:600px;">
       <div class="modal-hode">
-        <h3 class="modal-tittel">Legg ut ny læreplass</h3>
+        <h3 class="modal-tittel" id="annonse-modal-tittel">Legg ut ny læreplass</h3>
         <button class="modal-lukk" id="annonse-lukk-btn">&times;</button>
       </div>
       <div class="modal-kropp">
@@ -130,11 +130,13 @@
 
   <script type="module">
     import {
-      krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, slettAnnonse,
+      krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, oppdaterAnnonse, slettAnnonse,
       formaterDato, initScrollReveal, fagomraader, initVarselBjelle
     } from '../app.js';
 
     let bruker = null;
+    let annonser = [];
+    let redigererAnnonseId = null;
     bruker = await krevInnlogging('bedrift');
     if (!bruker) { window.location.href = '/login.html'; }
 
@@ -150,10 +152,58 @@
     });
 
     // Sett min-dato for frist
-    document.getElementById('a-frist').min = new Date().toISOString().split('T')[0];
+    const fristInput = document.getElementById('a-frist');
+    const standardFristMin = new Date().toISOString().split('T')[0];
+    fristInput.min = standardFristMin;
+
+    function tilJsStr(tekst) {
+      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    }
+
+    function oppdaterAnnonseModalTekst() {
+      document.getElementById('annonse-modal-tittel').textContent = redigererAnnonseId ? 'Rediger læreplass' : 'Legg ut ny læreplass';
+      document.getElementById('annonse-send-btn').textContent = redigererAnnonseId ? 'Lagre endringer' : 'Publiser læreplass';
+    }
+
+    function fyllAnnonseSkjema(annonse = {}) {
+      document.getElementById('a-tittel').value = annonse.tittel || '';
+      document.getElementById('a-fagomraade').value = annonse.fagomraade || '';
+      document.getElementById('a-sted').value = annonse.sted || '';
+      document.getElementById('a-beskrivelse').value = annonse.beskrivelse || '';
+      document.getElementById('a-krav').value = annonse.krav || '';
+      document.getElementById('a-antall').value = annonse.antall_plasser || 1;
+      document.getElementById('a-start').value = annonse.start_dato || '';
+      document.getElementById('a-frist').value = annonse.frist || '';
+      document.getElementById('a-kontaktperson').value = annonse.kontaktperson || '';
+      document.getElementById('a-kontaktepost').value = annonse.kontakt_epost || '';
+
+      if (annonse.frist && annonse.frist < standardFristMin) {
+        fristInput.min = annonse.frist;
+        return;
+      }
+      fristInput.min = standardFristMin;
+    }
+
+    function apneAnnonseModal(annonse = null) {
+      redigererAnnonseId = annonse ? String(annonse.id) : null;
+      document.getElementById('annonse-form').reset();
+      document.getElementById('annonse-varsel').classList.add('skjult');
+      fyllAnnonseSkjema(annonse || {});
+      oppdaterAnnonseModalTekst();
+      document.getElementById('annonse-modal').classList.remove('skjult');
+    }
+
+    function lukkAnnonseModal() {
+      redigererAnnonseId = null;
+      document.getElementById('annonse-form').reset();
+      document.getElementById('annonse-varsel').classList.add('skjult');
+      fristInput.min = standardFristMin;
+      oppdaterAnnonseModalTekst();
+      document.getElementById('annonse-modal').classList.add('skjult');
+    }
 
     async function lastAnnonser() {
-      const annonser = await hentMineAnnonser();
+      annonser = await hentMineAnnonser();
       document.getElementById('antall-tekst').textContent = `${annonser.length} læreplasser registrert`;
 
       const container = document.getElementById('annonser-liste');
@@ -181,10 +231,19 @@
           </div>
           <div class="kort-footer">
             <span class="badge badge-blaa">${a.antall_soknader || 0} søknader</span>
-            <button class="btn-mini btn-mini-roed" onclick="slettKlikk(${a.id})">Slett</button>
+            <div class="tabell-handlinger">
+              <button class="btn-mini btn-mini-blaa" onclick="redigerKlikk(${tilJsStr(String(a.id))})">Rediger</button>
+              <button class="btn-mini btn-mini-roed" onclick="slettKlikk(${tilJsStr(String(a.id))})">Slett</button>
+            </div>
           </div>
         </div>`).join('');
     }
+
+    window.redigerKlikk = function(id) {
+      const annonse = annonser.find((a) => String(a.id) === String(id));
+      if (!annonse) return;
+      apneAnnonseModal(annonse);
+    };
 
     window.slettKlikk = async function(id) {
       if (!confirm('Er du sikker på at du vil slette denne læreplassen?')) return;
@@ -197,25 +256,24 @@
     };
 
     document.getElementById('ny-annonse-btn').addEventListener('click', () => {
-      document.getElementById('annonse-form').reset();
-      document.getElementById('annonse-varsel').classList.add('skjult');
-      document.getElementById('annonse-modal').classList.remove('skjult');
+      apneAnnonseModal();
     });
 
     document.getElementById('annonse-lukk-btn').addEventListener('click', () => {
-      document.getElementById('annonse-modal').classList.add('skjult');
+      lukkAnnonseModal();
     });
     document.getElementById('annonse-modal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) document.getElementById('annonse-modal').classList.add('skjult');
+      if (e.target === e.currentTarget) lukkAnnonseModal();
     });
 
     document.getElementById('annonse-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('annonse-send-btn');
-      btn.disabled = true; btn.textContent = 'Publiserer…';
+      btn.disabled = true;
+      btn.textContent = redigererAnnonseId ? 'Lagrer…' : 'Publiserer…';
 
       try {
-        await lagreAnnonseUtvidet({
+        const annonseData = {
           tittel: document.getElementById('a-tittel').value.trim(),
           fagomraade: document.getElementById('a-fagomraade').value,
           sted: document.getElementById('a-sted').value.trim(),
@@ -226,13 +284,20 @@
           frist: document.getElementById('a-frist').value,
           kontaktperson: document.getElementById('a-kontaktperson').value.trim(),
           kontakt_epost: document.getElementById('a-kontaktepost').value.trim()
-        });
+        };
 
-        document.getElementById('annonse-modal').classList.add('skjult');
+        if (redigererAnnonseId) {
+          await oppdaterAnnonse(redigererAnnonseId, annonseData);
+        } else {
+          await lagreAnnonseUtvidet(annonseData);
+        }
+
+        const varRedigering = !!redigererAnnonseId;
+        lukkAnnonseModal();
         await lastAnnonser();
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.textContent = '✓ Læreplassen er publisert!';
+        toast.textContent = varRedigering ? '✓ Læreplassen er oppdatert!' : '✓ Læreplassen er publisert!';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
       } catch (err) {
@@ -240,7 +305,8 @@
         document.getElementById('annonse-varsel').textContent = err.message;
         document.getElementById('annonse-varsel').classList.remove('skjult');
       } finally {
-        btn.disabled = false; btn.textContent = 'Publiser læreplass';
+        btn.disabled = false;
+        oppdaterAnnonseModalTekst();
       }
     });
 
