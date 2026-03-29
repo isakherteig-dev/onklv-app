@@ -234,15 +234,6 @@
       const container = document.getElementById('laereplasser-liste');
       if (!container) return;
 
-      let sokKnapp;
-      if (!aktivBruker) {
-        sokKnapp = `<a href="/login.html" class="btn btn-primary btn-liten">Søk nå</a>`;
-      } else if (aktivBruker.rolle === 'laerling') {
-        sokKnapp = `<a href="/laerling/laereplasser.html" class="btn btn-primary btn-liten">Søk nå</a>`;
-      } else {
-        sokKnapp = '';
-      }
-
       container.innerHTML = plasser.slice(0, 4).map(p => `
         <div class="kort">
           <div class="kort-header">
@@ -257,7 +248,16 @@
             <div style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">
               ${p.sted} &nbsp;·&nbsp; Frist: ${formaterDato(p.frist)}
             </div>
-            ${sokKnapp}
+            ${(() => {
+              const maal = `/laerling/laereplasser.html?sok=${encodeURIComponent(p.id)}`;
+              if (!aktivBruker) {
+                return `<a href="/login.html?returnTo=${encodeURIComponent(maal)}" class="btn btn-primary btn-liten">Søk nå</a>`;
+              }
+              if (aktivBruker.rolle === 'laerling') {
+                return `<a href="${maal}" class="btn btn-primary btn-liten">Søk nå</a>`;
+              }
+              return '';
+            })()}
           </div>
         </div>
       `).join('');

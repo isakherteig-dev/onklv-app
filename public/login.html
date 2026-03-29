@@ -19,7 +19,7 @@
     <a href="/" class="nav-logo">
       <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
     </a>
-    <a href="/register.html" style="font-size: 0.875rem;">Registrer deg →</a>
+    <a href="/register.html" id="nav-register-lenke" style="font-size: 0.875rem;">Registrer deg →</a>
   </nav>
 
   <!-- INNHOLD -->
@@ -50,7 +50,7 @@
       </div>
 
       <p style="margin-top: 1.5rem; font-size: 0.82rem; color: rgba(255,255,255,0.4); text-align: center;">
-        Har du ikke konto? <a href="/register.html" style="color: rgba(255,255,255,0.65);">Registrer deg her</a>
+        Har du ikke konto? <a href="/register.html" id="start-register-lenke" style="color: rgba(255,255,255,0.65);">Registrer deg her</a>
       </p>
     </div>
 
@@ -107,7 +107,7 @@
           Ikke registrert?
           <a href="/register.html?rolle=laerling" id="reg-laerling-lenke">Registrer som lærling</a>
           &nbsp;·&nbsp;
-          <a href="/register.html?rolle=bedrift">Registrer bedrift</a>
+          <a href="/register.html?rolle=bedrift" id="reg-bedrift-lenke">Registrer bedrift</a>
         </p>
       </div>
     </div>
@@ -176,6 +176,57 @@
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
+    const params = new URLSearchParams(window.location.search);
+
+    function sanitiserInternSti(sti) {
+      if (!sti || typeof sti !== 'string' || !sti.startsWith('/') || sti.startsWith('//')) {
+        return '';
+      }
+
+      try {
+        const url = new URL(sti, window.location.origin);
+        if (url.origin !== window.location.origin) return '';
+        return `${url.pathname}${url.search}${url.hash}`;
+      } catch {
+        return '';
+      }
+    }
+
+    const returnTo = sanitiserInternSti(params.get('returnTo') || '');
+
+    function byggInternLenke(path, ekstraParams = {}) {
+      const url = new URL(path, window.location.origin);
+      Object.entries(ekstraParams).forEach(([nokkel, verdi]) => {
+        if (verdi) {
+          url.searchParams.set(nokkel, verdi);
+        }
+      });
+      if (returnTo) {
+        url.searchParams.set('returnTo', returnTo);
+      }
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+
+    function destinasjonFor(bruker) {
+      if (bruker?.rolle === 'laerling' && returnTo) {
+        return returnTo;
+      }
+      const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
+      return sider[bruker?.rolle] || '/';
+    }
+
+    function oppdaterRegisterLenker(rolle = 'laerling') {
+      const navRegisterLenke = document.getElementById('nav-register-lenke');
+      const startRegisterLenke = document.getElementById('start-register-lenke');
+      const regLaerlingLenke = document.getElementById('reg-laerling-lenke');
+      const regBedriftLenke = document.getElementById('reg-bedrift-lenke');
+
+      navRegisterLenke.href = byggInternLenke('/register.html');
+      startRegisterLenke.href = byggInternLenke('/register.html');
+      regLaerlingLenke.href = byggInternLenke('/register.html', { rolle: 'laerling' });
+      regBedriftLenke.href = byggInternLenke('/register.html', { rolle: 'bedrift' });
+    }
+
     // Redirect hvis allerede innlogget (og e-post er verifisert)
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
@@ -189,19 +240,18 @@
         });
         if (!res.ok) return;
         const bruker = await res.json();
-        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-        window.location.href = sider[bruker.rolle] || '/';
+        window.location.href = destinasjonFor(bruker);
       } catch { /* la brukeren logge inn på nytt */ }
     });
 
     let valgtRolle = 'laerling';
+    oppdaterRegisterLenker(valgtRolle);
 
     window.byttTilSteg2 = function(rolle) {
       valgtRolle = rolle;
       document.getElementById('login-tagline').textContent =
         rolle === 'laerling' ? 'Logg inn som lærling' : 'Logg inn som bedrift';
-      document.getElementById('reg-laerling-lenke').href =
-        rolle === 'laerling' ? '/register.html?rolle=laerling' : '/register.html?rolle=bedrift';
+      oppdaterRegisterLenker(rolle === 'laerling' ? 'laerling' : 'bedrift');
 
       const steg1 = document.getElementById('steg-1');
       const steg2 = document.getElementById('steg-2');
@@ -241,8 +291,7 @@
 
       try {
         const bruker = await loggInn(epost, passord);
-        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-        window.location.href = sider[bruker.rolle] || '/';
+        window.location.href = destinasjonFor(bruker);
       } catch (err) {
         if (err.message?.includes('verifisere e-posten')) {
           const varselEl = document.getElementById('varsel');
@@ -265,8 +314,7 @@
       try {
         const bruker = await loggInnMedGoogle();
         if (!bruker) return; // Sendt til registrering
-        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-        window.location.href = sider[bruker.rolle] || '/';
+        window.location.href = destinasjonFor(bruker);
       } catch (err) {
         const melding = err.message?.includes('venter godkjenning')
           ? 'Bedriftskontoen din venter godkjenning fra Opplæringskontoret. Du får beskjed på e-post når den er klar.'

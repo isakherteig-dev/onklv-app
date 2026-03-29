@@ -18,7 +18,7 @@
     <a href="/" class="nav-logo">
       <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
     </a>
-    <a href="/login.html" style="font-size: 0.875rem;">Logg inn →</a>
+    <a href="/login.html" id="nav-login-lenke" style="font-size: 0.875rem;">Logg inn →</a>
   </nav>
 
   <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 1rem 2rem; position: relative; z-index: 10;">
@@ -45,7 +45,7 @@
       </div>
 
       <p style="text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-top: 2rem;">
-        Har du allerede konto? <a href="/login.html" style="color: rgba(255,255,255,0.65);">Logg inn her</a>
+        Har du allerede konto? <a href="/login.html" id="start-login-lenke" style="color: rgba(255,255,255,0.65);">Logg inn her</a>
       </p>
     </div>
 
@@ -65,7 +65,7 @@
             ✅ <strong>Konto opprettet!</strong>
           </div>
           <p id="suksess-tekst" style="margin-bottom: 1.5rem;"></p>
-          <a href="/login.html" class="btn btn-primary" style="width: 100%; text-align: center;">Gå til innlogging →</a>
+          <a href="/login.html" id="suksess-login-lenke" class="btn btn-primary" style="width: 100%; text-align: center;">Gå til innlogging →</a>
         </div>
 
         <form id="reg-form" novalidate>
@@ -176,7 +176,7 @@
         </form>
 
         <p class="auth-bunn">
-          Har du allerede konto? <a href="/login.html">Logg inn her</a>
+          Har du allerede konto? <a href="/login.html" id="bunn-login-lenke">Logg inn her</a>
         </p>
       </div>
     </div>
@@ -241,7 +241,47 @@
       GoogleAuthProvider
     } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
+    const params = new URLSearchParams(window.location.search);
     let rolle = 'laerling';
+
+    function sanitiserInternSti(sti) {
+      if (!sti || typeof sti !== 'string' || !sti.startsWith('/') || sti.startsWith('//')) {
+        return '';
+      }
+
+      try {
+        const url = new URL(sti, window.location.origin);
+        if (url.origin !== window.location.origin) return '';
+        return `${url.pathname}${url.search}${url.hash}`;
+      } catch {
+        return '';
+      }
+    }
+
+    const returnTo = sanitiserInternSti(params.get('returnTo') || '');
+
+    function byggInnloggingsLenke() {
+      const url = new URL('/login.html', window.location.origin);
+      if (returnTo) {
+        url.searchParams.set('returnTo', returnTo);
+      }
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+
+    function oppdaterInnloggingsLenker() {
+      const innloggingLenke = byggInnloggingsLenke();
+      [
+        'nav-login-lenke',
+        'start-login-lenke',
+        'suksess-login-lenke',
+        'bunn-login-lenke'
+      ].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.href = innloggingLenke;
+      });
+    }
+
+    oppdaterInnloggingsLenker();
 
     function oppdaterSkjema() {
       document.getElementById('laerling-felt').classList.toggle('skjult', rolle !== 'laerling');
@@ -278,7 +318,6 @@
     };
 
     // Pre-fyll fra URL-params og hopp til steg 2 om rolle er satt
-    const params = new URLSearchParams(window.location.search);
     const fraGoogle = !!params.get('uid');
 
     if (params.get('rolle')) {
@@ -410,7 +449,14 @@
         } else {
           // Lagre token midlertidig så verifiseringssiden kan bruke "send på nytt"
           sessionStorage.setItem('olkv-verif-token', token);
-          window.location.href = `/verifiser-epost.html?epost=${encodeURIComponent(epost)}&uid=${encodeURIComponent(result.user.uid)}`;
+          const verifiserParams = new URLSearchParams({
+            epost,
+            uid: result.user.uid
+          });
+          if (returnTo) {
+            verifiserParams.set('returnTo', returnTo);
+          }
+          window.location.href = `/verifiser-epost.html?${verifiserParams.toString()}`;
         }
       } catch (err) {
         visFeilmelding(oversettFirebaseFeil(err.code) || err.message);

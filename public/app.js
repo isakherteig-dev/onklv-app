@@ -27,6 +27,29 @@ async function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
+function sanitiserInternSti(sti) {
+  if (!sti || typeof sti !== 'string' || !sti.startsWith('/') || sti.startsWith('//')) {
+    return '';
+  }
+
+  try {
+    const url = new URL(sti, window.location.origin);
+    if (url.origin !== window.location.origin) return '';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return '';
+  }
+}
+
+function byggLoginUrl(returnTo = '') {
+  const url = new URL('/login.html', window.location.origin);
+  const tryggReturnTo = sanitiserInternSti(returnTo);
+  if (tryggReturnTo) {
+    url.searchParams.set('returnTo', tryggReturnTo);
+  }
+  return `${url.pathname}${url.search}`;
+}
+
 // ===== AUTENTISERING =====
 
 export function erInnlogget() {
@@ -71,6 +94,7 @@ export async function loggInnMedGoogle() {
   const provider = new GoogleAuthProvider();
   const result = await signInWithPopup(auth, provider);
   const token = await result.user.getIdToken();
+  const returnTo = sanitiserInternSti(new URLSearchParams(window.location.search).get('returnTo') || '');
 
   const res = await fetch('/api/auth/login-update', {
     method: 'POST',
@@ -84,6 +108,9 @@ export async function loggInnMedGoogle() {
       epost: result.user.email || '',
       navn:  result.user.displayName || ''
     });
+    if (returnTo) {
+      params.set('returnTo', returnTo);
+    }
     window.location.href = `/register.html?${params.toString()}`;
     return null;
   }
@@ -161,21 +188,22 @@ export function krevInnlogging(rolle) {
   return new Promise((resolve) => {
     const avregistrer = onAuthStateChanged(auth, async (firebaseUser) => {
       avregistrer(); // Kjør kun én gang
+      const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       if (!firebaseUser) {
-        window.location.href = '/login.html';
+        window.location.href = byggLoginUrl(returnTo);
         resolve(null);
         return;
       }
 
       const bruker = await hentBruker();
       if (!bruker) {
-        window.location.href = '/login.html';
+        window.location.href = byggLoginUrl(returnTo);
         resolve(null);
         return;
       }
 
       if (rolle && bruker.rolle !== rolle && bruker.rolle !== 'admin') {
-        window.location.href = '/login.html';
+        window.location.href = byggLoginUrl(returnTo);
         resolve(null);
         return;
       }

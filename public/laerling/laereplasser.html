@@ -231,7 +231,7 @@
       const res = await fetch('/api/soknader/mine', { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         const mine = await res.json();
-        mine.forEach(s => minneSoknaderIds.add(s.laerplass_id));
+        mine.forEach(s => minneSoknaderIds.add(String(s.laerplass_id)));
       }
     } catch {}
 
@@ -247,6 +247,7 @@
       });
     visPlasser(allePlasser);
     oppdaterResultatTekst(allePlasser.length, allePlasser.length);
+    haandterSokFraUrl();
 
     document.getElementById('search-input').addEventListener('input', filterLaereplasser);
     document.getElementById('filter-fagomraade').addEventListener('change', filterLaereplasser);
@@ -275,6 +276,16 @@
         .replace(/æ/g, 'ae')
         .replace(/ø/g, 'o')
         .replace(/å/g, 'a');
+    }
+
+    function tilJsStr(tekst) {
+      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    }
+
+    function fjernQueryParameter(navn) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete(navn);
+      history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }
 
     function oppdaterResultatTekst(antall, totalt) {
@@ -381,10 +392,13 @@
       const dager = (p) => dagertilFrist(p.frist);
 
       container.innerHTML = plasser.map(p => {
+        const plassId = String(p.id);
         const utlopt = dager(p) !== null && dager(p) < 0;
-        const harSokt = minneSoknaderIds.has(p.id);
+        const harSokt = minneSoknaderIds.has(plassId);
         const fagtekst = hentFagtekst(p);
         const fagBadge = fagtekst ? `<span class="badge badge-blaa">${fagtekst}</span>` : '';
+        const jsPlassId = tilJsStr(plassId);
+        const jsTittel = tilJsStr(p.tittel || '');
         return `
           <div class="kort laereplass-kort${animer ? ' kort-filter-inn' : ''}${utlopt ? ' opacity-50' : ''}">
             <div class="kort-header">
@@ -405,11 +419,27 @@
                 ? `<span class="badge badge-godkjent">Allerede søkt ✓</span>`
                 : utlopt
                   ? `<span class="badge badge-trukket">Utløpt</span>`
-                  : `<button class="btn btn-primary btn-liten" onclick="apneSoknadModal(${p.id}, '${p.tittel.replace(/'/g, "\\'")}')">Søk nå →</button>`
+                  : `<button class="btn btn-primary btn-liten" onclick="apneSoknadModal(${jsPlassId}, ${jsTittel})">Søk nå →</button>`
               }
             </div>
           </div>`;
       }).join('');
+    }
+
+    function haandterSokFraUrl() {
+      const sokId = new URLSearchParams(window.location.search).get('sok');
+      if (!sokId) return;
+
+      const plass = allePlasser.find((p) => String(p.id) === sokId);
+      if (!plass) return;
+
+      const dagerTilFrist = dagertilFrist(plass.frist);
+      const utlopt = dagerTilFrist !== null && dagerTilFrist < 0;
+      const harSokt = minneSoknaderIds.has(String(plass.id));
+      if (utlopt || harSokt) return;
+
+      apneSoknadModal(String(plass.id), plass.tittel || '');
+      fjernQueryParameter('sok');
     }
 
     function oppdaterCvTekst(fil) {
@@ -517,7 +547,7 @@
 
         await sendSoknadFull(formData);
 
-        const plassId = parseInt(document.getElementById('soknad-laerplass-id').value);
+        const plassId = String(document.getElementById('soknad-laerplass-id').value);
         minneSoknaderIds.add(plassId);
 
         document.getElementById('soknad-modal').classList.add('skjult');
@@ -583,8 +613,8 @@
                   <div style="font-size:0.8rem;opacity:0.75;">${plass.bedrift_navn || ''} ${plass.sted ? '· ' + plass.sted : ''}</div>
                   <div style="font-size:0.78rem;opacity:0.7;margin-top:2px;">${r.begrunnelse || ''}</div>
                 </div>
-                ${!minneSoknaderIds.has(plass.id)
-                  ? `<button class="btn btn-primary btn-liten" style="flex-shrink:0;" onclick="apneSoknadModal(${plass.id}, '${plass.tittel.replace(/'/g, "\\'")}')">Søk nå →</button>`
+                ${!minneSoknaderIds.has(String(plass.id))
+                  ? `<button class="btn btn-primary btn-liten" style="flex-shrink:0;" onclick="apneSoknadModal(${tilJsStr(String(plass.id))}, ${tilJsStr(plass.tittel || '')})">Søk nå →</button>`
                   : `<span class="badge badge-godkjent" style="flex-shrink:0;">Søkt ✓</span>`
                 }
               </div>`;

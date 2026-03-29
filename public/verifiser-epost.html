@@ -86,8 +86,24 @@
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
     const params  = new URLSearchParams(window.location.search);
+
+    function sanitiserInternSti(sti) {
+      if (!sti || typeof sti !== 'string' || !sti.startsWith('/') || sti.startsWith('//')) {
+        return '';
+      }
+
+      try {
+        const url = new URL(sti, window.location.origin);
+        if (url.origin !== window.location.origin) return '';
+        return `${url.pathname}${url.search}${url.hash}`;
+      } catch {
+        return '';
+      }
+    }
+
     const epost   = params.get('epost') || '';
     const uid     = params.get('uid')   || '';
+    const returnTo = sanitiserInternSti(params.get('returnTo') || '');
 
     document.getElementById('epost-visning').textContent = epost || 'e-postadressen din';
 
@@ -226,7 +242,7 @@
             if (rolle === 'bedrift') {
               window.location.href = '/bedrift/dashboard.html';
             } else if (rolle === 'laerling') {
-              window.location.href = '/laerling/dashboard.html';
+              window.location.href = returnTo || '/laerling/dashboard.html';
             } else {
               window.location.href = '/login.html';
             }
