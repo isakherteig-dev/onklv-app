@@ -187,26 +187,35 @@
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
+    let aktivBruker = null;
+
     onAuthStateChanged(auth, async (user) => {
       const navAuth = document.getElementById('nav-auth');
-      if (!navAuth) return;
-      if (!user) return;
+      if (!user) {
+        visLaereplasser();
+        return;
+      }
       try {
         const token = await user.getIdToken();
         const res = await fetch('/api/auth/meg', { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) return;
-        const bruker = await res.json();
-        const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
-        const navn = bruker.navn || user.displayName || 'Min side';
-        navAuth.innerHTML = `
-          <a href="${sider[bruker.rolle] || '/'}" class="btn btn-ghost btn-liten" style="font-weight:600;">${navn}</a>
-          <button class="btn btn-primary btn-liten" id="nav-logg-ut">Logg ut</button>
-        `;
-        document.getElementById('nav-logg-ut').addEventListener('click', async () => {
-          await loggUt();
-          window.location.reload();
-        });
+        if (res.ok) {
+          const bruker = await res.json();
+          aktivBruker = bruker;
+          if (navAuth) {
+            const sider = { laerling: '/laerling/dashboard.html', bedrift: '/bedrift/dashboard.html', admin: '/admin/dashboard.html' };
+            const navn = bruker.navn || user.displayName || 'Min side';
+            navAuth.innerHTML = `
+              <a href="${sider[bruker.rolle] || '/'}" class="btn btn-ghost btn-liten" style="font-weight:600;">${navn}</a>
+              <button class="btn btn-primary btn-liten" id="nav-logg-ut">Logg ut</button>
+            `;
+            document.getElementById('nav-logg-ut').addEventListener('click', async () => {
+              await loggUt();
+              window.location.reload();
+            });
+          }
+        }
       } catch { /* brukeren er ikke innlogget */ }
+      visLaereplasser();
     });
 
     if (sessionStorage.getItem('olkv-konto-slettet') === 'true') {
@@ -225,6 +234,15 @@
       const container = document.getElementById('laereplasser-liste');
       if (!container) return;
 
+      let sokKnapp;
+      if (!aktivBruker) {
+        sokKnapp = `<a href="/login.html" class="btn btn-primary btn-liten">Søk nå</a>`;
+      } else if (aktivBruker.rolle === 'laerling') {
+        sokKnapp = `<a href="/laerling/laereplasser.html" class="btn btn-primary btn-liten">Søk nå</a>`;
+      } else {
+        sokKnapp = '';
+      }
+
       container.innerHTML = plasser.slice(0, 4).map(p => `
         <div class="kort">
           <div class="kort-header">
@@ -239,13 +257,11 @@
             <div style="font-size: 0.85rem; color: var(--farge-tekst-sekundaer);">
               ${p.sted} &nbsp;·&nbsp; Frist: ${formaterDato(p.frist)}
             </div>
-            <a href="/laerling/registrer.html" class="btn btn-primary btn-liten">Søk nå</a>
+            ${sokKnapp}
           </div>
         </div>
       `).join('');
     }
-
-    visLaereplasser();
 
     // Hent ekte statistikk fra API
     fetch('/api/statistikk')
