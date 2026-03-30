@@ -299,8 +299,10 @@ ruter.post('/video/confirm', krevAuth, krevRolle('laerling'), async (req, res) =
       return res.status(400).json({ feil: 'Videofil ble ikke funnet etter opplasting. Prøv igjen.' });
     }
 
-    await fil.makePublic();
-    const videoURL = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+    const [videoURL] = await fil.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000 // 1 år
+    });
 
     const now = new Date().toISOString();
     await adminDB.collection('users').doc(req.user.uid)

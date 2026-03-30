@@ -53,7 +53,7 @@ app.use('/api/cv', cvRuter);
 app.use('/api/chat', chatRuter);
 
 // Lokal dev: start server. Vercel: eksporter app.
-if (process.env.VERCEL !== '1') {
+if (!process.env.FUNCTION_TARGET) {
   app.listen(port, () => {
     console.log(`Server kjører på http://localhost:${port}`);
   });
