@@ -290,6 +290,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
     });
 
     // Varsle admin og bedrift
+    console.log('[SØKNAD] Sender varsler, bedrift_user_id:', plass.bedrift_user_id);
     await Promise.all([
       lagVarsel('admin', 'ny_soknad',
         'Ny søknad mottatt',
@@ -302,6 +303,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
         '/bedrift/soknader.html'
       )
     ]);
+    console.log('[SØKNAD] Varsler sendt OK');
 
     res.status(201).json({ ok: true, id: ref.id });
   } catch (err) {
