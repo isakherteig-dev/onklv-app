@@ -27,7 +27,7 @@ const upload = multer({
 async function lastOppCvTilStorage(buffer, originalname, uid, mimetype) {
   const ext = path.extname(originalname).toLowerCase();
   const filnavn = `cv/${uid}/${Date.now()}${ext}`;
-  const bucket = adminStorage.bucket();
+  const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
   const fil = bucket.file(filnavn);
   await fil.save(buffer, { contentType: mimetype });
   await fil.makePublic();
@@ -37,7 +37,7 @@ async function lastOppCvTilStorage(buffer, originalname, uid, mimetype) {
 async function slettGammelCvFraStorage(cvUrl) {
   if (!cvUrl) return;
   try {
-    const bucket = adminStorage.bucket();
+    const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
     const url = new URL(cvUrl);
     const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
     await bucket.file(filnavn).delete();
@@ -159,7 +159,7 @@ const avatarUpload = multer({
 async function slettGammelAvatarFraStorage(avatarUrl) {
   if (!avatarUrl || !avatarUrl.includes('storage.googleapis.com')) return;
   try {
-    const bucket = adminStorage.bucket();
+    const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
     const url = new URL(avatarUrl);
     const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
     await bucket.file(filnavn).delete();
@@ -192,7 +192,7 @@ ruter.post('/avatar', krevAuth, (req, res) => {
 
       const ext = path.extname(req.file.originalname).toLowerCase();
       const filnavn = `avatarer/${req.user.uid}/${Date.now()}${ext}`;
-      const bucket = adminStorage.bucket();
+      const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
       const fil = bucket.file(filnavn);
       await fil.save(req.file.buffer, { contentType: req.file.mimetype });
       await fil.makePublic();
@@ -216,7 +216,7 @@ const MAX_VIDEO_BYTES       = 100 * 1024 * 1024; // 100 MB
 
 async function slettGammelVideoFraStorage(videoPath) {
   if (!videoPath) return;
-  try { await adminStorage.bucket().file(videoPath).delete(); } catch { /* ikke kritisk */ }
+  try { await adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET).file(videoPath).delete(); } catch { /* ikke kritisk */ }
 }
 
 /**
@@ -251,7 +251,7 @@ ruter.post('/video/signed-url', krevAuth, krevRolle('laerling'), async (req, res
     }
 
     const storagePath = `profileVideos/${uid}/intro${ext}`;
-    const bucket = adminStorage.bucket();
+    const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
     const [signedUrl] = await bucket.file(storagePath).getSignedUrl({
       version: 'v4',
       action: 'write',
@@ -292,7 +292,7 @@ ruter.post('/video/confirm', krevAuth, krevRolle('laerling'), async (req, res) =
   }
 
   try {
-    const bucket = adminStorage.bucket();
+    const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
     const fil = bucket.file(storagePath);
     const [exists] = await fil.exists();
     if (!exists) {

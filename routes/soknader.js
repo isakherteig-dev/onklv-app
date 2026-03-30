@@ -31,7 +31,7 @@ async function lastOppTilStorage(buffer, originalname, uid) {
   const ext = path.extname(originalname || 'vedlegg').toLowerCase();
   const contentType = ext === '.pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   const filnavn = `vedlegg/${uid}/${Date.now()}${ext}`;
-  const bucket = adminStorage.bucket();
+  const bucket = adminStorage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
   const fil = bucket.file(filnavn);
   console.log('[STORAGE] Laster opp:', filnavn, 'contentType:', contentType, 'størrelse:', buffer.length);
   await fil.save(buffer, { contentType, resumable: false });
