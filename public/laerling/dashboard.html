@@ -533,9 +533,10 @@
 
       const filnavn = fil.name || '';
       const ext = filnavn.slice(filnavn.lastIndexOf('.')).toLowerCase();
-      const gyldigType = TILLATTE_CV_TYPER.includes(fil.type) && TILLATTE_CV_ENDINGER.includes(ext);
+      const gyldigExt = TILLATTE_CV_ENDINGER.includes(ext);
+      const gyldigType = !fil.type || TILLATTE_CV_TYPER.includes(fil.type);
 
-      if (!gyldigType) {
+      if (!gyldigExt || !gyldigType) {
         return 'Kun PDF og DOCX-filer er tillatt.';
       }
       if (fil.size > MAKS_CV_STORRELSE) {

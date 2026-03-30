@@ -18,22 +18,30 @@ const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname || '').toLowerCase();
-    const gyldig = TILLATTE_FILTYPER.includes(file.mimetype) && TILLATTE_ENDINGER.includes(ext);
-    if (gyldig) { cb(null, true); return; }
+    const gyldigExt = TILLATTE_ENDINGER.includes(ext);
+    const gyldigMime = !file.mimetype || file.mimetype === 'application/octet-stream' || TILLATTE_FILTYPER.includes(file.mimetype);
+    if (gyldigExt && gyldigMime) { cb(null, true); return; }
     cb(new Error('Kun PDF og DOCX-filer er tillatt'), false);
   },
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// Last opp buffer til Firebase Storage, returner public download URL
+// Last opp buffer til Firebase Storage, returner signert URL (120 dager)
 async function lastOppTilStorage(buffer, originalname, uid) {
   const ext = path.extname(originalname || 'vedlegg').toLowerCase();
+  const contentType = ext === '.pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   const filnavn = `vedlegg/${uid}/${Date.now()}${ext}`;
   const bucket = adminStorage.bucket();
   const fil = bucket.file(filnavn);
-  await fil.save(buffer, { contentType: TILLATTE_FILTYPER[ext === '.pdf' ? 0 : 1] });
-  await fil.makePublic();
-  return `https://storage.googleapis.com/${bucket.name}/${filnavn}`;
+  console.log('[STORAGE] Laster opp:', filnavn, 'contentType:', contentType, 'størrelse:', buffer.length);
+  await fil.save(buffer, { contentType, resumable: false });
+  // Generer signert URL (gyldig i 120 dager) — unngår makePublic()-permissions-feil
+  const [url] = await fil.getSignedUrl({
+    action: 'read',
+    expires: Date.now() + 120 * 24 * 60 * 60 * 1000
+  });
+  console.log('[STORAGE] Opplasting OK:', filnavn);
+  return url;
 }
 
 function haandterValgfrittVedlegg(req, res, next) {
