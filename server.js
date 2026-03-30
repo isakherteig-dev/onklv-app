@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import './firebase/config.js';  // Initialiser Firebase Admin SDK
+import { pathToFileURL } from 'node:url';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { adminDB } from './firebase/config.js';
@@ -14,6 +15,9 @@ import chatRuter from './routes/chat.js';
 
 const app = express();
 const port = process.env.PORT ?? 3000;
+const isDirectRun = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false;
 
 // Middleware
 app.use((_req, res, next) => {
@@ -52,8 +56,7 @@ app.use('/api/ai', aiRuter);
 app.use('/api/cv', cvRuter);
 app.use('/api/chat', chatRuter);
 
-// Lokal dev: start server. Vercel: eksporter app.
-if (!process.env.FUNCTION_TARGET) {
+if (isDirectRun) {
   app.listen(port, () => {
     console.log(`Server kjører på http://localhost:${port}`);
   });
