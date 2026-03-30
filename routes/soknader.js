@@ -230,8 +230,11 @@ ruter.get('/stats', krevAuth, krevRolle('admin'), async (req, res) => {
 
 // POST /api/soknader — send søknad (lærling)
 ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async (req, res) => {
-  const laerplassId = req.body.laerplass_id;
+  // Firestore doc IDs er alltid strenger — sikre konsistens
+  const laerplassId = String(req.body.laerplass_id || '').trim();
   const { melding, erfaring, vg1, vg2, telefon } = req.body;
+
+  console.log('[SØKNAD] Mottatt:', { laerplassId, melding: melding?.slice(0, 30), harFil: !!req.file, bodyKeys: Object.keys(req.body) });
 
   if (!laerplassId) return res.status(400).json({ feil: 'Mangler laerplass_id' });
   if (!melding || melding.trim().length < 10) {
@@ -243,13 +246,15 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
     const dupSnap = await adminDB.collection('soknader')
       .where('laerling_user_id', '==', req.user.uid)
       .get();
-    const harDuplikat = dupSnap.docs.some((doc) => doc.data().laerplass_id === laerplassId);
+    const harDuplikat = dupSnap.docs.some((doc) => String(doc.data().laerplass_id) === String(laerplassId));
+    console.log('[SØKNAD] Duplikatsjekk:', { antallEksisterende: dupSnap.docs.length, harDuplikat });
     if (harDuplikat) {
       return res.status(409).json({ feil: 'Du har allerede søkt på denne lærlingplassen' });
     }
 
     // Sjekk at læreplassen eksisterer og er aktiv
     const plassDoc = await adminDB.collection('laereplasser').doc(laerplassId).get();
+    console.log('[SØKNAD] Læreplass:', { finnes: plassDoc.exists, aktiv: plassDoc.exists ? plassDoc.data().aktiv : null, docId: laerplassId });
     if (!plassDoc.exists || !plassDoc.data().aktiv) {
       return res.status(404).json({ feil: 'Læreplassen finnes ikke eller er ikke lenger aktiv' });
     }
@@ -262,6 +267,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
       vedleggUrl = await lastOppTilStorage(req.file.buffer, req.file.originalname, req.user.uid);
     }
 
+    console.log('[SØKNAD] Lagrer søknad...');
     const ref = await adminDB.collection('soknader').add({
       laerling_user_id:  req.user.uid,
       laerling_naam:     req.user.navn || null,
@@ -299,7 +305,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
 
     res.status(201).json({ ok: true, id: ref.id });
   } catch (err) {
-    console.error('Kunne ikke lagre søknad:', err);
+    console.error('[SØKNAD] FEIL:', err.message, err.stack);
     res.status(500).json({ feil: 'Kunne ikke lagre søknaden. Prøv igjen.' });
   }
 });

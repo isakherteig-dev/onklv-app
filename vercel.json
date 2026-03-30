@@ -9,6 +9,8 @@
           "firebase/**",
           "middleware/**",
           "routes/**",
+          "tools/**",
+          "utils/**",
           "public/**"
         ]
       }
