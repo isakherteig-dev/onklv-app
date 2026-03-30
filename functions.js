@@ -9,7 +9,7 @@ export const api = onRequest(
     region: 'europe-west1',
     memory: '512MiB',
     timeoutSeconds: 120,
-    secrets: ['FIREBASE_PRIVATE_KEY', 'ANTHROPIC_API_KEY', 'SMTP_PASS']
+    secrets: ['FB_PRIVATE_KEY', 'ANTHROPIC_API_KEY', 'SMTP_PASS']
   },
   app
 );

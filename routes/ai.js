@@ -9,6 +9,7 @@ import { forbedreProfil } from '../tools/ai_tips.js';
 
 // Maks 10 AI-kall per bruker per minutt
 const aiLimit = rateLimiter(10, 60_000);
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY ?? process.env.LOCAL_ANTHROPIC_API_KEY;
 
 const ruter = Router();
 
@@ -134,12 +135,12 @@ ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
     return res.status(400).json({ feil: 'messages er påkrevd' });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!anthropicApiKey) {
     return res.status(503).json({ feil: 'AI-tjenesten er ikke satt opp ennå' });
   }
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const client = new Anthropic({ apiKey: anthropicApiKey });
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',

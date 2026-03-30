@@ -4,21 +4,23 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 // Initialiser kun én gang (viktig i dev med hot-reload)
+const fbPrivateKey = process.env.FB_PRIVATE_KEY ?? process.env.LOCAL_FB_PRIVATE_KEY;
+
 if (!getApps().length) {
-  if (process.env.FIREBASE_PRIVATE_KEY) {
+  if (fbPrivateKey) {
     // Lokal dev: bruk eksplisitt service account fra .env
     initializeApp({
       credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        projectId: process.env.FB_PROJECT_ID,
+        clientEmail: process.env.FB_CLIENT_EMAIL,
+        privateKey: fbPrivateKey.replace(/\\n/g, '\n')
       }),
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+      storageBucket: process.env.FB_STORAGE_BUCKET
     });
   } else {
     // Cloud Functions: Application Default Credentials håndterer auth automatisk
     initializeApp({
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'onklv-app.firebasestorage.app'
+      storageBucket: process.env.FB_STORAGE_BUCKET || 'onklv-app.firebasestorage.app'
     });
   }
 }
