@@ -41,7 +41,18 @@
       #portefolje-grid { grid-template-columns: 1fr 1fr !important; }
       #tilgjengelighet-grid { grid-template-columns: 1fr !important; }
       #hode-edit-form { flex-direction: column !important; }
-      #badge-rad { flex-wrap: nowrap; }
+      #badge-rad { flex-wrap: wrap !important; overflow-x: visible !important; }
+
+      /* Profilhode kompakt på mobil */
+      #profilhode { border-radius: 0 !important; margin: -1.25rem -1rem 1.5rem !important; }
+      #profilhode > div:first-child { height: 80px !important; }
+      #profilhode > div:last-child { padding: 0 1rem 1rem !important; }
+      #profil-navn { font-size: 1.2rem !important; }
+      #profil-sub { font-size: 0.8rem !important; }
+
+      /* Rediger-skjema full bredde */
+      #hode-edit-form input,
+      #hode-edit-form select { width: 100% !important; min-width: unset !important; box-sizing: border-box; }
     }
   </style>
 </head>
