@@ -285,7 +285,7 @@
     document.getElementById('profil-navn').textContent = bruker.navn;
     document.getElementById('profil-program').textContent =
       (bruker.utdanningsprogram || '—') + (bruker.skole ? ' · ' + bruker.skole : '');
-    document.getElementById('profil-epost').textContent = bruker.epost;
+    document.getElementById('profil-epost')?.textContent && (document.getElementById('profil-epost').textContent = bruker.epost);
     document.getElementById('program-badge').textContent =
       bruker.utdanningsprogram ? 'Basert på ' + bruker.utdanningsprogram : 'Alle programmer';
 
@@ -613,7 +613,7 @@
     });
 
     // ===== REDIGER PROFIL MODAL =====
-    document.getElementById('rediger-profil-btn').addEventListener('click', () => {
+    document.getElementById('rediger-profil-btn')?.addEventListener('click', () => {
       document.getElementById('edit-navn').value = bruker.navn || '';
       document.getElementById('edit-bio').value = bruker.bio || '';
       document.getElementById('profil-modal').classList.remove('skjult');
