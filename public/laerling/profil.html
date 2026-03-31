@@ -69,8 +69,23 @@
         <button class="btn btn-secondary btn-liten edit-owner-only" id="toggleEditBtn">✏️ Rediger profil</button>
         <button class="btn btn-ghost btn-liten" onclick="history.back()">← Tilbake</button>
       </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+  <div class="mobil-meny-overlay skjult" id="meny-overlay"></div>
+  <div class="mobil-meny skjult" id="slide-meny">
+    <div class="mobil-meny-topp">
+      <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
+      <button class="mobil-meny-lukk" id="meny-lukk">✕</button>
+    </div>
+    <a href="/laerling/dashboard.html" class="mobil-meny-lenke">🏠 Dashbord</a>
+    <a href="/laerling/laereplasser.html" class="mobil-meny-lenke">🔍 Finn læreplasser</a>
+    <a href="/laerling/mine-soknader.html" class="mobil-meny-lenke">📄 Mine søknader</a>
+    <a href="/laerling/profil.html" class="mobil-meny-lenke">👤 Min profil</a>
+    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut">🚪 Logg ut</button>
+  </div>
 
   <!-- REDIGERINGSMODUS-BANNER -->
   <div id="editBanner" class="varsel varsel-info skjult" style="text-align:center;border-radius:0;padding:0.75rem;">✏️ Redigeringsmodus aktiv — klikk «Ferdig» for å avslutte</div>
@@ -1153,31 +1168,47 @@ Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
       setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
     }
   </script>
-  <nav class="bunn-nav">
-    <a href="/laerling/dashboard.html" class="bunn-nav-lenke" id="bnav-hjem">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  <nav class="bunn-nav" id="bunn-nav">
+    <a href="/laerling/dashboard.html" class="bunn-nav-lenke" data-side="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Hjem</span>
     </a>
-    <a href="/laerling/laereplasser.html" class="bunn-nav-lenke" id="bnav-soek">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <a href="/laerling/laereplasser.html" class="bunn-nav-lenke" data-side="laereplasser">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <span>Søk</span>
     </a>
-    <a href="/laerling/mine-soknader.html" class="bunn-nav-lenke" id="bnav-soknader">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <a href="/laerling/mine-soknader.html" class="bunn-nav-lenke" data-side="soknader">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       <span>Søknader</span>
     </a>
-    <a href="/laerling/profil.html" class="bunn-nav-lenke" id="bnav-profil">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <a href="/laerling/profil.html" class="bunn-nav-lenke" data-side="profil">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Profil</span>
     </a>
   </nav>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const path = window.location.pathname;
-      if (path.includes('dashboard')) document.getElementById('bnav-hjem')?.classList.add('aktiv');
-      if (path.includes('laereplasser')) document.getElementById('bnav-soek')?.classList.add('aktiv');
-      if (path.includes('mine-soknader')) document.getElementById('bnav-soknader')?.classList.add('aktiv');
-      if (path.includes('profil')) document.getElementById('bnav-profil')?.classList.add('aktiv');
+  <script type="module">
+    const sti = window.location.pathname;
+    document.querySelectorAll('.bunn-nav-lenke').forEach(a => {
+      const side = a.dataset.side;
+      if (
+        (side === 'dashboard' && sti.includes('dashboard')) ||
+        (side === 'laereplasser' && sti.includes('laereplasser')) ||
+        (side === 'soknader' && sti.includes('mine-soknader')) ||
+        (side === 'profil' && sti.includes('profil'))
+      ) a.classList.add('aktiv');
+    });
+    const btn = document.getElementById('hamburger-btn');
+    const overlay = document.getElementById('meny-overlay');
+    const meny = document.getElementById('slide-meny');
+    const lukk = document.getElementById('meny-lukk');
+    const apne = () => { meny.classList.remove('skjult'); overlay.classList.remove('skjult'); document.body.style.overflow = 'hidden'; };
+    const lukke = () => { meny.classList.add('skjult'); overlay.classList.add('skjult'); document.body.style.overflow = ''; };
+    btn?.addEventListener('click', apne);
+    lukk?.addEventListener('click', lukke);
+    overlay?.addEventListener('click', lukke);
+    document.getElementById('meny-logg-ut')?.addEventListener('click', async () => {
+      const { loggUt } = await import('../app.js');
+      await loggUt();
     });
   </script>
 </body>
