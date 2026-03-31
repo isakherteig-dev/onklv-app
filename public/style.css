@@ -1763,3 +1763,213 @@ tr:hover td {
   .chat-seksjon { height: 300px; }
   .chat-boble { max-width: 90%; }
 }
+
+/* ===== HAMBURGER MENY ===== */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+}
+.hamburger-btn span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--olkv-dark);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.mobil-meny-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 150;
+  backdrop-filter: blur(4px);
+}
+.mobil-meny {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 80%;
+  max-width: 320px;
+  height: 100vh;
+  background: #fff;
+  z-index: 200;
+  padding: 1.5rem;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.15);
+  animation: slideInRight 0.3s cubic-bezier(0.16,1,0.3,1);
+  display: flex;
+  flex-direction: column;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.mobil-meny-topp {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--olkv-border);
+}
+.mobil-meny-lukk {
+  background: var(--olkv-gray-light);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobil-meny-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.mobil-meny-lenke {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--olkv-dark);
+  text-decoration: none;
+  transition: background 0.2s;
+  display: block;
+}
+.mobil-meny-lenke:hover {
+  background: var(--olkv-gray-light);
+}
+
+/* ===== BUNNNAVIGASJON ===== */
+.bunn-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid var(--olkv-border);
+  padding: 0.5rem 0 max(0.5rem, env(safe-area-inset-bottom));
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+.bunn-nav-lenke {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  color: var(--olkv-gray);
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  padding: 0.35rem 0;
+  transition: color 0.2s;
+  border-radius: 12px;
+  margin: 0 4px;
+}
+.bunn-nav-lenke.aktiv {
+  color: var(--olkv-blue);
+}
+.bunn-nav-lenke svg {
+  stroke-width: 1.5;
+}
+.bunn-nav-lenke.aktiv svg {
+  stroke-width: 2.5;
+}
+
+/* ===== MOBIL-SPESIFIKKE REGLER ===== */
+@media (max-width: 768px) {
+  /* Vis hamburger, skjul nav-lenker på forsiden */
+  .hamburger-btn { display: flex; }
+  .nav-innhold .nav-lenker { display: none; }
+
+  /* Vis bunnnavigasjon */
+  .bunn-nav {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  /* Skjul sidebar på mobil */
+  .sidebar { display: none; }
+
+  /* Full bredde hoveddel */
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Padding for bunnnavigasjon */
+  .hoveddel {
+    padding: 1.25rem 1rem;
+    padding-bottom: 90px;
+  }
+
+  /* Forsiden hero */
+  .hero {
+    padding: 3rem 1rem 2.5rem;
+    text-align: left;
+  }
+  .hero h1 { font-size: 2rem; }
+  .hero p { font-size: 1rem; }
+  .hero-knapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-knapper .btn {
+    text-align: center;
+  }
+
+  /* Kort: ett per rad */
+  .rutenett-2,
+  .rutenett-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Statistikk: 2x2 grid */
+  .rutenett-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Tabell: gjør den scrollbar */
+  .tabell-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Navigasjonsbar på dashbord-sider */
+  .nav-innhold {
+    height: 60px;
+  }
+
+  /* Stat-tall litt mindre */
+  .stat-tall { font-size: 2rem; }
+
+  /* Modal full bredde */
+  .modal {
+    max-width: 100% !important;
+    margin: 0;
+    border-radius: var(--radius-stor) var(--radius-stor) 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 90vh;
+  }
+  .modal-bakgrunn {
+    align-items: flex-end;
+  }
+
+  /* Knapper større touch-target */
+  .btn { min-height: 52px; }
+  .btn-liten { min-height: 44px; }
+}

@@ -25,6 +25,22 @@
         </div>
       </div>
     </div>
+  <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mobil-meny-overlay skjult" id="mobil-meny-overlay"></div>
+  <div class="mobil-meny skjult" id="mobil-meny">
+    <div class="mobil-meny-topp">
+      <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
+      <button class="mobil-meny-lukk" id="mobil-meny-lukk">✕</button>
+    </div>
+    <nav class="mobil-meny-nav">
+      <a href="/laerling/registrer.html" class="mobil-meny-lenke">👷 For lærlinger</a>
+      <a href="/bedrift/registrer.html" class="mobil-meny-lenke">🏢 For bedrifter</a>
+      <a href="/login.html" class="mobil-meny-lenke">Logg inn</a>
+      <a href="/register.html" class="mobil-meny-lenke btn btn-primary" style="margin-top:1rem;">Registrer deg</a>
+    </nav>
+  </div>
   </nav>
 
   <!-- HERO -->
@@ -278,5 +294,25 @@
       .catch(() => { /* statistikk forblir — ved nettverksfeil */ });
   </script>
   <script src="/cookie-banner.js" defer></script>
+  <script>
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobilMeny = document.getElementById('mobil-meny');
+    const mobilMenyOverlay = document.getElementById('mobil-meny-overlay');
+    const mobilMenyLukk = document.getElementById('mobil-meny-lukk');
+
+    function apneMobilMeny() {
+      mobilMeny.classList.remove('skjult');
+      mobilMenyOverlay.classList.remove('skjult');
+      document.body.style.overflow = 'hidden';
+    }
+    function lukkMobilMeny() {
+      mobilMeny.classList.add('skjult');
+      mobilMenyOverlay.classList.add('skjult');
+      document.body.style.overflow = '';
+    }
+    hamburgerBtn?.addEventListener('click', apneMobilMeny);
+    mobilMenyLukk?.addEventListener('click', lukkMobilMeny);
+    mobilMenyOverlay?.addEventListener('click', lukkMobilMeny);
+  </script>
 </body>
 </html>

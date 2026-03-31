@@ -339,8 +339,25 @@ export function skjulVarsel(elementId = 'varsel') {
 
 export function formaterDato(datoStreng) {
   if (!datoStreng) return '—';
-  const dato = new Date(datoStreng + 'T00:00:00');
-  return dato.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  try {
+    let dato;
+    if (typeof datoStreng === 'object' && datoStreng.toDate) {
+      dato = datoStreng.toDate();
+    } else if (typeof datoStreng === 'string') {
+      // Prøv direkte parse først
+      dato = new Date(datoStreng);
+      // Hvis ugyldig, prøv med T00:00:00
+      if (isNaN(dato.getTime()) && datoStreng.length === 10) {
+        dato = new Date(datoStreng + 'T00:00:00');
+      }
+    } else {
+      dato = new Date(datoStreng);
+    }
+    if (isNaN(dato.getTime())) return '—';
+    return dato.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return '—';
+  }
 }
 
 export function statusTekst(status) {
