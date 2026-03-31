@@ -85,49 +85,27 @@
         <a href="#laereplasser" class="btn btn-primary" onclick="scrollTil('laereplasser'); return false;">Finn læreplasser →</a>
       </div>
 
-      <!-- PROFILKORT -->
-      <section id="profil" class="kort reveal" style="margin-bottom: 2rem;">
-        <div class="kort-header">
-          <div class="rad" style="gap: 1rem; align-items: center;">
+      <!-- PROFILKORT (kompakt) -->
+      <section id="profil" class="kort reveal" style="margin-bottom: 1.5rem;">
+        <div class="rad" style="gap: 1rem; align-items: center; justify-content: space-between;">
+          <div class="rad" style="gap: 0.75rem; align-items: center;">
             <div class="avatar avatar-stor" id="profil-avatar">?</div>
             <div>
-              <h3 style="margin-bottom: 0.2rem;" id="profil-navn">—</h3>
-              <p style="margin: 0; font-size: 0.9rem;" id="profil-program">—</p>
-              <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--farge-tekst-sekundaer);" id="profil-epost">—</p>
+              <h3 style="margin-bottom: 0.15rem; font-size: 1rem;" id="profil-navn">—</h3>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--farge-tekst-sekundaer);" id="profil-program">—</p>
             </div>
           </div>
-          <button class="btn btn-ghost btn-liten" id="rediger-profil-btn">Rediger</button>
+          <a href="/laerling/profil.html" class="btn btn-ghost btn-liten">Profil →</a>
         </div>
-        <hr class="skille" style="margin: 1rem 0;" />
-        <div>
+        <div style="margin-top: 0.875rem;">
           <div class="rad" style="justify-content: space-between; margin-bottom: 0.3rem;">
-            <span style="font-size: 0.875rem; font-weight: 600;">Profilkomplettering</span>
-            <span style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer);" id="profil-prosent">0%</span>
+            <span style="font-size: 0.8rem; font-weight: 600;">Profilkomplettering</span>
+            <span style="font-size: 0.8rem; color: var(--farge-tekst-sekundaer);" id="profil-prosent">0%</span>
           </div>
           <div class="fremgang-linje">
             <div class="fremgang-fyll" id="profil-fyll" style="width: 0%;"></div>
           </div>
           <p class="fremgang-tekst" id="profil-tips">Last opp CV for å øke synligheten din</p>
-        </div>
-        <div class="rad" style="margin-top: 1rem; gap: 0.75rem; flex-wrap: wrap;">
-          <label class="btn btn-secondary btn-liten" id="cv-label" style="cursor: pointer; min-height: 36px;">
-            <span id="cv-label-tekst">Last opp CV</span>
-            <input type="file" id="cv-input" accept=".pdf,.docx,.doc" style="display: none;" />
-          </label>
-          <button id="cv-last-ned" class="btn btn-ghost btn-liten skjult" style="min-height:36px;">Last ned CV</button>
-          <button id="cv-slett-btn" class="btn btn-ghost btn-liten skjult" style="color: var(--farge-feil); min-height:36px;">Slett CV</button>
-          <button class="btn btn-ghost btn-liten" id="oppdater-bio-btn">Oppdater bio</button>
-          <button class="btn btn-ghost btn-liten" id="ai-tips-btn" style="color: var(--olkv-blue);">✨ AI-tips</button>
-        </div>
-        <div id="ai-tips-boks" style="display:none; margin-top:1rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:var(--radius); padding:1rem;">
-          <p style="font-size:0.8rem;font-weight:600;color:var(--olkv-blue);margin-bottom:0.75rem;">✨ Tips for å forbedre profilen din</p>
-          <div id="ai-tips-innhold" style="font-size:0.875rem;color:var(--farge-tekst-sekundaer);">Laster…</div>
-        </div>
-        <div id="cv-varsel" class="varsel skjult" style="margin-top: 0.75rem;"></div>
-        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--farge-kant);">
-          <button class="btn btn-ghost btn-liten" id="slett-konto-btn" style="color: var(--farge-feil);">
-            Slett min konto
-          </button>
         </div>
       </section>
 
@@ -148,15 +126,6 @@
             <p style="color: var(--farge-tekst-sekundaer);">Laster læreplasser…</p>
           </div>
         </div>
-      </section>
-
-      <!-- MINE SØKNADER -->
-      <section id="soknader" class="reveal">
-        <div class="rad" style="justify-content: space-between; margin-bottom: 1.25rem;">
-          <h2 style="font-size: 1.3rem;">Mine søknader</h2>
-          <span id="antall-soknader" class="badge badge-graa">0 søknader</span>
-        </div>
-        <div id="soknader-liste"></div>
       </section>
 
     </main>
@@ -377,8 +346,9 @@
       const soknader = await hentSoknaderLaerling();
       const container = document.getElementById('soknader-liste');
       const antall = document.getElementById('antall-soknader');
+      if (!container) return;
 
-      antall.textContent = `${soknader.length} søknad${soknader.length !== 1 ? 'er' : ''}`;
+      if (antall) antall.textContent = `${soknader.length} søknad${soknader.length !== 1 ? 'er' : ''}`;
 
       if (soknader.length === 0) {
         container.innerHTML = `
@@ -422,13 +392,13 @@
       const slettBtn = document.getElementById('cv-slett-btn');
       const labelTekst = document.getElementById('cv-label-tekst');
       if (harCV) {
-        lastNed.classList.remove('skjult');
-        slettBtn.classList.remove('skjult');
-        labelTekst.textContent = 'Bytt CV';
+        lastNed?.classList.remove('skjult');
+        slettBtn?.classList.remove('skjult');
+        if (labelTekst) labelTekst.textContent = 'Bytt CV';
       } else {
-        lastNed.classList.add('skjult');
-        slettBtn.classList.add('skjult');
-        labelTekst.textContent = 'Last opp CV';
+        lastNed?.classList.add('skjult');
+        slettBtn?.classList.add('skjult');
+        if (labelTekst) labelTekst.textContent = 'Last opp CV';
       }
     }
 
@@ -436,7 +406,7 @@
     visCVStatus(!!bruker.cv_filnavn);
 
     // ===== CV OPPLASTING =====
-    document.getElementById('cv-input').addEventListener('change', async (e) => {
+    document.getElementById('cv-input')?.addEventListener('change', async (e) => {
       const fil = e.target.files[0];
       if (!fil) return;
 
@@ -470,7 +440,7 @@
     });
 
     // ===== CV NEDLASTING =====
-    document.getElementById('cv-last-ned').addEventListener('click', async () => {
+    document.getElementById('cv-last-ned')?.addEventListener('click', async () => {
       const varselEl = document.getElementById('cv-varsel');
       try {
         const token = await getToken();
@@ -497,7 +467,7 @@
     });
 
     // ===== CV SLETTING =====
-    document.getElementById('cv-slett-btn').addEventListener('click', async () => {
+    document.getElementById('cv-slett-btn')?.addEventListener('click', async () => {
       if (!confirm('Er du sikker på at du vil slette CV-en din?')) return;
 
       const varselEl = document.getElementById('cv-varsel');
@@ -641,7 +611,7 @@
       document.getElementById('edit-bio').value = bruker.bio || '';
       document.getElementById('profil-modal').classList.remove('skjult');
     });
-    document.getElementById('oppdater-bio-btn').addEventListener('click', () => {
+    document.getElementById('oppdater-bio-btn')?.addEventListener('click', () => {
       document.getElementById('edit-navn').value = bruker.navn || '';
       document.getElementById('edit-bio').value = bruker.bio || '';
       document.getElementById('profil-modal').classList.remove('skjult');
@@ -695,7 +665,7 @@
       document.getElementById('slett-konto-modal').classList.add('skjult');
     }
 
-    document.getElementById('slett-konto-btn').addEventListener('click', apneSlettKontoModal);
+    document.getElementById('slett-konto-btn')?.addEventListener('click', apneSlettKontoModal);
     document.getElementById('slett-konto-lukk').addEventListener('click', lukkSlettKontoModal);
     document.getElementById('slett-konto-avbryt').addEventListener('click', lukkSlettKontoModal);
     document.getElementById('slett-konto-modal').addEventListener('click', (e) => {
@@ -738,7 +708,7 @@
     });
 
     // ===== AI: PROFILTIPS =====
-    document.getElementById('ai-tips-btn').addEventListener('click', async () => {
+    document.getElementById('ai-tips-btn')?.addEventListener('click', async () => {
       const boks = document.getElementById('ai-tips-boks');
       const innhold = document.getElementById('ai-tips-innhold');
       const btn = document.getElementById('ai-tips-btn');
