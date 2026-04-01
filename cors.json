@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://onklv-app.web.app", "https://onklv-app.firebaseapp.com", "http://localhost:3000"],
+    "method": ["PUT", "GET", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization"]
+  }
+]

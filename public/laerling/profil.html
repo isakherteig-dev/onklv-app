@@ -240,6 +240,15 @@
         <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">⚡ Ferdigheter</h2>
       </div>
       <div id="ferdigheter-liste"></div>
+      <div class="edit-only skjult" id="ferdigheter-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
+        <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-gruppe" style="flex:1;min-width:140px;">
+            <label class="etikett">Ferdighet</label>
+            <input type="text" id="ny-ferdighet-navn" placeholder="F.eks. «Sveising»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
+          </div>
+          <button class="btn btn-primary btn-liten" onclick="leggTilFerdighet()">+ Legg til</button>
+        </div>
+      </div>
       <button class="btn btn-secondary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreFerdigheter()">💾 Lagre ferdigheter</button>
     </section>
 
@@ -707,6 +716,18 @@
       visMelding('Ferdigheter lagret!', true);
     };
 
+    window.leggTilFerdighet = async function() {
+      const input = document.getElementById('ny-ferdighet-navn');
+      const navn = input.value.trim();
+      if (!navn) { visMelding('Fyll inn navn på ferdigheten.', false); return; }
+      profil.ferdigheter = profil.ferdigheter || [];
+      profil.ferdigheter.push({ navn, prosent: 50 });
+      input.value = '';
+      await lagreProfil();
+      renderFerdigheter();
+      visMelding('Ferdighet lagt til!', true);
+    };
+
     function initSkillBarObserver() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -1045,11 +1066,25 @@
       leggTilAiBoble('Hei! Jeg er OLKV sin AI-assistent. Jeg kan hjelpe deg å vurdere denne profilen, lage intervjuspørsmål eller svare på spørsmål om lærlingen.');
     }
 
+    function parseMarkdown(tekst) {
+      return tekst
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/(^|\n)(- .+)(\n|$)/g, (_, pre, item, post) => {
+          return pre + '<li>' + item.replace(/^- /, '') + '</li>' + post;
+        })
+        .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
+        .replace(/<\/ul>\s*<ul>/g, '')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+    }
+
     function leggTilAiBoble(tekst) {
       const chat = document.getElementById('ai-chat');
       const boble = document.createElement('div');
       boble.className = 'ai-boble';
-      boble.textContent = tekst;
+      boble.innerHTML = parseMarkdown(tekst);
       chat.appendChild(boble);
       chat.scrollTop = chat.scrollHeight;
       return boble;

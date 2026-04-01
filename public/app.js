@@ -238,7 +238,10 @@ export async function hentSoknaderLaerling() {
 export async function hentSoknaderBedrift() {
   const headers = await authHeaders();
   const res = await fetch('/api/soknader/bedrift', { headers });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.feil || 'Kunne ikke hente søknader');
+  }
   return res.json();
 }
 
@@ -624,7 +627,10 @@ export async function hentSoknaderBedriftMed(laerplass_id = '') {
   const headers = await authHeaders();
   const qs = laerplass_id ? `?laerplass_id=${laerplass_id}` : '';
   const res = await fetch(`/api/soknader/bedrift${qs}`, { headers });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.feil || 'Kunne ikke hente søknader');
+  }
   return res.json();
 }
 

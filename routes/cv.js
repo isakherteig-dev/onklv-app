@@ -233,7 +233,11 @@ ruter.post('/video/signed-url', krevAuth, krevRolle('laerling'), async (req, res
   }
 
   const ext = path.extname(filnavn).toLowerCase();
-  if (!TILLATTE_VIDEO_EXT.includes(ext) || !TILLATTE_VIDEO_TYPER.includes(contentType)) {
+  const EXT_TIL_MIME = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime' };
+  const resolvedContentType = (contentType && TILLATTE_VIDEO_TYPER.includes(contentType))
+    ? contentType
+    : EXT_TIL_MIME[ext] || contentType;
+  if (!TILLATTE_VIDEO_EXT.includes(ext) || !TILLATTE_VIDEO_TYPER.includes(resolvedContentType)) {
     return res.status(400).json({ feil: 'Filformatet er ikke tillatt. Kun MP4, WebM og MOV er tillatt.' });
   }
   if (size > MAX_VIDEO_BYTES) {
@@ -256,7 +260,7 @@ ruter.post('/video/signed-url', krevAuth, krevRolle('laerling'), async (req, res
       version: 'v4',
       action: 'write',
       expires: Date.now() + 15 * 60 * 1000, // 15 minutter
-      contentType
+      contentType: resolvedContentType
     });
 
     // Marker at opplasting er i gang
@@ -266,10 +270,13 @@ ruter.post('/video/signed-url', krevAuth, krevRolle('laerling'), async (req, res
       uploadPendingStopath: storagePath
     }, { merge: true });
 
-    res.json({ ok: true, signedUrl, storagePath, contentType });
+    res.json({ ok: true, signedUrl, storagePath, contentType: resolvedContentType });
   } catch (err) {
-    console.error('Video signed-url feil:', err);
-    res.status(500).json({ feil: 'Kunne ikke klargjøre opplasting. Prøv igjen.' });
+    console.error('Video signed-url feil — code:', err.code, 'message:', err.message, 'stack:', err.stack);
+    const feil = err.code === 7 || err.message?.includes('permission') || err.message?.includes('PERMISSION_DENIED')
+      ? 'Opplastningstillatelse mangler. Kontakt support.'
+      : 'Kunne ikke klargjøre opplasting. Prøv igjen.';
+    res.status(500).json({ feil });
   }
 });
 

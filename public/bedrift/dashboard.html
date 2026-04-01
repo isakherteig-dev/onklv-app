@@ -280,7 +280,14 @@
 
     // ===== SØKNADER =====
     async function lastSoknader(filter = '') {
-      alleSoknader = await hentSoknaderBedrift();
+      try {
+        alleSoknader = await hentSoknaderBedrift();
+      } catch (err) {
+        console.error('Kunne ikke hente søknader:', err.message);
+        alleSoknader = [];
+        document.getElementById('soknader-liste').innerHTML = `<div class="kort" style="text-align:center;padding:2rem;"><p style="color:#dc2626;">${err.message}</p></div>`;
+        return;
+      }
       const soknader = filter ? alleSoknader.filter(s => s.status === filter) : alleSoknader;
       const container = document.getElementById('soknader-liste');
 

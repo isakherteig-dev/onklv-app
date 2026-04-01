@@ -203,7 +203,14 @@
     async function lastSoknader() {
       stoppAllChatPolling();
       const laerplass_id = laerplassFilter.value;
-      alleSoknader = await hentSoknaderBedriftMed(laerplass_id);
+      try {
+        alleSoknader = await hentSoknaderBedriftMed(laerplass_id);
+      } catch (err) {
+        console.error('Kunne ikke hente søknader:', err.message);
+        alleSoknader = [];
+        document.getElementById('soknader-liste').innerHTML = `<div class="kort" style="text-align:center;padding:2rem;"><p style="color:#dc2626;">${err.message}</p></div>`;
+        return;
+      }
       visSoknader(alleSoknader);
       await oppdaterChatBadges();
       await haandterAutoAapnetChat();
