@@ -523,9 +523,9 @@
 
     // Modal
     window.apneSoknadModal = function(id, tittel) {
+      document.getElementById('soknad-form').reset();
       document.getElementById('soknad-laerplass-id').value = id;
       document.getElementById('modal-laereplasstitle').textContent = `Søk på: ${tittel}`;
-      document.getElementById('soknad-form').reset();
       nullstillCvFelt();
       document.getElementById('motivasjon-tegnteller').textContent = '0 tegn';
       document.getElementById('soknad-varsel').classList.add('skjult');
