@@ -85,7 +85,6 @@ ruter.get('/mine', krevAuth, krevRolle('laerling'), async (req, res) => {
   try {
     const snap = await adminDB.collection('soknader')
       .where('laerling_user_id', '==', req.user.uid)
-      .orderBy('sendt_dato', 'desc')
       .get();
 
     // Hent tilhørende læreplasser i parallell
@@ -109,6 +108,7 @@ ruter.get('/mine', krevAuth, krevRolle('laerling'), async (req, res) => {
       };
     });
 
+    resultat.sort((a, b) => new Date(b.sendt_dato) - new Date(a.sendt_dato));
     res.json(resultat);
   } catch (err) {
     console.error(err);
@@ -147,7 +147,6 @@ ruter.get('/bedrift', krevAuth, krevRolle('bedrift'), async (req, res) => {
     for (const chunk of chunks) {
       const sokSnap = await adminDB.collection('soknader')
         .where('laerplass_id', 'in', chunk)
-        .orderBy('sendt_dato', 'desc')
         .get();
       soknader.push(...sokSnap.docs.map(d => {
         const data = soknadTilObj(d);
