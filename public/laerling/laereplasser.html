@@ -144,6 +144,10 @@
         <form id="soknad-form">
           <input type="hidden" id="soknad-laerplass-id" />
           <div class="form-gruppe">
+            <label class="etikett" for="soknad-navn">Navn</label>
+            <input type="text" id="soknad-navn" class="input" />
+          </div>
+          <div class="form-gruppe">
             <label class="etikett" for="soknad-motivasjon">Motivasjon <span style="color:var(--olkv-red);">*</span></label>
             <textarea id="soknad-motivasjon" class="input" rows="5" placeholder="Fortell hvorfor du ønsker denne læreplassen og hva du kan bidra med (minst 50 tegn)…" required></textarea>
             <div class="hint" id="motivasjon-tegnteller">0 tegn</div>
@@ -529,6 +533,7 @@
       nullstillCvFelt();
       document.getElementById('motivasjon-tegnteller').textContent = '0 tegn';
       document.getElementById('soknad-varsel').classList.add('skjult');
+      if (bruker?.navn) document.getElementById('soknad-navn').value = bruker.navn;
       if (bruker?.telefon) document.getElementById('soknad-telefon').value = bruker.telefon;
       if (bruker?.utdanningsprogram) document.getElementById('soknad-vg2').value = bruker.utdanningsprogram;
       document.getElementById('soknad-modal').classList.remove('skjult');
