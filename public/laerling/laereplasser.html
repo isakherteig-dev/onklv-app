@@ -586,18 +586,28 @@
       btn.textContent = 'Sender…';
 
       try {
-        const formData = new FormData();
-        formData.append('laerplass_id', document.getElementById('soknad-laerplass-id').value);
-        formData.append('melding', motivasjon);
-        formData.append('erfaring', document.getElementById('soknad-erfaring').value.trim());
-        formData.append('vg1', document.getElementById('soknad-vg1').value.trim());
-        formData.append('vg2', document.getElementById('soknad-vg2').value.trim());
-        formData.append('telefon', document.getElementById('soknad-telefon').value.trim());
+        const laerplass_id = document.getElementById('soknad-laerplass-id').value;
+        const erfaring = document.getElementById('soknad-erfaring').value.trim();
+        const vg1 = document.getElementById('soknad-vg1').value.trim();
+        const vg2 = document.getElementById('soknad-vg2').value.trim();
+        const telefon = document.getElementById('soknad-telefon').value.trim();
+
+        let payload;
         if (cvFil) {
+          const formData = new FormData();
+          formData.append('laerplass_id', laerplass_id);
+          formData.append('melding', motivasjon);
+          formData.append('erfaring', erfaring);
+          formData.append('vg1', vg1);
+          formData.append('vg2', vg2);
+          formData.append('telefon', telefon);
           formData.append('vedlegg', cvFil);
+          payload = formData;
+        } else {
+          payload = { laerplass_id, melding: motivasjon, erfaring, vg1, vg2, telefon };
         }
 
-        await sendSoknadFull(formData);
+        await sendSoknadFull(payload);
 
         const plassId = String(document.getElementById('soknad-laerplass-id').value);
         minneSoknaderIds.add(plassId);

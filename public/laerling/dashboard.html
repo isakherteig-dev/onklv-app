@@ -588,14 +588,18 @@
       btn.textContent = 'Sender…';
 
       try {
-        const formData = new FormData();
-        formData.append('laerplass_id', valgtLaerplass.id);
-        formData.append('melding', melding);
+        let payload;
         if (cvFil) {
+          const formData = new FormData();
+          formData.append('laerplass_id', valgtLaerplass.id);
+          formData.append('melding', melding);
           formData.append('vedlegg', cvFil);
+          payload = formData;
+        } else {
+          payload = { laerplass_id: valgtLaerplass.id, melding };
         }
 
-        await sendSoknadFull(formData);
+        await sendSoknadFull(payload);
         const tittel = valgtLaerplass.tittel;
         lukkModal();
         nullstillCvFelt();
