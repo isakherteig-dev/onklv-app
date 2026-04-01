@@ -590,11 +590,18 @@
       try {
         let payload;
         if (cvFil) {
-          const formData = new FormData();
-          formData.append('laerplass_id', valgtLaerplass.id);
-          formData.append('melding', melding);
-          formData.append('vedlegg', cvFil);
-          payload = formData;
+          const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(cvFil);
+          });
+          payload = {
+            laerplass_id: valgtLaerplass.id, melding,
+            vedlegg_base64: base64,
+            vedlegg_filnavn: cvFil.name,
+            vedlegg_type: cvFil.type
+          };
         } else {
           payload = { laerplass_id: valgtLaerplass.id, melding };
         }

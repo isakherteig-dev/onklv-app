@@ -237,12 +237,11 @@ ruter.get('/stats', krevAuth, krevRolle('admin'), async (req, res) => {
 });
 
 // POST /api/soknader — send søknad (lærling)
-ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async (req, res) => {
-  // Firestore doc IDs er alltid strenger — sikre konsistens
+ruter.post('/', krevAuth, krevRolle('laerling'), async (req, res) => {
   const laerplassId = String(req.body.laerplass_id || '').trim();
-  const { melding, erfaring, vg1, vg2, telefon } = req.body;
+  const { melding, erfaring, vg1, vg2, telefon, vedlegg_base64, vedlegg_filnavn } = req.body;
 
-  console.log('[SØKNAD] Mottatt:', { laerplassId, melding: melding?.slice(0, 30), harFil: !!req.file, bodyKeys: Object.keys(req.body) });
+  console.log('[SØKNAD] Mottatt:', { laerplassId, melding: melding?.slice(0, 30), harVedlegg: !!vedlegg_base64 });
 
   if (!laerplassId) return res.status(400).json({ feil: 'Mangler laerplass_id' });
   if (!melding || melding.trim().length < 10) {
@@ -260,7 +259,6 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
       return res.status(409).json({ feil: 'Du har allerede søkt på denne lærlingplassen' });
     }
 
-    // Sjekk at læreplassen eksisterer og er aktiv
     const plassDoc = await adminDB.collection('laereplasser').doc(laerplassId).get();
     console.log('[SØKNAD] Læreplass:', { finnes: plassDoc.exists, aktiv: plassDoc.exists ? plassDoc.data().aktiv : null, docId: laerplassId });
     if (!plassDoc.exists || !plassDoc.data().aktiv) {
@@ -268,11 +266,11 @@ ruter.post('/', krevAuth, krevRolle('laerling'), haandterValgfrittVedlegg, async
     }
     const plass = plassDoc.data();
 
-    // Last opp vedlegg til Firebase Storage hvis det finnes
     let vedleggUrl = null;
-    const vedleggOriginalnavn = req.file?.originalname || null;
-    if (req.file) {
-      vedleggUrl = await lastOppTilStorage(req.file.buffer, req.file.originalname, req.user.uid);
+    const vedleggOriginalnavn = vedlegg_filnavn || null;
+    if (vedlegg_base64 && vedlegg_filnavn) {
+      const buffer = Buffer.from(vedlegg_base64, "base64");
+      vedleggUrl = await lastOppTilStorage(buffer, vedlegg_filnavn, req.user.uid);
     }
 
     console.log('[SØKNAD] Lagrer søknad...');
