@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
-import { sendStatusEpost } from '../tools/epost.js';
+import { sendStatusEpost, sendBekreftelsesEpost } from '../tools/epost.js';
 import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
@@ -309,6 +309,12 @@ ruter.post('/', krevAuth, krevRolle('laerling'), async (req, res) => {
       )
     ]);
     console.log('[SØKNAD] Varsler sendt OK');
+
+    try {
+      await sendBekreftelsesEpost(req.user.epost, req.user.navn, plass.tittel);
+    } catch (epostErr) {
+      console.error('Kunne ikke sende bekreftelse-epost:', epostErr);
+    }
 
     res.status(201).json({ ok: true, id: ref.id });
   } catch (err) {
