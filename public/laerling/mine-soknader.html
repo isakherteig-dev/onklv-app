@@ -129,17 +129,13 @@
     import {
       krevInnlogging, loggUt, hentSoknaderLaerling, trekkSoknad,
       statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle, initialFra,
-      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger
+      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml
     } from '../app.js';
 
     let bruker = null;
     let alleSoknader = [];
     let aktivSoknadId = null;
     let chatPollInterval = null;
-
-    function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
 
     function oppdaterChatBadge(antall) {
       const badge = document.getElementById('chat-ulest-badge');
@@ -241,8 +237,8 @@
             <tbody>
               ${soknader.map(s => `
                 <tr style="cursor:pointer;" onclick="visDetaljer(${s.id})">
-                  <td><strong>${s.tittel || '—'}</strong></td>
-                  <td>${s.bedrift_navn || '—'}</td>
+                  <td><strong>${escHtml(s.tittel || '—')}</strong></td>
+                  <td>${escHtml(s.bedrift_navn || '—')}</td>
                   <td>${formaterDato(s.sendt_dato)}</td>
                   <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
                   <td>
@@ -265,7 +261,7 @@
           <div class="rad" style="gap:1rem;flex-wrap:wrap;">
             <div style="flex:1;min-width:180px;">
               <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Bedrift</div>
-              <strong>${s.bedrift_navn || '—'}</strong>
+              <strong>${escHtml(s.bedrift_navn || '—')}</strong>
             </div>
             <div>
               <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Status</div>
@@ -277,12 +273,12 @@
               <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sendt</div>
               ${formaterDato(s.sendt_dato)}
             </div>
-            ${s.sted ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sted</div>${s.sted}</div>` : ''}
+            ${s.sted ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sted</div>${escHtml(s.sted)}</div>` : ''}
           </div>
-          ${s.melding ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${s.melding}</p></div>` : ''}
-          ${s.erfaring ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${s.erfaring}</p></div>` : ''}
-          ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG1</div>${s.vg1 || '—'}</div><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG2</div>${s.vg2 || '—'}</div></div>` : ''}
-          ${s.admin_kommentar ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Kommentar fra OLKV</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;border-left:3px solid #B7791F;">${s.admin_kommentar}</p></div>` : ''}
+          ${s.melding ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${escHtml(s.melding)}</p></div>` : ''}
+          ${s.erfaring ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${escHtml(s.erfaring)}</p></div>` : ''}
+          ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG1</div>${escHtml(s.vg1 || '—')}</div><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG2</div>${escHtml(s.vg2 || '—')}</div></div>` : ''}
+          ${s.admin_kommentar ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Kommentar fra OLKV</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;border-left:3px solid #B7791F;">${escHtml(s.admin_kommentar)}</p></div>` : ''}
         </div>`;
 
       document.getElementById('detaljer-handlinger').innerHTML = s.status === 'sendt'
