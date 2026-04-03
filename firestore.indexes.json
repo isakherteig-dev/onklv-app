@@ -24,6 +24,65 @@
         { "fieldPath": "fagomraade", "order": "ASCENDING" },
         { "fieldPath": "opprettet",  "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "varsler",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mottaker_id", "order": "ASCENDING" },
+        { "fieldPath": "opprettet",   "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "varsler",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mottaker_id", "order": "ASCENDING" },
+        { "fieldPath": "lest",        "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chat_meldinger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "soknad_id", "order": "ASCENDING" },
+        { "fieldPath": "opprettet", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chat_meldinger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "soknad_id",   "order": "ASCENDING" },
+        { "fieldPath": "avsender_id", "order": "ASCENDING" },
+        { "fieldPath": "lest",        "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "soknader",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",     "order": "ASCENDING" },
+        { "fieldPath": "sendt_dato", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rolle",     "order": "ASCENDING" },
+        { "fieldPath": "godkjent",  "order": "ASCENDING" },
+        { "fieldPath": "aktiv",     "order": "ASCENDING" },
+        { "fieldPath": "opprettet", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rolle",     "order": "ASCENDING" },
+        { "fieldPath": "opprettet", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
