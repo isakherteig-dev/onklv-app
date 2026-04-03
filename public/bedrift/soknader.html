@@ -72,7 +72,7 @@
     import {
       krevInnlogging, loggUt, hentSoknaderBedriftMed, hentMineAnnonser, oppdaterSoknadStatus,
       statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle,
-      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger
+      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -81,10 +81,6 @@
     const sideParams = new URLSearchParams(window.location.search);
     let autoChatSoknadId = (sideParams.get('chat') || '').trim();
     const forhandsvalgtLaerplassId = (sideParams.get('laerplass_id') || '').trim();
-
-    function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
 
     function tilJsStr(tekst) {
       return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
@@ -241,21 +237,21 @@
         <div class="kort" style="margin-bottom:1rem;">
           <div class="kort-header">
             <div>
-              <div class="kort-tittel">${s.laerling_naam || '—'}</div>
-              <div class="kort-undertittel">${s.laerling_epost || ''} ${s.skole ? '· ' + s.skole : ''}</div>
+              <div class="kort-tittel">${escHtml(s.laerling_naam || '—')}</div>
+              <div class="kort-undertittel">${escHtml(s.laerling_epost || '')} ${s.skole ? '· ' + escHtml(s.skole) : ''}</div>
             </div>
             <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
           </div>
           <div style="margin:0.5rem 0;font-size:0.83rem;color:var(--olkv-gray);">
-            ${s.utdanningsprogram ? `📚 ${s.utdanningsprogram}` : ''}
-            ${s.vg1 ? ` · VG1: ${s.vg1}` : ''}
-            ${s.vg2 ? ` · VG2: ${s.vg2}` : ''}
+            ${s.utdanningsprogram ? `📚 ${escHtml(s.utdanningsprogram)}` : ''}
+            ${s.vg1 ? ` · VG1: ${escHtml(s.vg1)}` : ''}
+            ${s.vg2 ? ` · VG2: ${escHtml(s.vg2)}` : ''}
           </div>
           <div style="margin-bottom:0;font-size:0.85rem;">
             <strong style="font-size:0.8rem;color:var(--olkv-gray);display:block;margin-bottom:3px;">Motivasjon</strong>
-            <p style="margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${s.melding || '—'}</p>
+            <p style="margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${escHtml(s.melding || '—')}</p>
           </div>
-          ${s.erfaring ? `<div style="margin-top:0.5rem;font-size:0.85rem;"><strong style="font-size:0.8rem;color:var(--olkv-gray);display:block;margin-bottom:3px;">Erfaring</strong><p style="margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.erfaring}</p></div>` : ''}
+          ${s.erfaring ? `<div style="margin-top:0.5rem;font-size:0.85rem;"><strong style="font-size:0.8rem;color:var(--olkv-gray);display:block;margin-bottom:3px;">Erfaring</strong><p style="margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escHtml(s.erfaring)}</p></div>` : ''}
           <div class="kort-footer" style="margin-top:1rem;">
             <span style="font-size:0.82rem;color:var(--olkv-gray);">Sendt: ${formaterDato(s.sendt_dato)}</span>
             <div class="tabell-handlinger">
