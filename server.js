@@ -15,6 +15,7 @@ import chatRuter from './routes/chat.js';
 import { rateLimiter } from './middleware/rateLimit.js';
 
 const app = express();
+app.set('trust proxy', true);
 const port = process.env.PORT ?? 3000;
 const isDirectRun = process.argv[1]
   ? import.meta.url === pathToFileURL(process.argv[1]).href
