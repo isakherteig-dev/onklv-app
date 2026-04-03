@@ -1,7 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropicApiKey = process.env.ANTHROPIC_API_KEY ?? process.env.LOCAL_ANTHROPIC_API_KEY;
-const client = new Anthropic({ apiKey: anthropicApiKey });
+let _client = null;
+
+function getClient() {
+  if (_client) return _client;
+
+  const apiKey = process.env.ANTHROPIC_API_KEY ?? process.env.LOCAL_ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('AI-tjenesten er ikke satt opp ennå (mangler ANTHROPIC_API_KEY)');
+  }
+
+  _client = new Anthropic({ apiKey });
+  return _client;
+}
 
 /**
  * Sender en melding til Claude og returnerer svaret som tekst.
@@ -10,9 +21,7 @@ const client = new Anthropic({ apiKey: anthropicApiKey });
  * @returns {Promise<string>} - Claudes svar som tekst
  */
 export async function callClaude(systemPrompt, userMessage) {
-  if (!anthropicApiKey) {
-    throw new Error('AI-tjenesten er ikke satt opp ennå');
-  }
+  const client = getClient();
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
