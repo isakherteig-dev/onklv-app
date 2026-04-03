@@ -725,7 +725,3 @@ export async function initVarselBjelle(bjelleId = 'varsel-bjelle', dropdownId = 
 
   await oppdaterBjelle();
 }
-
-// ===== DUMMY-DATA (beholdt for bakoverkompatibilitet) =====
-export const BEDRIFTER_VENTER = [];
-export const LAEREPLASSER = [];

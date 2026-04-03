@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import multer from 'multer';
 import path from 'path';
 import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
@@ -7,24 +6,6 @@ import { sendStatusEpost, sendBekreftelsesEpost } from '../tools/epost.js';
 import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
-const TILLATTE_FILTYPER = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-];
-const TILLATTE_ENDINGER = ['.pdf', '.docx'];
-
-// Multer med memoryStorage — ingen lokal disk brukes
-const upload = multer({
-  storage: multer.memoryStorage(),
-  fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    const gyldigExt = TILLATTE_ENDINGER.includes(ext);
-    const gyldigMime = !file.mimetype || file.mimetype === 'application/octet-stream' || TILLATTE_FILTYPER.includes(file.mimetype);
-    if (gyldigExt && gyldigMime) { cb(null, true); return; }
-    cb(new Error('Kun PDF og DOCX-filer er tillatt'), false);
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }
-});
 
 // Last opp buffer til Firebase Storage, returner signert URL (120 dager)
 async function lastOppTilStorage(buffer, originalname, uid) {
@@ -42,18 +23,6 @@ async function lastOppTilStorage(buffer, originalname, uid) {
   });
   console.log('[STORAGE] Opplasting OK:', filnavn);
   return url;
-}
-
-function haandterValgfrittVedlegg(req, res, next) {
-  const contentType = req.headers['content-type'] || '';
-  if (!contentType.includes('multipart/form-data')) { next(); return; }
-  upload.single('vedlegg')(req, res, (err) => {
-    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ feil: 'CV-en er for stor. Maks filstørrelse er 5 MB.' });
-    }
-    if (err) { return res.status(400).json({ feil: err.message || 'Kunne ikke laste opp CV.' }); }
-    next();
-  });
 }
 
 
@@ -160,78 +129,6 @@ ruter.get('/bedrift', krevAuth, krevRolle('bedrift'), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ feil: 'Kunne ikke hente søknader' });
-  }
-});
-
-// GET /api/soknader/admin — alle søknader (admin)
-ruter.get('/admin', krevAuth, krevRolle('admin'), async (req, res) => {
-  try {
-    const { status, sok } = req.query;
-
-    let q = adminDB.collection('soknader');
-    if (status && status !== 'alle') q = q.where('status', '==', status);
-    q = q.orderBy('sendt_dato', 'desc');
-
-    const snap = await q.get();
-    const soknader = snap.docs.map(soknadTilObj);
-
-    // Berik med læreplasstittel og bedriftsnavn
-    const plassIds = [...new Set(soknader.map(s => s.laerplass_id))];
-    const plassDocs = await Promise.all(
-      plassIds.map(id => adminDB.collection('laereplasser').doc(id).get())
-    );
-    const plassMap = {};
-    plassDocs.forEach(d => { if (d.exists) plassMap[d.id] = d.data(); });
-
-    let resultat = soknader.map(s => {
-      const p = plassMap[s.laerplass_id] || {};
-      return {
-        ...s,
-        laerplass_tittel: p.tittel,
-        bedrift_navn: p.bedrift_navn,
-        bedrift_user_id: p.bedrift_user_id
-      };
-    });
-
-    if (sok) {
-      const s = sok.toLowerCase();
-      resultat = resultat.filter(r =>
-        r.laerling_naam?.toLowerCase().includes(s) ||
-        r.laerplass_tittel?.toLowerCase().includes(s) ||
-        r.bedrift_navn?.toLowerCase().includes(s)
-      );
-    }
-
-    res.json(resultat);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ feil: 'Kunne ikke hente søknader' });
-  }
-});
-
-// GET /api/soknader/stats — søknadsstatistikk (admin)
-ruter.get('/stats', krevAuth, krevRolle('admin'), async (req, res) => {
-  try {
-    const statuser = ['sendt', 'under_behandling', 'godkjent', 'avslatt', 'trukket'];
-    const [counts, aktivePlass] = await Promise.all([
-      Promise.all(statuser.map(s =>
-        adminDB.collection('soknader').where('status', '==', s).count().get()
-          .then(snap => ({ status: s, antall: snap.data().count }))
-      )),
-      adminDB.collection('laereplasser').where('aktiv', '==', true).count().get()
-    ]);
-
-    const stats = { sendt: 0, under_behandling: 0, godkjent: 0, avslatt: 0, trukket: 0, totalt: 0 };
-    counts.forEach(({ status, antall }) => {
-      stats[status] = antall;
-      stats.totalt += antall;
-    });
-    stats.aktiveLaereplasser = aktivePlass.data().count;
-
-    res.json(stats);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ feil: 'Kunne ikke hente statistikk' });
   }
 });
 

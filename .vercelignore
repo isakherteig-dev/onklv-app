@@ -1,7 +1,0 @@
-.env
-.env.*
-.tmp/
-tools/
-workflows/
-skills/
-node_modules/
