@@ -196,7 +196,8 @@
       slettMinKonto,
       oppdaterSoknadStatus,
       getToken,
-      hentUlesteChatMeldinger
+      hentUlesteChatMeldinger,
+      escHtml
     } from '../app.js';
     initScrollReveal();
 
@@ -252,7 +253,7 @@
         <div class="kort">
           <div class="kort-header">
             <div>
-              <div class="kort-tittel">${a.tittel}</div>
+              <div class="kort-tittel">${escHtml(a.tittel)}</div>
               <div class="kort-undertittel">Frist: ${formaterDato(a.frist)}</div>
             </div>
             <span class="badge ${a.aktiv ? 'badge-gronn' : 'badge-graa'}">${a.aktiv ? 'Aktiv' : 'Inaktiv'}</span>
@@ -309,19 +310,19 @@
             <div class="rad" style="gap: 0.75rem; align-items: center;">
               <div class="avatar">${(s.laerling_naam || '?').trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}</div>
               <div>
-                <div class="kort-tittel">${s.laerling_naam || '—'}</div>
-                <div class="kort-undertittel">${[s.utdanningsprogram, s.skole].filter(Boolean).join(' · ') || '—'}</div>
+                <div class="kort-tittel">${escHtml(s.laerling_naam || '—')}</div>
+                <div class="kort-undertittel">${[s.utdanningsprogram, s.skole].filter(Boolean).map(escHtml).join(' · ') || '—'}</div>
               </div>
             </div>
             <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
           </div>
           <p style="font-size: 0.875rem; background: #f8fafc; padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; border-left: 3px solid var(--farge-kant); font-style: italic;">
-            "${s.melding}"
+            "${escHtml(s.melding)}"
           </p>
           <div class="kort-footer">
             <span style="font-size: 0.8rem; color: var(--farge-tekst-sekundaer);">Sendt ${formaterDato(s.sendt_dato)}</span>
             <div class="rad" style="gap: 0.5rem;">
-              <button class="btn btn-ghost btn-liten" onclick="seProfilModal('${s.laerling_user_id}', '${(s.laerling_naam || '').replace(/'/g, "\\'")}')">Se profil</button>
+              <button class="btn btn-ghost btn-liten" onclick="seProfilModal(${tilJsStr(s.laerling_user_id)}, ${tilJsStr(s.laerling_naam || '')})">Se profil</button>
               <a class="btn btn-ghost btn-liten" href="/bedrift/soknader.html?${chatParams.toString()}" style="display:inline-flex;align-items:center;">
                 💬 Meldinger <span id="dashboard-chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span>
               </a>
@@ -395,8 +396,8 @@
           ? `<img src="${b.avatar_url}" alt="Profilbilde" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;" />`
           : `<div class="avatar" style="width:64px;height:64px;font-size:1.4rem;flex-shrink:0;">${initialer}</div>`;
 
-        const infoLinjer = [b.utdanningsprogram, b.skole].filter(Boolean).join(' · ');
-        const metaLinjer = [p.sted ? `📍 ${p.sted}` : null, p.alder ? `Alder: ${p.alder}` : null].filter(Boolean);
+        const infoLinjer = [b.utdanningsprogram, b.skole].filter(Boolean).map(escHtml).join(' · ');
+        const metaLinjer = [p.sted ? `📍 ${escHtml(p.sted)}` : null, p.alder ? `Alder: ${escHtml(p.alder)}` : null].filter(Boolean);
 
         const harData = b.navn || b.bio || (p.ferdigheter && p.ferdigheter.length) || p.motivasjon;
 
@@ -405,7 +406,7 @@
             <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;">
               ${avatarHTML}
               <div>
-                <div style="font-weight:700;font-size:1.1rem;margin-bottom:0.2rem;">${b.navn || '—'}</div>
+                <div style="font-weight:700;font-size:1.1rem;margin-bottom:0.2rem;">${escHtml(b.navn || '—')}</div>
                 ${infoLinjer ? `<div style="font-size:0.875rem;color:var(--farge-tekst-sekundaer);margin-bottom:0.2rem;">${infoLinjer}</div>` : ''}
                 ${metaLinjer.map(l => `<div style="font-size:0.82rem;color:var(--farge-tekst-sekundaer);">${l}</div>`).join('')}
               </div>
@@ -414,32 +415,32 @@
             ${b.bio ? `
               <div style="margin-bottom:1.25rem;">
                 <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.4rem;">Om meg</div>
-                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${b.bio}</p>
+                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${escHtml(b.bio)}</p>
               </div>` : ''}
 
             ${(p.ferdigheter && p.ferdigheter.length) ? `
               <div style="margin-bottom:1.25rem;">
                 <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.5rem;">Ferdigheter</div>
                 <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
-                  ${p.ferdigheter.map(f => `<span class="badge badge-blaa">${f}</span>`).join('')}
+                  ${p.ferdigheter.map(f => `<span class="badge badge-blaa">${escHtml(f)}</span>`).join('')}
                 </div>
               </div>` : ''}
 
             ${p.motivasjon ? `
               <div style="margin-bottom:1.25rem;">
                 <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.4rem;">Motivasjon</div>
-                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${p.motivasjon}</p>
+                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${escHtml(p.motivasjon)}</p>
               </div>` : ''}
 
             ${(p.kanStarte || p.stillingsprosent) ? `
               <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap;">
-                ${p.kanStarte ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Kan starte: </span>${p.kanStarte}</div>` : ''}
-                ${p.stillingsprosent ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Stillingsprosent: </span>${p.stillingsprosent}%</div>` : ''}
+                ${p.kanStarte ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Kan starte: </span>${escHtml(p.kanStarte)}</div>` : ''}
+                ${p.stillingsprosent ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Stillingsprosent: </span>${escHtml(p.stillingsprosent)}%</div>` : ''}
               </div>` : ''}
 
             ${b.cv_url ? `
               <div style="padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
-                <a href="${b.cv_url}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-liten">Last ned CV${b.cv_filnavn ? ` (${b.cv_filnavn})` : ''}</a>
+                <a href="${b.cv_url}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-liten">Last ned CV${b.cv_filnavn ? ` (${escHtml(b.cv_filnavn)})` : ''}</a>
               </div>` : ''}
 
             ${!harData ? `
