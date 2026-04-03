@@ -131,7 +131,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, oppdaterAnnonse, slettAnnonse,
-      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml
+      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml, tilJsStr
     } from '../app.js';
 
     let bruker = null;
@@ -155,10 +155,6 @@
     const fristInput = document.getElementById('a-frist');
     const standardFristMin = new Date().toISOString().split('T')[0];
     fristInput.min = standardFristMin;
-
-    function tilJsStr(tekst) {
-      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
-    }
 
     function oppdaterAnnonseModalTekst() {
       document.getElementById('annonse-modal-tittel').textContent = redigererAnnonseId ? 'Rediger læreplass' : 'Legg ut ny læreplass';

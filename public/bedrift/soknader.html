@@ -72,7 +72,7 @@
     import {
       krevInnlogging, loggUt, hentSoknaderBedriftMed, hentMineAnnonser, oppdaterSoknadStatus,
       statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle,
-      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml
+      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml, tilJsStr
     } from '../app.js';
 
     let bruker = null;
@@ -81,10 +81,6 @@
     const sideParams = new URLSearchParams(window.location.search);
     let autoChatSoknadId = (sideParams.get('chat') || '').trim();
     const forhandsvalgtLaerplassId = (sideParams.get('laerplass_id') || '').trim();
-
-    function tilJsStr(tekst) {
-      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
-    }
 
     function stoppChatPolling(id) {
       clearInterval(chatPolls[id]);

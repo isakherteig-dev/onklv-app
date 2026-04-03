@@ -195,7 +195,7 @@
       krevInnlogging, loggUt, hentLaereplasser, sendSoknadFull,
       statusTekst, formaterDato, initScrollReveal, fagomraader,
       visFeilmelding, visBekreftelse, initVarselBjelle, initialFra,
-      getToken, escHtml
+      getToken, escHtml, tilJsStr
     } from '../app.js';
 
     let bruker = null;
@@ -295,10 +295,6 @@
         .replace(/æ/g, 'ae')
         .replace(/ø/g, 'o')
         .replace(/å/g, 'a');
-    }
-
-    function tilJsStr(tekst) {
-      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     }
 
     function fjernQueryParameter(navn) {

@@ -197,7 +197,8 @@
       oppdaterSoknadStatus,
       getToken,
       hentUlesteChatMeldinger,
-      escHtml
+      escHtml,
+      tilJsStr
     } from '../app.js';
     initScrollReveal();
 
@@ -213,10 +214,6 @@
 
     let alleSoknader = [];
     let alleAnnonser = [];
-
-    function tilJsStr(tekst) {
-      return `'${String(tekst ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
-    }
 
     // ===== STATS =====
     function visStats() {
