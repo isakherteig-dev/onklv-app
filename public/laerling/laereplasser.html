@@ -195,7 +195,7 @@
       krevInnlogging, loggUt, hentLaereplasser, sendSoknadFull,
       statusTekst, formaterDato, initScrollReveal, fagomraader,
       visFeilmelding, visBekreftelse, initVarselBjelle, initialFra,
-      getToken
+      getToken, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -451,21 +451,21 @@
         const utlopt = dager(p) !== null && dager(p) < 0;
         const harSokt = minneSoknaderIds.has(plassId);
         const fagtekst = hentFagtekst(p);
-        const fagBadge = fagtekst ? `<span class="badge badge-blaa">${fagtekst}</span>` : '';
+        const fagBadge = fagtekst ? `<span class="badge badge-blaa">${escHtml(fagtekst)}</span>` : '';
         const jsPlassId = tilJsStr(plassId);
         const jsTittel = tilJsStr(p.tittel || '');
         return `
           <div class="kort laereplass-kort${animer ? ' kort-filter-inn' : ''}${utlopt ? ' opacity-50' : ''}">
             <div class="kort-header">
               <div>
-                <div class="kort-tittel">${p.tittel}</div>
-                <div class="kort-undertittel">${p.bedrift_navn || '—'}</div>
+                <div class="kort-tittel">${escHtml(p.tittel)}</div>
+                <div class="kort-undertittel">${escHtml(p.bedrift_navn || '—')}</div>
               </div>
               ${fagBadge}
             </div>
-            <p style="font-size:0.88rem;margin:0.75rem 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--farge-tekst-sekundaer);">${p.beskrivelse || 'Ingen beskrivelse tilgjengelig.'}</p>
+            <p style="font-size:0.88rem;margin:0.75rem 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--farge-tekst-sekundaer);">${escHtml(p.beskrivelse || 'Ingen beskrivelse tilgjengelig.')}</p>
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
-              ${p.sted ? `<span style="font-size:0.82rem;color:var(--olkv-gray);">📍 ${p.sted}</span>` : ''}
+              ${p.sted ? `<span style="font-size:0.82rem;color:var(--olkv-gray);">📍 ${escHtml(p.sted)}</span>` : ''}
               ${fristBadge(p.frist)}
             </div>
             <div class="kort-footer">
@@ -679,9 +679,9 @@
                   <div style="font-size:0.65rem;opacity:0.7;">match</div>
                 </div>
                 <div style="flex:1;min-width:180px;">
-                  <div style="font-weight:600;font-size:0.9rem;">${plass.tittel}</div>
-                  <div style="font-size:0.8rem;opacity:0.75;">${plass.bedrift_navn || ''} ${plass.sted ? '· ' + plass.sted : ''}</div>
-                  <div style="font-size:0.78rem;opacity:0.7;margin-top:2px;">${r.begrunnelse || ''}</div>
+                  <div style="font-weight:600;font-size:0.9rem;">${escHtml(plass.tittel)}</div>
+                  <div style="font-size:0.8rem;opacity:0.75;">${escHtml(plass.bedrift_navn || '')} ${plass.sted ? '· ' + escHtml(plass.sted) : ''}</div>
+                  <div style="font-size:0.78rem;opacity:0.7;margin-top:2px;">${escHtml(r.begrunnelse || '')}</div>
                 </div>
                 ${!minneSoknaderIds.has(String(plass.id))
                   ? `<button class="btn btn-primary btn-liten" style="flex-shrink:0;" onclick="apneSoknadModal(${tilJsStr(String(plass.id))}, ${tilJsStr(plass.tittel || '')})">Søk nå →</button>`
