@@ -9,11 +9,23 @@ const ruter = Router();
  * POST /api/auth/register
  */
 ruter.post('/register', async (req, res) => {
-  const { uid, navn, epost, telefon, rolle, utdanningsprogram, skole, bio,
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) return res.status(401).json({ feil: 'Ikke innlogget' });
+
+  let uid;
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+    uid = decoded.uid;
+  } catch (err) {
+    console.error('Token-verifisering feilet:', err);
+    return res.status(401).json({ feil: 'Ugyldig token' });
+  }
+
+  const { navn, epost, telefon, rolle, utdanningsprogram, skole, bio,
           orgNr, bransje, bedriftBeskrivelse, samtykkeVersjon } = req.body;
 
-  if (!uid || !navn || !epost || !rolle) {
-    return res.status(400).json({ feil: 'Mangler påkrevde felt (uid, navn, epost, rolle)' });
+  if (!navn || !epost || !rolle) {
+    return res.status(400).json({ feil: 'Mangler påkrevde felt (navn, epost, rolle)' });
   }
   if (!['laerling', 'bedrift'].includes(rolle)) {
     return res.status(400).json({ feil: 'Ugyldig rolle' });
@@ -26,8 +38,6 @@ ruter.post('/register', async (req, res) => {
   }
 
   try {
-    await adminAuth.getUser(uid);
-
     const eksisterende = await adminDB.collection('users').doc(uid).get();
     if (eksisterende.exists) {
       return res.status(400).json({ feil: 'Bruker allerede registrert' });
@@ -64,9 +74,6 @@ ruter.post('/register', async (req, res) => {
     res.status(201).json(svar);
   } catch (err) {
     console.error('Registreringsfeil:', err);
-    if (err.code === 'auth/user-not-found') {
-      return res.status(400).json({ feil: 'Firebase Auth-bruker ikke funnet' });
-    }
     res.status(500).json({ feil: 'Kunne ikke registrere bruker' });
   }
 });
