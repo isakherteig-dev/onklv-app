@@ -34,7 +34,8 @@ export async function krevAuth(req, res, next) {
 
     req.user = { uid: decoded.uid, ...userData };
     next();
-  } catch {
+  } catch (err) {
+    console.error('Auth-verifisering feilet:', err);
     return res.status(401).json({ feil: 'Ugyldig sesjon — logg inn på nytt' });
   }
 }
