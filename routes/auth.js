@@ -2,13 +2,25 @@ import { Router } from 'express';
 import { adminAuth, adminDB } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 import { sendVerifiseringsEpost } from '../tools/epost.js';
+import { rateLimiter } from '../middleware/rateLimit.js';
+
+// IP-basert rate limiter for uautentiserte endepunkter (register)
+function ipRateLimiter(maks = 5, vindusMs = 600_000) {
+  return (req, res, next) => {
+    req.user = { uid: req.ip || 'unknown-ip' };
+    rateLimiter(maks, vindusMs)(req, res, next);
+  };
+}
+
+const registerLimit = ipRateLimiter(5, 10 * 60 * 1000); // 5 per 10 min per IP
+const verifiseringLimit = rateLimiter(3, 10 * 60 * 1000); // 3 per 10 min per bruker
 
 const ruter = Router();
 
 /**
  * POST /api/auth/register
  */
-ruter.post('/register', async (req, res) => {
+ruter.post('/register', registerLimit, async (req, res) => {
   const token = req.headers.authorization?.split('Bearer ')[1];
   if (!token) return res.status(401).json({ feil: 'Ikke innlogget' });
 
@@ -82,7 +94,7 @@ ruter.post('/register', async (req, res) => {
  * POST /api/auth/send-verifisering
  * Genererer 6-sifret kode, lagrer i Firestore, sender på e-post.
  */
-ruter.post('/send-verifisering', async (req, res) => {
+ruter.post('/send-verifisering', verifiseringLimit, async (req, res) => {
   const token = req.headers.authorization?.split('Bearer ')[1];
   if (!token) return res.status(401).json({ feil: 'Ikke innlogget' });
 
