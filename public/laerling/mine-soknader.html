@@ -173,7 +173,7 @@
 
     function startChatPolling(soknadId) {
       stoppChatPolling();
-      chatPollInterval = setInterval(() => lastChatMeldinger(soknadId), 5000);
+      chatPollInterval = setInterval(() => lastChatMeldinger(soknadId), 15000);
     }
 
     function stoppChatPolling() {
@@ -350,6 +350,18 @@
     });
 
     await lastSoknader();
+
+    // Stopp chat-polling når fanen er skjult, start igjen når synlig
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stoppChatPolling();
+      } else if (aktivSoknadId && !document.getElementById('panel-chat')?.classList.contains('skjult')) {
+        lastChatMeldinger(aktivSoknadId);
+        stoppChatPolling();
+        chatPollInterval = setInterval(() => lastChatMeldinger(aktivSoknadId), 15000);
+      }
+    });
+
     initScrollReveal();
     initVarselBjelle();
   </script>

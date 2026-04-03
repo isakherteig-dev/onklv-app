@@ -107,7 +107,7 @@
       if (skalAapne) {
         await lastChatBedrift(id);
         stoppChatPolling(id);
-        chatPolls[id] = setInterval(() => lastChatBedrift(id), 5000);
+        chatPolls[id] = setInterval(() => lastChatBedrift(id), 15000);
         if (scrollTilPanel) {
           panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -326,6 +326,23 @@
     };
 
     await lastSoknader();
+
+    // Stopp chat-polling når fanen er skjult, start igjen når synlig
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stoppAllChatPolling();
+      } else {
+        // Gjenstart polling for alle åpne chat-paneler
+        alleSoknader.forEach(s => {
+          const panel = document.getElementById(`chat-panel-${s.id}`);
+          if (panel && !panel.classList.contains('skjult')) {
+            lastChatBedrift(s.id);
+            stoppChatPolling(s.id);
+            chatPolls[s.id] = setInterval(() => lastChatBedrift(s.id), 15000);
+          }
+        });
+      }
+    });
 
     initScrollReveal();
     initVarselBjelle();
