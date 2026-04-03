@@ -55,13 +55,16 @@ public/               ← Frontend (statiske filer)
 - `FB_PRIVATE_KEY` har `\n` som må erstattes: `.replace(/\\n/g, '\n')`
 - Firestore Timestamps må konverteres: `data.opprettet?.toDate?.()?.toISOString?.()`
 - Cloud Functions secrets: definert i `index.js` sin `secrets`-array
+- AI-chat system-prompt bygges i backend (`routes/ai.js`) — klienten sender bare `target_uid`
 - Storage bucket: `onklv-app.firebasestorage.app`
+- Rate limiting: Firestore-collection `rate_limits` (brukes av middleware/rateLimit.js)
 
 ### Frontend-spesifikt
 - Firebase Client SDK importeres via CDN (ikke npm): `https://www.gstatic.com/firebasejs/11.6.0/`
 - `getToken()` i `app.js` returnerer Firebase ID-token
 - Alle API-kall bruker `Authorization: Bearer ${token}`
 - Modaler bruker `.modal-bakgrunn.skjult` — toggle med `classList.add/remove('skjult')`
+- `tilJsStr()` i `app.js` — brukes for sikker JS-streng-escaping i onclick-attributter
 
 ### Profil-siden (profil.html)
 - Har to moduser: visning (for bedrift/admin) og redigering (for eier)
