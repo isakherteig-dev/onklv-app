@@ -1,82 +1,85 @@
-# Agent Instructions
+# OLKV — Agent Instructions
 
-You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.
+## Prosjektoversikt
+OLKV er en norsk webapp for Opplæringskontoret i Vestland. Den kobler lærlinger med lærebedrifter.
+Stack: Node.js + Express (ESM), Firebase (Auth, Firestore, Storage, Cloud Functions Gen 2), Vanilla JS frontend.
 
-## The WAT Architecture
+## KRITISKE REGLER — LES DETTE FØRST
 
-**Layer 1: Workflows (The Instructions)**
-- Markdown SOPs stored in `workflows/`
-- Each workflow defines the objective, required inputs, which tools to use, expected outputs, and how to handle edge cases
-- Written in plain language, the same way you'd brief someone on your team
+### 1. ALDRI rediger filer over 300 linjer uten å lese hele filen først
+- `profil.html` er 1500+ linjer. Ikke gjør endringer uten å forstå helheten.
+- Bruk `view` med `view_range` for å lese seksjoner du skal endre.
+- Beskriv alltid HVA du endrer og HVORFOR før du gjør det.
 
-**Layer 2: Agents (The Decision-Maker)**
-- This is your role. You're responsible for intelligent coordination.
-- Read the relevant workflow, run tools in the correct sequence, handle failures gracefully, and ask clarifying questions when needed
-- You connect intent to execution without trying to do everything yourself
-- Example: If you need to pull data from a website, don't attempt it directly. Read `workflows/scrape_website.md`, figure out the required inputs, then execute `tools/scrape_single_site.py`
+### 2. ÉN endring om gangen
+- Gjør aldri mer enn én logisk endring per commit.
+- Test at den ene endringen fungerer FØR du går videre.
+- Hvis du fikser en bug, ikke "forbedre" noe annet samtidig.
 
-**Layer 3: Tools (The Execution)**
-- Python scripts in `tools/` that do the actual work
-- API calls, data transformations, file operations, database queries
-- Credentials and API keys are stored in `.env`
-- These scripts are consistent, testable, and fast
+### 3. Ikke svelg feil
+- ALDRI skriv tomme `catch {}` eller `catch { /* ignorer */ }`.
+- Alle catch-blokker SKAL minst ha `console.error(err)`.
+- Frontend-feil SKAL vises til brukeren med `visFeilmelding()` eller `visMelding()`.
 
-**Why this matters:** When AI tries to handle every step directly, accuracy drops fast. If each step is 90% accurate, you're down to 59% success after just five steps. By offloading execution to deterministic scripts, you stay focused on orchestration and decision-making where you excel.
+### 4. Ikke dupliser kode
+- `index.js` er ENESTE entry point for Cloud Functions. `functions.js` skal IKKE eksistere.
+- Sjekk alltid om en funksjon allerede finnes i `app.js` før du lager en ny.
 
-## Skills (Les alltid disse)
+### 5. Mobil-first
+- Alle CSS-endringer SKAL testes med viewport 375px bredde.
+- Bruk `min-height: 44px` på alle interaktive elementer.
+- Sjekk at `.skjult`-klassen fungerer korrekt (den bruker `display: none !important`).
 
-Ved start av hver samtale, les alle filer i `skills/` før du begynner å jobbe:
-- `skills/PERFECTMATCH_STACK.md` — tech stack, arkitektur og databaseskjema
-- `skills/PERFECTMATCH_AUTH_UX.md` — auth-implementasjon og UX-prinsipper
-- `skills/PERFECTMATCH_AI.md` — AI-integrasjon og matching-logikk
+## Filstruktur — hva er hva
 
-Disse filene gir deg konteksten du trenger for å ta gode beslutninger.
-
-## How to Operate
-
-**1. Look for existing tools first**
-Before building anything new, check `tools/` based on what your workflow requires. Only create new scripts when nothing exists for that task.
-
-**2. Learn and adapt when things fail**
-When you hit an error:
-- Read the full error message and trace
-- Fix the script and retest (if it uses paid API calls or credits, check with me before running again)
-- Document what you learned in the workflow (rate limits, timing quirks, unexpected behavior)
-- Example: You get rate-limited on an API, so you dig into the docs, discover a batch endpoint, refactor the tool to use it, verify it works, then update the workflow so this never happens again
-
-**3. Keep workflows current**
-Workflows should evolve as you learn. When you find better methods, discover constraints, or encounter recurring issues, update the workflow. That said, don't create or overwrite workflows without asking unless I explicitly tell you to. These are your instructions and need to be preserved and refined, not tossed after one use.
-
-## The Self-Improvement Loop
-
-Every failure is a chance to make the system stronger:
-1. Identify what broke
-2. Fix the tool
-3. Verify the fix works
-4. Update the workflow with the new approach
-5. Move on with a more robust system
-
-This loop is how the framework improves over time.
-
-## File Structure
-
-**What goes where:**
-- **Deliverables**: Final outputs go to cloud services (Google Sheets, Slides, etc.) where I can access them directly
-- **Intermediates**: Temporary processing files that can be regenerated
-
-**Directory layout:**
 ```
-.tmp/           # Temporary files (scraped data, intermediate exports). Regenerated as needed.
-tools/          # Python scripts for deterministic execution
-workflows/      # Markdown SOPs defining what to do and how
-.env            # API keys and environment variables (NEVER store secrets anywhere else)
-credentials.json, token.json  # Google OAuth (gitignored)
+index.js              ← Cloud Functions entry point (ENESTE)
+server.js             ← Express-app (brukes av både dev og prod)
+firebase/config.js    ← Admin SDK init
+middleware/            ← Auth og rate limiting
+routes/               ← API-endepunkter (auth, ai, admin, soknader, etc.)
+tools/                ← AI-klienter, e-post, seed-scripts
+utils/                ← Hjelpefunksjoner (varsler)
+public/               ← Frontend (statiske filer)
+  app.js              ← Delt frontend-logikk (auth, API-kall, hjelpefunksjoner)
+  firebase-config.js  ← Client SDK config
+  style.css           ← All CSS
+  laerling/           ← Lærling-sider (dashboard, profil, søknader, læreplasser)
+  bedrift/            ← Bedrift-sider
+  admin/              ← Admin-sider
 ```
 
-**Core principle:** Local files are just for processing. Anything I need to see or use lives in cloud services. Everything in `.tmp/` is disposable.
+## Vanlige fallgruver
 
-## Bottom Line
+### Firebase-spesifikt
+- `FB_PRIVATE_KEY` har `\n` som må erstattes: `.replace(/\\n/g, '\n')`
+- Firestore Timestamps må konverteres: `data.opprettet?.toDate?.()?.toISOString?.()`
+- Cloud Functions secrets: definert i `index.js` sin `secrets`-array
+- Storage bucket: `onklv-app.firebasestorage.app`
 
-You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
+### Frontend-spesifikt
+- Firebase Client SDK importeres via CDN (ikke npm): `https://www.gstatic.com/firebasejs/11.6.0/`
+- `getToken()` i `app.js` returnerer Firebase ID-token
+- Alle API-kall bruker `Authorization: Bearer ${token}`
+- Modaler bruker `.modal-bakgrunn.skjult` — toggle med `classList.add/remove('skjult')`
 
-Stay pragmatic. Stay reliable. Keep learning.
+### Profil-siden (profil.html)
+- Har to moduser: visning (for bedrift/admin) og redigering (for eier)
+- `editMode` styrer `.edit-only`-elementers synlighet
+- `targetBruker` = den brukeren vi ser på (kan være en annen enn innlogget bruker)
+- `profil` = profilData fra Firestore subcollection `users/{uid}/profilData/main`
+- Video bruker signed URLs (3-stegs opplasting: signed-url → direkte upload → confirm)
+
+## Når du får en feil
+
+1. Les HELE feilmeldingen (ikke bare første linje)
+2. Finn den EKSAKTE filen og linjen som feiler
+3. Forklar hva som går galt og hvorfor
+4. Foreslå den MINSTE endringen som fikser det
+5. Gjør endringen og test
+6. Hvis testen feiler, STOPP og spør meg — ikke prøv å fikse videre på egen hånd
+
+## Skills (bakgrunnsdokumentasjon)
+- `skills/PERFECTMATCH_STACK.md` — tech stack og arkitektur
+- `skills/PERFECTMATCH_AUTH_UX.md` — auth og UX-prinsipper
+- `skills/PERFECTMATCH_AI.md` — AI-integrasjon
