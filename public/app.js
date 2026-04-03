@@ -398,6 +398,15 @@ export function initialFra(navn) {
   return navn.trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+export function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function beregnProfilkomplettering(bruker) {
   let score = 0;
   if (bruker.navn) score += 25;
