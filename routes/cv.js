@@ -30,8 +30,11 @@ async function lastOppCvTilStorage(buffer, originalname, uid, mimetype) {
   const bucket = adminStorage.bucket(process.env.FB_STORAGE_BUCKET);
   const fil = bucket.file(filnavn);
   await fil.save(buffer, { contentType: mimetype });
-  await fil.makePublic();
-  return `https://storage.googleapis.com/${bucket.name}/${filnavn}`;
+  const [signedUrl] = await fil.getSignedUrl({
+    action: 'read',
+    expires: Date.now() + 120 * 24 * 60 * 60 * 1000 // 120 dager
+  });
+  return signedUrl;
 }
 
 async function slettGammelCvFraStorage(cvUrl) {
