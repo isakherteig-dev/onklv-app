@@ -260,7 +260,8 @@
       getToken,
       lastOppCV,
       slettCV,
-      slettMinKonto
+      slettMinKonto,
+      escHtml
     } from '../app.js';
     initScrollReveal();
 
@@ -322,26 +323,26 @@
         <div class="kort">
           <div class="kort-header">
             <div>
-              <div class="kort-tittel">${p.tittel}</div>
-              <div class="kort-undertittel">${p.bedrift_navn}</div>
+              <div class="kort-tittel">${escHtml(p.tittel)}</div>
+              <div class="kort-undertittel">${escHtml(p.bedrift_navn)}</div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.35rem;">
               <span class="badge badge-blaa">${p.antall_plasser} plass${p.antall_plasser !== 1 ? 'er' : ''}</span>
               ${ai ? `<span style="font-size:0.75rem;font-weight:700;color:${scoreFarge};">✨ ${ai.score}% match</span>` : ''}
             </div>
           </div>
-          ${ai ? `<p style="font-size:0.78rem;color:${scoreFarge};background:#f0fdf4;border-radius:6px;padding:0.4rem 0.6rem;margin-bottom:0.75rem;">${ai.begrunnelse}</p>` : ''}
+          ${ai ? `<p style="font-size:0.78rem;color:${scoreFarge};background:#f0fdf4;border-radius:6px;padding:0.4rem 0.6rem;margin-bottom:0.75rem;">${escHtml(ai.begrunnelse)}</p>` : ''}
           <p style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer); margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-            ${p.beskrivelse}
+            ${escHtml(p.beskrivelse)}
           </p>
           <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--farge-tekst-sekundaer); margin-bottom: 1rem; flex-wrap: wrap;">
-            <span>${p.sted}</span>
+            <span>${escHtml(p.sted)}</span>
             <span>Frist: ${formaterDato(p.frist)}</span>
-            <span>${p.bransje}</span>
+            <span>${escHtml(p.bransje)}</span>
           </div>
           <button
             class="btn btn-primary btn-liten"
-            onclick="åpneSøknadModal('${p.id}', '${p.tittel.replace(/'/g, "\\'")}', '${p.bedrift_navn.replace(/'/g, "\\'")}')"
+            onclick="åpneSøknadModal('${p.id}', '${escHtml(p.tittel).replace(/'/g, "\\'")}', '${escHtml(p.bedrift_navn).replace(/'/g, "\\'")}')"
             style="width: 100%;"
           >Søk nå →</button>
         </div>`;
@@ -381,8 +382,8 @@
             <tbody>
               ${soknader.map(s => `
                 <tr>
-                  <td><strong>${s.tittel}</strong></td>
-                  <td>${s.bedrift_navn}</td>
+                  <td><strong>${escHtml(s.tittel)}</strong></td>
+                  <td>${escHtml(s.bedrift_navn)}</td>
                   <td style="font-size: 0.875rem; color: var(--farge-tekst-sekundaer);">${formaterDato(s.sendt_dato)}</td>
                   <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
                 </tr>
@@ -744,7 +745,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.feil || 'AI-tjenesten feilet');
         innhold.innerHTML = data.tips.map((t, i) =>
-          `<p style="margin:0 0 0.5rem;"><strong>${i + 1}.</strong> ${t}</p>`
+          `<p style="margin:0 0 0.5rem;"><strong>${i + 1}.</strong> ${escHtml(t)}</p>`
         ).join('');
       } catch (err) {
         innhold.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
