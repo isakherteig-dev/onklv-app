@@ -12,6 +12,7 @@ import varslerRuter from './routes/varsler.js';
 import aiRuter from './routes/ai.js';
 import cvRuter from './routes/cv.js';
 import chatRuter from './routes/chat.js';
+import { rateLimiter } from './middleware/rateLimit.js';
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -29,7 +30,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 
 // Offentlig statistikk for landingssiden (ingen autentisering nødvendig)
-app.get('/api/statistikk', async (_req, res) => {
+app.get('/api/statistikk', (req, _res, next) => { req.user = { uid: req.ip || 'anon' }; next(); }, rateLimiter(30, 60_000), async (_req, res) => {
   try {
     const [laerlinger, bedrifter, laereplasser] = await Promise.all([
       adminDB.collection('users').where('rolle', '==', 'laerling').count().get(),
