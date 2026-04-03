@@ -759,6 +759,9 @@ window.sendAiMessage = async function() {
 
   leggTilBrukerBoble(msg);
   konversasjonsHistorikk.push({ role: 'user', content: msg });
+    if (konversasjonsHistorikk.length > 20) {
+      konversasjonsHistorikk = konversasjonsHistorikk.slice(-20);
+    }
 
   const chat = document.getElementById('ai-chat');
   const skeleton = document.createElement('div');
@@ -790,6 +793,9 @@ window.sendAiMessage = async function() {
     }
 
     konversasjonsHistorikk.push({ role: 'assistant', content: svar });
+    if (konversasjonsHistorikk.length > 20) {
+      konversasjonsHistorikk = konversasjonsHistorikk.slice(-20);
+    }
     chat.removeChild(skeleton);
     leggTilAiBoble(svar);
   } catch (e) {
