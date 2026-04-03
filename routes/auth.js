@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminAuth, adminDB } from '../firebase/config.js';
+import { adminAuth, adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 import { sendVerifiseringsEpost } from '../tools/epost.js';
 import { rateLimiter } from '../middleware/rateLimit.js';
@@ -358,21 +358,70 @@ ruter.patch('/profildata', krevAuth, async (req, res) => {
  */
 ruter.delete('/slett-konto', krevAuth, async (req, res) => {
   try {
+    const uid = req.user.uid;
+
+    // Hent brukerdata og profildata for å finne Storage-filer
+    const userDoc = await adminDB.collection('users').doc(uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+    const profilDoc = await adminDB.collection('users').doc(uid)
+      .collection('profilData').doc('main').get();
+    const profilData = profilDoc.exists ? profilDoc.data() : {};
+
+    // Slett Storage-filer (avatar, CV, video)
+    const bucket = adminStorage.bucket(process.env.FB_STORAGE_BUCKET || 'onklv-app.firebasestorage.app');
+    const filerASlette = [];
+
+    if (userData.avatar_url && userData.avatar_url.includes('storage.googleapis.com')) {
+      try {
+        const url = new URL(userData.avatar_url);
+        const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
+        filerASlette.push(bucket.file(filnavn).delete().catch(() => {}));
+      } catch { /* ikke kritisk */ }
+    }
+
+    if (userData.cv_url && userData.cv_url.includes('storage.googleapis.com')) {
+      try {
+        const url = new URL(userData.cv_url);
+        const filnavn = decodeURIComponent(url.pathname.replace(`/${bucket.name}/`, ''));
+        filerASlette.push(bucket.file(filnavn).delete().catch(() => {}));
+      } catch { /* ikke kritisk */ }
+    }
+
+    if (profilData.videoPath) {
+      filerASlette.push(bucket.file(profilData.videoPath).delete().catch(() => {}));
+    }
+
+    await Promise.all(filerASlette);
+
     // Slett Firestore-data i parallell
-    const [soknaderSnap, laereplasserSnap, varslerSnap] = await Promise.all([
-      adminDB.collection('soknader').where('laerling_user_id', '==', req.user.uid).get(),
-      adminDB.collection('laereplasser').where('bedrift_user_id', '==', req.user.uid).get(),
-      adminDB.collection('varsler').where('mottaker_id', '==', req.user.uid).get()
+    const [soknaderSnap, laereplasserSnap, varslerSnap, chatSnap] = await Promise.all([
+      adminDB.collection('soknader').where('laerling_user_id', '==', uid).get(),
+      adminDB.collection('laereplasser').where('bedrift_user_id', '==', uid).get(),
+      adminDB.collection('varsler').where('mottaker_id', '==', uid).get(),
+      adminDB.collection('chat_meldinger').where('avsender_id', '==', uid).get()
     ]);
 
     const batch = adminDB.batch();
     soknaderSnap.docs.forEach(d => batch.delete(d.ref));
     laereplasserSnap.docs.forEach(d => batch.delete(d.ref));
     varslerSnap.docs.forEach(d => batch.delete(d.ref));
-    batch.delete(adminDB.collection('users').doc(req.user.uid));
+    chatSnap.docs.forEach(d => batch.delete(d.ref));
+
+    // Slett profilData subcollection
+    if (profilDoc.exists) batch.delete(profilDoc.ref);
+
+    // Slett rate_limits for denne brukeren
+    const rateLimitSnap = await adminDB.collection('rate_limits')
+      .where('uid', '==', uid).get();
+    rateLimitSnap.docs.forEach(d => batch.delete(d.ref));
+
+    // Slett selve brukerdokumentet
+    batch.delete(adminDB.collection('users').doc(uid));
     await batch.commit();
 
-    await adminAuth.deleteUser(req.user.uid);
+    // Revoke tokens og slett Firebase Auth-bruker
+    await adminAuth.revokeRefreshTokens(uid);
+    await adminAuth.deleteUser(uid);
 
     res.json({ ok: true, melding: 'Kontoen din er slettet.' });
   } catch (err) {
