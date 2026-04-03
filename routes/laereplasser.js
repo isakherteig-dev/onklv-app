@@ -5,6 +5,26 @@ import { krevAuth, krevRolle } from '../middleware/auth.js';
 const ruter = Router();
 const col = () => adminDB.collection('laereplasser');
 
+// Hjelper: hent søknadsantall for flere læreplasser i én query (unngår N+1)
+async function hentSoknadsantall(plassIds) {
+  if (plassIds.length === 0) return {};
+  const antallMap = {};
+  plassIds.forEach(id => { antallMap[id] = 0; });
+
+  // Firestore 'in' støtter maks 30 elementer
+  for (let i = 0; i < plassIds.length; i += 30) {
+    const chunk = plassIds.slice(i, i + 30);
+    const snap = await adminDB.collection('soknader')
+      .where('laerplass_id', 'in', chunk)
+      .get();
+    snap.docs.forEach(d => {
+      const pid = d.data().laerplass_id;
+      if (antallMap[pid] !== undefined) antallMap[pid]++;
+    });
+  }
+  return antallMap;
+}
+
 function docTilObj(doc) {
   const d = doc.data();
   return {
@@ -50,13 +70,8 @@ ruter.get('/alle', krevAuth, krevRolle('admin'), async (req, res) => {
       );
     }
 
-    // Hent søknadsantall for hvert oppslag
-    const med = await Promise.all(plasser.map(async p => {
-      const antSnap = await adminDB.collection('soknader')
-        .where('laerplass_id', '==', p.id)
-        .count().get();
-      return { ...p, antall_soknader: antSnap.data().count };
-    }));
+    const antallMap = await hentSoknadsantall(plasser.map(p => p.id));
+    const med = plasser.map(p => ({ ...p, antall_soknader: antallMap[p.id] || 0 }));
 
     res.json(med);
   } catch (err) {
@@ -75,12 +90,8 @@ ruter.get('/mine', krevAuth, krevRolle('bedrift'), async (req, res) => {
 
     const plasser = snap.docs.map(docTilObj);
 
-    const med = await Promise.all(plasser.map(async p => {
-      const antSnap = await adminDB.collection('soknader')
-        .where('laerplass_id', '==', p.id)
-        .count().get();
-      return { ...p, antall_soknader: antSnap.data().count };
-    }));
+    const antallMap = await hentSoknadsantall(plasser.map(p => p.id));
+    const med = plasser.map(p => ({ ...p, antall_soknader: antallMap[p.id] || 0 }));
 
     res.json(med);
   } catch (err) {
@@ -95,11 +106,9 @@ ruter.get('/:id', async (req, res) => {
     const doc = await col().doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ feil: 'Læreplass ikke funnet' });
 
-    const antSnap = await adminDB.collection('soknader')
-      .where('laerplass_id', '==', req.params.id)
-      .count().get();
+    const antallMap = await hentSoknadsantall([req.params.id]);
 
-    res.json({ ...docTilObj(doc), antall_soknader: antSnap.data().count });
+    res.json({ ...docTilObj(doc), antall_soknader: antallMap[req.params.id] || 0 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ feil: 'Kunne ikke hente læreplass' });

@@ -239,11 +239,19 @@ ruter.get('/alle-laereplasser', async (req, res) => {
       );
     }
 
-    // Hent søknadsantall
-    const med = await Promise.all(plasser.map(async p => {
-      const antSnap = await adminDB.collection('soknader').where('laerplass_id', '==', p.id).count().get();
-      return { ...p, antall_soknader: antSnap.data().count };
-    }));
+    // Hent søknadsantall samlet (unngår N+1)
+    const plassIds = plasser.map(p => p.id);
+    const antallMap = {};
+    plassIds.forEach(id => { antallMap[id] = 0; });
+    for (let i = 0; i < plassIds.length; i += 30) {
+      const chunk = plassIds.slice(i, i + 30);
+      const snap = await adminDB.collection('soknader').where('laerplass_id', 'in', chunk).get();
+      snap.docs.forEach(d => {
+        const pid = d.data().laerplass_id;
+        if (antallMap[pid] !== undefined) antallMap[pid]++;
+      });
+    }
+    const med = plasser.map(p => ({ ...p, antall_soknader: antallMap[p.id] || 0 }));
 
     res.json(med);
   } catch (err) {
