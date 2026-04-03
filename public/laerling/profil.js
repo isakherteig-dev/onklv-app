@@ -767,17 +767,6 @@ window.sendAiMessage = async function() {
   chat.appendChild(skeleton);
   chat.scrollTop = chat.scrollHeight;
 
-  const tb = targetBruker || bruker;
-  const profileContext = `Du er OLKV sin AI-assistent. Her er lærlingprofilen du hjelper med:
-Navn: ${tb.navn || 'Ikke oppgitt'}
-Fagområde: ${tb.utdanningsprogram || 'Ikke oppgitt'}
-Sted: ${profil.sted || tb.sted || 'Ikke oppgitt'}
-Motivasjon: ${profil.motivasjon || 'Ikke oppgitt'}
-Ferdigheter: ${(profil.ferdigheter || []).map(f => f.navn + ' ' + f.prosent + '%').join(', ') || 'Ikke oppgitt'}
-Erfaring: ${(profil.tidslinje || []).map(t => t.tittel).join(', ') || 'Ikke oppgitt'}
-Referanser fra: ${(profil.referanser || []).map(r => r.navn + ' (' + r.rolle + ')').join(', ') || 'Ingen'}
-Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
-
   try {
     const token = await getToken();
     const response = await fetch('/api/ai/chat', {
@@ -787,7 +776,7 @@ Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
         'Authorization': 'Bearer ' + token
       },
       body: JSON.stringify({
-        system: profileContext,
+        target_uid: (targetBruker || bruker).uid,
         messages: konversasjonsHistorikk
       })
     });

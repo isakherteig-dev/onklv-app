@@ -129,7 +129,7 @@ ruter.post('/tips', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) =
  * Fri samtale med AI-assistenten.
  */
 ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
-  const { system, messages } = req.body;
+  const { target_uid, messages } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ feil: 'messages er påkrevd' });
@@ -139,13 +139,44 @@ ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
     return res.status(503).json({ feil: 'AI-tjenesten er ikke satt opp ennå' });
   }
 
+  // Bygg system-prompt på serveren — aldri stol på klientens system-prompt
+  const uid = target_uid || req.user.uid;
+
+  if (uid !== req.user.uid && !['admin', 'bedrift'].includes(req.user.rolle)) {
+    return res.status(403).json({ feil: 'Ingen tilgang' });
+  }
+
+  let systemPrompt = 'Du er OLKV sin AI-assistent. Svar alltid på norsk. Vær profesjonell og hjelpsom.';
+
+  try {
+    const [userDoc, profilDoc] = await Promise.all([
+      adminDB.collection('users').doc(uid).get(),
+      adminDB.collection('users').doc(uid).collection('profilData').doc('main').get()
+    ]);
+
+    const brukerData = userDoc.exists ? userDoc.data() : {};
+    const profilData = profilDoc.exists ? profilDoc.data() : {};
+
+    systemPrompt = `Du er OLKV sin AI-assistent. Her er lærlingprofilen du hjelper med:
+Navn: ${brukerData.navn || 'Ikke oppgitt'}
+Fagområde: ${brukerData.utdanningsprogram || 'Ikke oppgitt'}
+Sted: ${profilData.sted || 'Ikke oppgitt'}
+Motivasjon: ${profilData.motivasjon || 'Ikke oppgitt'}
+Ferdigheter: ${(profilData.ferdigheter || []).map(f => f.navn + ' ' + f.prosent + '%').join(', ') || 'Ikke oppgitt'}
+Erfaring: ${(profilData.tidslinje || []).map(t => t.tittel).join(', ') || 'Ikke oppgitt'}
+Referanser fra: ${(profilData.referanser || []).map(r => r.navn + ' (' + r.rolle + ')').join(', ') || 'Ingen'}
+Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
+  } catch (profilErr) {
+    console.error('Kunne ikke hente profildata for AI-chat:', profilErr.message);
+  }
+
   try {
     const client = new Anthropic({ apiKey: anthropicApiKey });
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
-      system: system || 'Du er OLKV sin AI-assistent. Svar alltid på norsk.',
+      system: systemPrompt,
       messages
     });
 
