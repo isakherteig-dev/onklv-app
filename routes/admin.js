@@ -6,6 +6,11 @@ import { lagVarsel } from '../utils/varsler.js';
 
 const ruter = Router();
 
+function parseGrense(query, standard = 100) {
+  const grense = parseInt(query.grense || query.limit) || standard;
+  return Math.min(Math.max(grense, 1), 500);
+}
+
 // Alle admin-ruter krever innlogging og admin-rolle
 ruter.use(krevAuth, krevRolle('admin'));
 
@@ -115,6 +120,7 @@ ruter.get('/alle-soknader', async (req, res) => {
     let q = adminDB.collection('soknader');
     if (status && status !== 'alle') q = q.where('status', '==', status);
     q = q.orderBy('sendt_dato', 'desc');
+    q = q.limit(parseGrense(req.query));
 
     const snap = await q.get();
     let soknader = snap.docs.map(d => {
@@ -220,7 +226,7 @@ ruter.get('/alle-laereplasser', async (req, res) => {
     if (status === 'aktiv')   q = q.where('aktiv', '==', true);
     if (status === 'inaktiv') q = q.where('aktiv', '==', false);
     if (fagomraade)           q = q.where('fagomraade', '==', fagomraade);
-    q = q.orderBy('opprettet', 'desc');
+    q = q.orderBy('opprettet', 'desc').limit(parseGrense(req.query));
 
     const snap = await q.get();
     let plasser = snap.docs.map(d => {
@@ -284,7 +290,7 @@ ruter.get('/brukere', async (req, res) => {
     const { rolle } = req.query;
     let q = adminDB.collection('users');
     if (rolle) q = q.where('rolle', '==', rolle);
-    const snapshot = await q.orderBy('opprettet', 'desc').get();
+    const snapshot = await q.orderBy('opprettet', 'desc').limit(parseGrense(req.query)).get();
 
     const brukere = snapshot.docs.map(doc => {
       const d = doc.data();
