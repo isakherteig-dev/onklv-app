@@ -129,7 +129,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentAllesoknader, oppdaterSoknadStatusAdmin,
-      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle, getToken
+      statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle, getToken, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -161,11 +161,11 @@
       tbody.innerHTML = soknader.map(s => `
         <tr style="cursor:pointer;" onclick="visDetaljer(${s.id})">
           <td>
-            <strong>${s.laerling_naam || '—'}</strong><br/>
-            <span style="font-size:0.8rem;color:var(--olkv-gray);">${s.laerling_epost || ''}</span>
+            <strong>${escHtml(s.laerling_naam || '—')}</strong><br/>
+            <span style="font-size:0.8rem;color:var(--olkv-gray);">${escHtml(s.laerling_epost || '')}</span>
           </td>
-          <td>${s.laerplass_tittel || '—'}</td>
-          <td>${s.bedrift_navn || '—'}</td>
+          <td>${escHtml(s.laerplass_tittel || '—')}</td>
+          <td>${escHtml(s.bedrift_navn || '—')}</td>
           <td>${formaterDato(s.sendt_dato)}</td>
           <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
           <td>
@@ -188,17 +188,17 @@
       document.getElementById('detaljer-innhold').innerHTML = `
         <div style="display:grid;gap:1rem;">
           <div class="rad" style="gap:1rem;flex-wrap:wrap;">
-            <div style="flex:1;"><div class="hint">Søker</div><strong>${s.laerling_naam || '—'}</strong><br/><span style="font-size:0.85rem;">${s.laerling_epost || ''}</span></div>
+            <div style="flex:1;"><div class="hint">Søker</div><strong>${escHtml(s.laerling_naam || '—')}</strong><br/><span style="font-size:0.85rem;">${escHtml(s.laerling_epost || '')}</span></div>
             <div><div class="hint">Status</div><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></div>
           </div>
           <div class="rad" style="gap:1rem;flex-wrap:wrap;">
-            <div style="flex:1;"><div class="hint">Læreplass</div>${s.laerplass_tittel || '—'}</div>
-            <div style="flex:1;"><div class="hint">Bedrift</div>${s.bedrift_navn || '—'}</div>
+            <div style="flex:1;"><div class="hint">Læreplass</div>${escHtml(s.laerplass_tittel || '—')}</div>
+            <div style="flex:1;"><div class="hint">Bedrift</div>${escHtml(s.bedrift_navn || '—')}</div>
           </div>
-          ${s.utdanningsprogram ? `<div><div class="hint">Utdanningsprogram</div>${s.utdanningsprogram}</div>` : ''}
-          ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div class="hint">VG1</div>${s.vg1 || '—'}</div><div><div class="hint">VG2</div>${s.vg2 || '—'}</div></div>` : ''}
-          ${s.melding ? `<div><div class="hint">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${s.melding}</p></div>` : ''}
-          ${s.erfaring ? `<div><div class="hint">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${s.erfaring}</p></div>` : ''}
+          ${s.utdanningsprogram ? `<div><div class="hint">Utdanningsprogram</div>${escHtml(s.utdanningsprogram)}</div>` : ''}
+          ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div class="hint">VG1</div>${escHtml(s.vg1 || '—')}</div><div><div class="hint">VG2</div>${escHtml(s.vg2 || '—')}</div></div>` : ''}
+          ${s.melding ? `<div><div class="hint">Motivasjon</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${escHtml(s.melding)}</p></div>` : ''}
+          ${s.erfaring ? `<div><div class="hint">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;">${escHtml(s.erfaring)}</p></div>` : ''}
           ${s.vedlegg ? `
             <div>
               <div class="hint">Vedlegg</div>
@@ -207,7 +207,7 @@
               </button>
             </div>
           ` : ''}
-          ${s.admin_kommentar ? `<div><div class="hint">Admin-kommentar</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;border-left:3px solid #B7791F;">${s.admin_kommentar}</p></div>` : ''}
+          ${s.admin_kommentar ? `<div><div class="hint">Admin-kommentar</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.88rem;margin:0.25rem 0 0;border-left:3px solid #B7791F;">${escHtml(s.admin_kommentar)}</p></div>` : ''}
           <div class="rad" style="gap:2rem;margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
             <div><div class="hint">Sendt</div>${formaterDato(s.sendt_dato)}</div>
             ${s.behandlet_dato ? `<div><div class="hint">Behandlet</div>${formaterDato(s.behandlet_dato)}</div>` : ''}

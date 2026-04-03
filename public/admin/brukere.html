@@ -93,7 +93,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentAlleBrukere, godkjennBedrift, avvisBedrift,
-      formaterDato, initScrollReveal, initVarselBjelle
+      formaterDato, initScrollReveal, initVarselBjelle, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -137,8 +137,8 @@
 
       tbody.innerHTML = brukere.map(b => {
         const info = b.rolle === 'bedrift'
-          ? `${b.orgNr ? 'Org.nr: ' + b.orgNr + ' · ' : ''}${b.bransje || ''}`
-          : (b.utdanningsprogram || '');
+          ? `${b.orgNr ? 'Org.nr: ' + escHtml(b.orgNr) + ' · ' : ''}${escHtml(b.bransje || '')}`
+          : escHtml(b.utdanningsprogram || '');
 
         const status = b.rolle === 'bedrift'
           ? `<span class="badge ${b.godkjent ? 'badge-godkjent' : 'badge-sendt'}">${b.godkjent ? 'Godkjent' : 'Venter'}</span>`
@@ -151,8 +151,8 @@
 
         return `
           <tr>
-            <td><strong>${b.navn || '—'}</strong></td>
-            <td style="font-size:0.85rem;">${b.epost || '—'}</td>
+            <td><strong>${escHtml(b.navn || '—')}</strong></td>
+            <td style="font-size:0.85rem;">${escHtml(b.epost || '—')}</td>
             <td>
               <span class="badge ${rolleBadge[b.rolle] || 'badge-graa'}">${rolleTekst[b.rolle] || b.rolle}</span>
               ${status}

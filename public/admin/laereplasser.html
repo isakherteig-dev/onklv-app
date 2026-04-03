@@ -150,7 +150,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentAlleLaereplasser, hentAlleBrukere,
-      lagreAnnonseUtvidet, formaterDato, initScrollReveal, fagomraader, initVarselBjelle
+      lagreAnnonseUtvidet, formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -204,10 +204,10 @@
       }
       tbody.innerHTML = plasser.map(p => `
         <tr>
-          <td><strong>${p.tittel}</strong></td>
-          <td>${p.bedrift_naam || '—'}</td>
-          <td>${p.fagomraade || p.bransje || '—'}</td>
-          <td>${p.sted || '—'}</td>
+          <td><strong>${escHtml(p.tittel)}</strong></td>
+          <td>${escHtml(p.bedrift_naam || '—')}</td>
+          <td>${escHtml(p.fagomraade || p.bransje || '—')}</td>
+          <td>${escHtml(p.sted || '—')}</td>
           <td>${formaterDato(p.frist)}</td>
           <td><span class="badge badge-blaa">${p.antall_soknader || 0}</span></td>
           <td><span class="badge ${p.aktiv ? 'badge-godkjent' : 'badge-graa'}">${p.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>

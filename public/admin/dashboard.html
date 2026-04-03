@@ -151,7 +151,8 @@
       godkjennBedrift as apiBedriftGodkjenn,
       avvisBedrift as apiBedriftAvvis,
       initScrollReveal,
-      initVarselBjelle
+      initVarselBjelle,
+      escHtml
     } from '../app.js';
 
     // ===== AUTH GUARD =====
@@ -232,10 +233,10 @@
               <tbody>
                 ${venter.map(b => `
                   <tr>
-                    <td><strong>${b.navn || '—'}</strong></td>
-                    <td style="font-family:monospace;font-size:0.85rem;">${b.orgNr || '—'}</td>
-                    <td>${b.bransje || '—'}</td>
-                    <td style="font-size:0.85rem;">${b.epost || '—'}</td>
+                    <td><strong>${escHtml(b.navn || '—')}</strong></td>
+                    <td style="font-family:monospace;font-size:0.85rem;">${escHtml(b.orgNr || '—')}</td>
+                    <td>${escHtml(b.bransje || '—')}</td>
+                    <td style="font-size:0.85rem;">${escHtml(b.epost || '—')}</td>
                     <td style="font-size:0.85rem;color:var(--farge-tekst-sekundaer);">${formaterDato(b.opprettet?.toDate ? b.opprettet.toDate().toISOString().split('T')[0] : (b.opprettet || ''))}</td>
                     <td>
                       <div class="rad" style="gap:0.5rem;flex-wrap:nowrap;">
@@ -297,10 +298,10 @@
       }
       tbody.innerHTML = soknader.map(s => `
         <tr>
-          <td><strong>${s.laerling_navn || '—'}</strong><br><span style="font-size:0.8rem;color:var(--farge-tekst-sekundaer);">${s.laerling_epost || ''}</span></td>
-          <td style="font-size:0.85rem;">${s.utdanningsprogram || s.vg1 || '—'}</td>
-          <td>${s.laerling_tittel || s.tittel || '—'}</td>
-          <td>${s.bedrift_naam || s.bedrift_navn || '—'}</td>
+          <td><strong>${escHtml(s.laerling_navn || '—')}</strong><br><span style="font-size:0.8rem;color:var(--farge-tekst-sekundaer);">${escHtml(s.laerling_epost || '')}</span></td>
+          <td style="font-size:0.85rem;">${escHtml(s.utdanningsprogram || s.vg1 || '—')}</td>
+          <td>${escHtml(s.laerling_tittel || s.tittel || '—')}</td>
+          <td>${escHtml(s.bedrift_naam || s.bedrift_navn || '—')}</td>
           <td style="font-size:0.85rem;color:var(--farge-tekst-sekundaer);">${formaterDato(s.opprettet || s.dato)}</td>
           <td><span class="badge ${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
         </tr>
@@ -343,7 +344,7 @@
         document.getElementById('bransje-fordeling').innerHTML = Object.entries(fagomraader).length
           ? Object.entries(fagomraader).sort((a, b) => b[1] - a[1]).map(([navn, antall]) => `
               <div class="rad" style="justify-content:space-between;">
-                <span style="font-size:0.875rem;">${navn}</span>
+                <span style="font-size:0.875rem;">${escHtml(navn)}</span>
                 <span class="badge badge-blaa">${antall}</span>
               </div>`).join('')
           : '<p style="color:var(--farge-tekst-sekundaer);font-size:0.875rem;">Ingen læreplasser ennå.</p>';
