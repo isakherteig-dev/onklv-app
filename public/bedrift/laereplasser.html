@@ -27,8 +27,23 @@
         </div>
         <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
       </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <div class="mobil-meny-overlay skjult" id="meny-overlay"></div>
+  <div class="mobil-meny skjult" id="slide-meny">
+    <div class="mobil-meny-topp">
+      <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
+      <button class="mobil-meny-lukk" id="meny-lukk">✕</button>
+    </div>
+    <a href="/bedrift/dashboard.html" class="mobil-meny-lenke">🏠 Dashbord</a>
+    <a href="/bedrift/laereplasser.html" class="mobil-meny-lenke">📋 Mine læreplasser</a>
+    <a href="/bedrift/soknader.html" class="mobil-meny-lenke">📄 Innkomne søknader</a>
+    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut">🚪 Logg ut</button>
+  </div>
 
   <div class="dashboard-layout">
     <aside class="sidebar">
@@ -311,5 +326,43 @@
     initVarselBjelle();
   </script>
   <script src="/cookie-banner.js" defer></script>
+  <nav class="bunn-nav" id="bunn-nav">
+    <a href="/bedrift/dashboard.html" class="bunn-nav-lenke" data-side="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashbord</span>
+    </a>
+    <a href="/bedrift/laereplasser.html" class="bunn-nav-lenke" data-side="laereplasser">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>Læreplasser</span>
+    </a>
+    <a href="/bedrift/soknader.html" class="bunn-nav-lenke" data-side="soknader">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Søknader</span>
+    </a>
+  </nav>
+  <script type="module">
+    const sti = window.location.pathname;
+    document.querySelectorAll('.bunn-nav-lenke').forEach(a => {
+      const side = a.dataset.side;
+      if (
+        (side === 'dashboard' && sti.includes('dashboard')) ||
+        (side === 'laereplasser' && sti.includes('laereplasser')) ||
+        (side === 'soknader' && sti.includes('soknader'))
+      ) a.classList.add('aktiv');
+    });
+    const btn = document.getElementById('hamburger-btn');
+    const overlay = document.getElementById('meny-overlay');
+    const meny = document.getElementById('slide-meny');
+    const lukk = document.getElementById('meny-lukk');
+    const apne = () => { meny.classList.remove('skjult'); overlay.classList.remove('skjult'); document.body.style.overflow = 'hidden'; };
+    const lukke = () => { meny.classList.add('skjult'); overlay.classList.add('skjult'); document.body.style.overflow = ''; };
+    btn?.addEventListener('click', apne);
+    lukk?.addEventListener('click', lukke);
+    overlay?.addEventListener('click', lukke);
+    document.getElementById('meny-logg-ut')?.addEventListener('click', async () => {
+      const { loggUt } = await import('../app.js');
+      await loggUt();
+    });
+  </script>
 </body>
 </html>
