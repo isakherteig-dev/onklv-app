@@ -184,33 +184,28 @@ export async function loggUt() {
  * Krev innlogging — omdirigerer til /login.html hvis ikke innlogget.
  * Returnerer brukerobjektet ved suksess.
  */
-export function krevInnlogging(rolle) {
-  return new Promise((resolve) => {
-    const avregistrer = onAuthStateChanged(auth, async (firebaseUser) => {
-      avregistrer(); // Kjør kun én gang
-      const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      if (!firebaseUser) {
-        window.location.href = byggLoginUrl(returnTo);
-        resolve(null);
-        return;
-      }
+export async function krevInnlogging(rolle) {
+  await auth.authStateReady();
+  const firebaseUser = auth.currentUser;
+  const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
-      const bruker = await hentBruker();
-      if (!bruker) {
-        window.location.href = byggLoginUrl(returnTo);
-        resolve(null);
-        return;
-      }
+  if (!firebaseUser) {
+    window.location.href = byggLoginUrl(returnTo);
+    return null;
+  }
 
-      if (rolle && bruker.rolle !== rolle && bruker.rolle !== 'admin') {
-        window.location.href = byggLoginUrl(returnTo);
-        resolve(null);
-        return;
-      }
+  const bruker = await hentBruker();
+  if (!bruker) {
+    window.location.href = byggLoginUrl(returnTo);
+    return null;
+  }
 
-      resolve(bruker);
-    });
-  });
+  if (rolle && bruker.rolle !== rolle && bruker.rolle !== 'admin') {
+    window.location.href = byggLoginUrl(returnTo);
+    return null;
+  }
+
+  return bruker;
 }
 
 // ===== DATAFUNKSJONER =====

@@ -228,9 +228,9 @@
     }
 
     // Redirect hvis allerede innlogget (og e-post er verifisert)
-    onAuthStateChanged(auth, async (user) => {
+    auth.authStateReady().then(async () => {
+      const user = auth.currentUser;
       if (!user) return;
-      // Ikke redirect hvis e-post ikke er verifisert (og ikke Google-bruker)
       const erGoogle = user.providerData?.some(p => p.providerId === 'google.com');
       if (!erGoogle && !user.emailVerified) return;
       try {
