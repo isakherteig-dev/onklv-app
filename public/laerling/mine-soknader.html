@@ -202,9 +202,26 @@
     if (navAvatar) navAvatar.textContent = initialFra(bruker.navn);
     document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
 
+    async function oppdaterTabellChatBadges() {
+      await Promise.all(alleSoknader.map(async (s) => {
+        try {
+          const { antall } = await hentUlesteChatMeldinger(s.id);
+          const badge = document.getElementById(`tabell-chat-badge-${s.id}`);
+          if (!badge) return;
+          if (antall > 0) {
+            badge.textContent = antall > 9 ? '9+' : antall;
+            badge.classList.remove('skjult');
+          } else {
+            badge.classList.add('skjult');
+          }
+        } catch { /* ignorer badge-feil */ }
+      }));
+    }
+
     async function lastSoknader() {
       alleSoknader = await hentSoknaderLaerling();
       visSoknader(alleSoknader);
+      await oppdaterTabellChatBadges();
     }
 
     function visSoknader(soknader) {
@@ -232,6 +249,7 @@
                 <th>Sendt</th>
                 <th>Status</th>
                 <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -243,6 +261,11 @@
                   <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
                   <td>
                     ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-roed" onclick="event.stopPropagation();trekkSoknadKlikk(${s.id})">Trekk</button>` : ''}
+                  </td>
+                  <td>
+                    <button class="btn-mini btn-mini-blaa" onclick="event.stopPropagation();visDetaljer(${s.id});setTimeout(()=>byttFane('chat'),50)">
+                      💬 <span id="tabell-chat-badge-${s.id}" class="chat-fane-badge skjult">0</span>
+                    </button>
                   </td>
                 </tr>
               `).join('')}
@@ -310,11 +333,13 @@
     document.getElementById('detaljer-lukk-btn').addEventListener('click', () => {
       document.getElementById('detaljer-modal').classList.add('skjult');
       stoppChatPolling();
+      oppdaterTabellChatBadges();
     });
     document.getElementById('detaljer-modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) {
         document.getElementById('detaljer-modal').classList.add('skjult');
         stoppChatPolling();
+        oppdaterTabellChatBadges();
       }
     });
 
