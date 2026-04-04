@@ -254,16 +254,16 @@
             </thead>
             <tbody>
               ${soknader.map(s => `
-                <tr style="cursor:pointer;" onclick="visDetaljer(${s.id})">
+                <tr style="cursor:pointer;" onclick="visDetaljer('${s.id}')">
                   <td><strong>${escHtml(s.tittel || '—')}</strong></td>
                   <td>${escHtml(s.bedrift_navn || '—')}</td>
                   <td>${formaterDato(s.sendt_dato)}</td>
                   <td><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></td>
                   <td>
-                    ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-roed" onclick="event.stopPropagation();trekkSoknadKlikk(${s.id})">Trekk</button>` : ''}
+                    ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-roed" onclick="event.stopPropagation();trekkSoknadKlikk('${s.id}')">Trekk</button>` : ''}
                   </td>
                   <td>
-                    <button class="btn-mini btn-mini-blaa" onclick="event.stopPropagation();visDetaljer(${s.id}, 'chat')">
+                    <button class="btn-mini btn-mini-blaa" onclick="event.stopPropagation();visDetaljer('${s.id}', 'chat')">
                       💬 <span id="tabell-chat-badge-${s.id}" class="chat-fane-badge skjult">0</span>
                     </button>
                   </td>
