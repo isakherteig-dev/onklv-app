@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   renderProfilhode();
+  renderBio();
   renderReferanser();
   renderFerdigheter();
   renderPortefolje();
@@ -216,6 +217,35 @@ function renderProfilhode() {
     });
   }
 }
+
+function renderBio() {
+  const bio = targetBruker.bio || '';
+  const p = document.getElementById('bio-tekst');
+  if (bio) {
+    p.textContent = bio;
+    p.style.fontStyle = 'normal';
+    p.style.color = 'var(--olkv-dark)';
+  } else {
+    p.textContent = 'Ingen beskrivelse lagt til ennå. Aktiver redigeringsmodus for å skrive om deg selv.';
+    p.style.fontStyle = 'italic';
+    p.style.color = 'var(--olkv-gray)';
+  }
+  const input = document.getElementById('bio-input');
+  if (input) input.value = bio;
+}
+
+window.lagreBio = async function() {
+  try {
+    const tekst = document.getElementById('bio-input').value.trim();
+    await oppdaterBruker({ bio: tekst });
+    targetBruker.bio = tekst;
+    renderBio();
+    visMelding('Bio er lagret!', true);
+  } catch (err) {
+    console.error('lagreBio feil:', err);
+    visMelding(err.message || 'Noe gikk galt. Prøv igjen.', false);
+  }
+};
 
 window.lagreHode = async function() {
   try {

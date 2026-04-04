@@ -179,6 +179,22 @@
       </div>
     </section>
 
+    <!-- SEKSJON: OM MEG (BIO) -->
+    <section class="kort" style="margin-bottom:1.5rem;">
+      <div class="kort-header">
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">👋 Om meg</h2>
+      </div>
+      <div id="bio-visning">
+        <p id="bio-tekst" style="font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);"></p>
+      </div>
+      <div class="edit-only skjult" style="margin-top:1rem;">
+        <textarea id="bio-input" rows="5" placeholder="Skriv litt om deg selv — hvem du er, hva du interesserer deg for, og hva slags lærlingplass du ser etter..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+          <button class="btn btn-primary btn-liten" onclick="lagreBio()">Lagre</button>
+        </div>
+      </div>
+    </section>
+
     <!-- SEKSJON 2: VIDEOPRESENTASJON -->
     <section class="kort" id="video-seksjon" style="margin-bottom:1.5rem;">
       <div class="kort-header">

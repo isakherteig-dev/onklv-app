@@ -107,10 +107,24 @@ ruter.post('/oppsummer', krevAuth, aiLimit, krevRolle('admin'), async (req, res)
  */
 ruter.post('/tips', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) => {
   try {
+    // Hent profilData/main for å gi AI full oversikt
+    const profilDoc = await adminDB.collection('users').doc(req.user.uid)
+      .collection('profilData').doc('main').get();
+    const profilData = profilDoc.exists ? profilDoc.data() : {};
+
     const laerling = {
       utdanningsprogram: req.user.utdanningsprogram,
       bio: req.user.bio,
-      cv_filnavn: req.user.cv_filnavn
+      cv_filnavn: req.user.cv_filnavn,
+      ferdigheter: profilData.ferdigheter || [],
+      motivasjon: profilData.motivasjon || null,
+      referanser: profilData.referanser || [],
+      tidslinje: profilData.tidslinje || [],
+      portefolje: profilData.portefolje || [],
+      sted: profilData.sted || null,
+      kanStarte: profilData.kanStarte || null,
+      stillingsprosent: profilData.stillingsprosent || null,
+      tilgjengeligeDager: profilData.tilgjengeligeDager || []
     };
 
     const resultat = await forbedreProfil(laerling);
