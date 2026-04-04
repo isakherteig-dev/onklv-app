@@ -263,7 +263,7 @@
                     ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-roed" onclick="event.stopPropagation();trekkSoknadKlikk(${s.id})">Trekk</button>` : ''}
                   </td>
                   <td>
-                    <button class="btn-mini btn-mini-blaa" onclick="event.stopPropagation();visDetaljer(${s.id});setTimeout(()=>byttFane('chat'),50)">
+                    <button class="btn-mini btn-mini-blaa" onclick="event.stopPropagation();visDetaljer(${s.id}, 'chat')">
                       💬 <span id="tabell-chat-badge-${s.id}" class="chat-fane-badge skjult">0</span>
                     </button>
                   </td>
@@ -274,7 +274,7 @@
         </div>`;
     }
 
-    window.visDetaljer = function(id) {
+    window.visDetaljer = function(id, startFane = 'detaljer') {
       const s = alleSoknader.find(x => x.id === id);
       if (!s) return;
 
@@ -312,6 +312,7 @@
       byttFane('detaljer');
       hentUlesteChatMeldinger(id).then(data => oppdaterChatBadge(data.antall || 0));
       document.getElementById('detaljer-modal').classList.remove('skjult');
+      if (startFane === 'chat') byttFane('chat');
     };
 
     window.trekkSoknadKlikk = async function(id) {
