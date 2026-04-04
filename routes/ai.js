@@ -19,22 +19,39 @@ const ruter = Router();
  */
 ruter.post('/match', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) => {
   try {
+    // Hent full profildata for bedre matching
+    const profilDoc = await adminDB.collection('users').doc(req.user.uid)
+      .collection('profilData').doc('main').get();
+    const profilData = profilDoc.exists ? profilDoc.data() : {};
+
     const laerling = {
       utdanningsprogram: req.user.utdanningsprogram,
-      bio: req.user.bio
+      bio: req.user.bio,
+      ferdigheter: profilData.ferdigheter || [],
+      motivasjon: profilData.motivasjon || null,
+      tidslinje: profilData.tidslinje || [],
+      sted: profilData.sted || null,
+      kanStarte: profilData.kanStarte || null
     };
 
     const snap = await adminDB.collection('laereplasser')
       .where('aktiv', '==', true)
       .get();
 
-    const plasser = snap.docs.map(d => ({
-      id: d.id,
-      tittel: d.data().tittel,
-      beskrivelse: d.data().beskrivelse,
-      bransje: d.data().bransje,
-      fagomraade: d.data().fagomraade
-    }));
+    const plasser = snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        tittel: data.tittel,
+        beskrivelse: data.beskrivelse,
+        bransje: data.bransje,
+        fagomraade: data.fagomraade,
+        sted: data.sted || null,
+        krav: data.krav || null,
+        start_dato: data.start_dato || null,
+        antall_plasser: data.antall_plasser || 1
+      };
+    });
 
     if (plasser.length === 0) {
       return res.status(200).json({ resultater: [], melding: 'Ingen aktive læreplasser å matche mot akkurat nå' });
