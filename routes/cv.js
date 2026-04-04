@@ -4,22 +4,25 @@ import path from 'path';
 import { adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth, krevRolle } from '../middleware/auth.js';
 
-const TILLATTE_EXT   = ['.pdf', '.docx', '.doc'];
+const TILLATTE_EXT   = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png', '.webp'];
 const TILLATTE_TYPER = [
   'application/pdf',
   'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg',
+  'image/png',
+  'image/webp'
 ];
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (TILLATTE_EXT.includes(ext) && TILLATTE_TYPER.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Kun PDF og Word-filer (.pdf, .docx, .doc) kan lastes opp'));
+      cb(new Error('Kun PDF, Word eller bilder (JPG, PNG, WebP) kan lastes opp'));
     }
   }
 });
@@ -57,7 +60,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
   upload.single('cv')(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ feil: 'Filen er for stor. Maks 5 MB er tillatt.' });
+        return res.status(400).json({ feil: 'Filen er for stor. Maks 10 MB er tillatt.' });
       }
       return res.status(400).json({ feil: 'Feil ved opplasting. Prøv igjen.' });
     }
@@ -89,6 +92,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), (req, res) => {
       res.json({
         ok: true,
         cv_filnavn: req.file.originalname,
+        cv_url: cvUrl,
         melding: `CV «${req.file.originalname}» er lastet opp.`
       });
     } catch (dbFeil) {

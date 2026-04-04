@@ -351,6 +351,46 @@
       </div>
     </section>
 
+    <!-- SEKSJON 7B: CV-OPPLASTING -->
+    <section class="kort" style="margin-bottom:1.5rem;" id="cv-seksjon">
+      <div class="kort-header">
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📎 Min CV</h2>
+      </div>
+
+      <!-- Vis-tilstand: CV finnes -->
+      <div id="cv-har-fil" class="skjult" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <span style="font-size:2rem;">📄</span>
+        <div style="flex:1;">
+          <p id="cv-filnavn-vis" style="margin:0;font-weight:600;font-family:'DM Sans',sans-serif;">—</p>
+          <p style="margin:0.2rem 0 0;font-size:0.82rem;color:var(--olkv-gray);">Lastet opp og synlig for bedrifter</p>
+        </div>
+        <a id="cv-last-ned-lenke" href="#" target="_blank" class="btn btn-secondary btn-liten">⬇️ Last ned</a>
+        <button id="cv-slett-knapp" class="btn btn-ghost btn-liten edit-only skjult" style="color:#dc2626;" onclick="slettCv()">🗑️ Slett</button>
+      </div>
+
+      <!-- Vis-tilstand: ingen CV (ikke-eier) -->
+      <div id="cv-ingen-visning" class="skjult">
+        <p style="color:var(--olkv-gray);font-style:italic;">Ingen CV lastet opp ennå.</p>
+      </div>
+
+      <!-- Opplasting (eier, redigeringsmodus) -->
+      <div id="cv-opplasting" class="edit-only skjult" style="margin-top:1rem;">
+        <div id="cv-dra-slipp"
+          style="background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
+          onclick="document.getElementById('cv-fil-input').click()"
+          onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
+          onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
+          <div style="font-size:2rem;margin-bottom:0.5rem;">📤</div>
+          <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Trykk for å velge fil eller ta bilde</p>
+          <p style="margin:0.4rem 0 0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">PDF, Word eller bilde (JPG, PNG) · maks 10 MB</p>
+          <input type="file" id="cv-fil-input" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,image/*" style="display:none;" />
+        </div>
+      </div>
+
+      <!-- Varsel -->
+      <div id="cv-profil-varsel" class="varsel skjult" style="margin-top:0.75rem;"></div>
+    </section>
+
     <!-- SEKSJON 8: TILGJENGELIGHET -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">

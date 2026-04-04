@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderMotiveasjon();
   renderTidslinje();
   renderTilgjengelighet();
+  renderCv();
   renderVideo();
   initAiChat();
   setTimeout(() => {
@@ -711,6 +712,109 @@ window.slettVideo = async function() {
   } catch (err) {
     console.error('Slett video feil:', err);
     visMelding('Noe gikk galt. Prøv igjen.', false);
+  }
+};
+
+function renderCv() {
+  const erEierLokal = !visUid || visUid === bruker.uid;
+  const harCv = !!targetBruker.cv_url;
+
+  const harFilEl = document.getElementById('cv-har-fil');
+  const ingenEl = document.getElementById('cv-ingen-visning');
+  const opplastingEl = document.getElementById('cv-opplasting');
+
+  harFilEl.classList.add('skjult');
+  ingenEl.classList.add('skjult');
+
+  if (harCv) {
+    document.getElementById('cv-filnavn-vis').textContent = targetBruker.cv_filnavn || 'CV';
+    const lenke = document.getElementById('cv-last-ned-lenke');
+    lenke.href = targetBruker.cv_url;
+    harFilEl.classList.remove('skjult');
+    harFilEl.style.display = 'flex';
+  } else if (!erEierLokal) {
+    ingenEl.classList.remove('skjult');
+  }
+
+  // Koble fil-input
+  const cvInput = document.getElementById('cv-fil-input');
+  if (cvInput && erEierLokal) {
+    cvInput.onchange = (e) => {
+      const fil = e.target.files[0];
+      if (fil) lastOppCv(fil);
+    };
+  }
+}
+
+async function lastOppCv(fil) {
+  const MAKS = 10 * 1024 * 1024;
+  const TILLATTE = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png', '.webp'];
+  const ext = fil.name.substring(fil.name.lastIndexOf('.')).toLowerCase();
+
+  if (!TILLATTE.includes(ext)) {
+    visMelding('Kun PDF, Word eller bilder (JPG, PNG) er tillatt.', false);
+    return;
+  }
+  if (fil.size > MAKS) {
+    visMelding('Filen er for stor. Maks 10 MB.', false);
+    return;
+  }
+
+  const varselEl = document.getElementById('cv-profil-varsel');
+  varselEl.className = 'varsel varsel-info';
+  varselEl.textContent = 'Laster opp...';
+  varselEl.classList.remove('skjult');
+
+  try {
+    const token = await getToken();
+    const formData = new FormData();
+    formData.append('cv', fil);
+
+    const res = await fetch('/api/cv', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.feil || 'Opplasting feilet');
+
+    targetBruker.cv_filnavn = data.cv_filnavn;
+    targetBruker.cv_url = data.cv_url || targetBruker.cv_url;
+    targetBruker.cv_lastet_opp = true;
+
+    renderCv();
+    varselEl.className = 'varsel varsel-suksess';
+    varselEl.textContent = `CV lastet opp: ${data.cv_filnavn}`;
+  } catch (err) {
+    console.error('CV opplasting feil:', err);
+    varselEl.className = 'varsel varsel-feil';
+    varselEl.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+  } finally {
+    document.getElementById('cv-fil-input').value = '';
+  }
+}
+
+window.slettCv = async function() {
+  if (!confirm('Er du sikker på at du vil slette CV-en din?')) return;
+  try {
+    const token = await getToken();
+    const res = await fetch('/api/cv', {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.feil || 'Kunne ikke slette CV');
+    }
+    targetBruker.cv_filnavn = null;
+    targetBruker.cv_url = null;
+    targetBruker.cv_lastet_opp = false;
+    renderCv();
+    visMelding('CV er slettet.', true);
+  } catch (err) {
+    console.error('Slett CV feil:', err);
+    visMelding(err.message || 'Noe gikk galt.', false);
   }
 };
 
