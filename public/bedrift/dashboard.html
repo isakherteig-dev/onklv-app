@@ -182,17 +182,6 @@
     </div>
   </div>
 
-  <!-- KANDIDATPROFIL MODAL -->
-  <div id="profil-modal" class="modal-bakgrunn skjult">
-    <div class="modal" style="max-width: 560px;">
-      <div class="modal-header">
-        <h3 id="profil-modal-tittel">Kandidatprofil</h3>
-        <button class="modal-lukk" id="profil-modal-lukk">✕</button>
-      </div>
-      <div id="profil-modal-innhold" style="padding: 1.25rem 0 0;"></div>
-    </div>
-  </div>
-
   <script type="module">
     import {
       krevInnlogging,
@@ -210,7 +199,6 @@
       initVarselBjelle,
       slettMinKonto,
       oppdaterSoknadStatus,
-      getToken,
       hentUlesteChatMeldinger,
       escHtml,
       tilJsStr
@@ -334,7 +322,7 @@
           <div class="kort-footer">
             <span style="font-size: 0.8rem; color: var(--farge-tekst-sekundaer);">Sendt ${formaterDato(s.sendt_dato)}</span>
             <div class="rad" style="gap: 0.5rem;">
-              <button class="btn btn-ghost btn-liten" onclick="seProfilModal(${tilJsStr(s.laerling_user_id)}, ${tilJsStr(s.laerling_naam || '')})">Se profil</button>
+              <a class="btn btn-ghost btn-liten" href="/laerling/profil.html?uid=${encodeURIComponent(s.laerling_user_id)}">Se profil</a>
               <a class="btn btn-ghost btn-liten" href="/bedrift/soknader.html?${chatParams.toString()}" style="display:inline-flex;align-items:center;">
                 💬 Meldinger <span id="dashboard-chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span>
               </a>
@@ -381,94 +369,6 @@
 
     document.getElementById('status-filter').addEventListener('change', (e) => {
       lastSoknader(e.target.value);
-    });
-
-    // ===== SE PROFIL MODAL =====
-    window.seProfilModal = async function(uid, navn) {
-      const modal = document.getElementById('profil-modal');
-      const innhold = document.getElementById('profil-modal-innhold');
-      document.getElementById('profil-modal-tittel').textContent = navn || 'Kandidatprofil';
-      innhold.innerHTML = '<p style="text-align:center;padding:2rem 1.25rem;color:var(--farge-tekst-sekundaer);">Laster profil…</p>';
-      modal.classList.remove('skjult');
-
-      try {
-        const token = await getToken();
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [brukerRes, profilRes] = await Promise.all([
-          fetch(`/api/auth/bruker/${uid}`, { headers }),
-          fetch(`/api/auth/profildata?uid=${uid}`, { headers })
-        ]);
-
-        const b = brukerRes.ok ? await brukerRes.json() : {};
-        const p = profilRes.ok ? await profilRes.json() : {};
-
-        const initialer = (b.navn || '?').trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
-        const avatarHTML = b.avatar_url
-          ? `<img src="${b.avatar_url}" alt="Profilbilde" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;" />`
-          : `<div class="avatar" style="width:64px;height:64px;font-size:1.4rem;flex-shrink:0;">${initialer}</div>`;
-
-        const infoLinjer = [b.utdanningsprogram, b.skole].filter(Boolean).map(escHtml).join(' · ');
-        const metaLinjer = [p.sted ? `📍 ${escHtml(p.sted)}` : null, p.alder ? `Alder: ${escHtml(p.alder)}` : null].filter(Boolean);
-
-        const harData = b.navn || b.bio || (p.ferdigheter && p.ferdigheter.length) || p.motivasjon;
-
-        innhold.innerHTML = `
-          <div style="padding:0 1.25rem 1.25rem;">
-            <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;">
-              ${avatarHTML}
-              <div>
-                <div style="font-weight:700;font-size:1.1rem;margin-bottom:0.2rem;">${escHtml(b.navn || '—')}</div>
-                ${infoLinjer ? `<div style="font-size:0.875rem;color:var(--farge-tekst-sekundaer);margin-bottom:0.2rem;">${infoLinjer}</div>` : ''}
-                ${metaLinjer.map(l => `<div style="font-size:0.82rem;color:var(--farge-tekst-sekundaer);">${l}</div>`).join('')}
-              </div>
-            </div>
-
-            ${b.bio ? `
-              <div style="margin-bottom:1.25rem;">
-                <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.4rem;">Om meg</div>
-                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${escHtml(b.bio)}</p>
-              </div>` : ''}
-
-            ${(p.ferdigheter && p.ferdigheter.length) ? `
-              <div style="margin-bottom:1.25rem;">
-                <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.5rem;">Ferdigheter</div>
-                <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
-                  ${p.ferdigheter.map(f => `<span class="badge badge-blaa">${escHtml(f)}</span>`).join('')}
-                </div>
-              </div>` : ''}
-
-            ${p.motivasjon ? `
-              <div style="margin-bottom:1.25rem;">
-                <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--farge-tekst-sekundaer);margin-bottom:0.4rem;">Motivasjon</div>
-                <p style="margin:0;font-size:0.9rem;line-height:1.6;">${escHtml(p.motivasjon)}</p>
-              </div>` : ''}
-
-            ${(p.kanStarte || p.stillingsprosent) ? `
-              <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap;">
-                ${p.kanStarte ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Kan starte: </span>${escHtml(p.kanStarte)}</div>` : ''}
-                ${p.stillingsprosent ? `<div style="font-size:0.85rem;"><span style="color:var(--farge-tekst-sekundaer);">Stillingsprosent: </span>${escHtml(p.stillingsprosent)}%</div>` : ''}
-              </div>` : ''}
-
-            ${b.cv_url ? `
-              <div style="padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
-                <a href="${b.cv_url}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-liten">Last ned CV${b.cv_filnavn ? ` (${escHtml(b.cv_filnavn)})` : ''}</a>
-              </div>` : ''}
-
-            ${!harData ? `
-              <p style="color:var(--farge-tekst-sekundaer);text-align:center;padding:1rem 0;">Kandidaten har ikke fylt ut profilen sin ennå.</p>` : ''}
-          </div>
-        `;
-      } catch {
-        innhold.innerHTML = '<p style="color:var(--farge-feil);text-align:center;padding:2rem 1.25rem;">Kunne ikke laste profil. Prøv igjen.</p>';
-      }
-    };
-
-    document.getElementById('profil-modal-lukk').addEventListener('click', () => {
-      document.getElementById('profil-modal').classList.add('skjult');
-    });
-    document.getElementById('profil-modal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) document.getElementById('profil-modal').classList.add('skjult');
     });
 
     // ===== NY ANNONSE MODAL =====
