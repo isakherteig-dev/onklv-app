@@ -466,26 +466,29 @@
     });
 
     document.getElementById('google-btn').addEventListener('click', async () => {
+      const feil = [];
+
       if (!document.getElementById('samtykke').checked) {
-        visFeilmelding('Du må godta personvernerklæringen før du registrerer deg');
-        return;
+        feil.push('Godta personvernerklæringen');
       }
 
       if (rolle === 'laerling' && !document.getElementById('utdanningsprogram').value) {
-        visFeilmelding('Velg utdanningsprogram før du fortsetter med Google');
-        return;
+        feil.push('Velg utdanningsprogram');
       }
 
       if (rolle === 'bedrift') {
         const orgnr = document.getElementById('orgnr').value.trim();
         if (!orgnr || !/^\d{9}$/.test(orgnr)) {
-          visFeilmelding('Fyll inn et gyldig organisasjonsnummer (9 siffer) før du fortsetter med Google');
-          return;
+          feil.push('Fyll inn et gyldig organisasjonsnummer (9 siffer)');
         }
         if (!document.getElementById('bransje').value) {
-          visFeilmelding('Velg bransje før du fortsetter med Google');
-          return;
+          feil.push('Velg bransje');
         }
+      }
+
+      if (feil.length > 0) {
+        visFeilmelding('Fyll ut følgende før du fortsetter med Google:\n• ' + feil.join('\n• '));
+        return;
       }
 
       try {
