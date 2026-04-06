@@ -8,10 +8,9 @@
   <link rel="stylesheet" href="../style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'DM Sans', sans-serif; background: var(--olkv-gray-light); }
-    h1, h2, h3 { font-family: 'Playfair Display', serif; }
     main.hoveddel { padding: 2rem 1rem; }
 
     #profilhode { margin-bottom: 2rem; border-radius: var(--radius-stor); overflow: hidden; box-shadow: var(--olkv-shadow-md); }
@@ -33,7 +32,7 @@
     .bruker-boble { background: var(--olkv-blue); color: white; border-radius: 12px 4px 12px 12px; max-width: 85%; padding: 0.75rem 1rem; font-size: 0.875rem; align-self: flex-end; line-height: 1.5; }
 
     .motiver-boks { position: relative; padding: 1.25rem 1.25rem 1.25rem 1.5rem; background: var(--olkv-blue-pale); border-left: 4px solid var(--olkv-blue-light); border-radius: 0 var(--radius) var(--radius) 0; overflow: hidden; }
-    .motiver-boks::before { content: '"'; position: absolute; top: -10px; left: 8px; font-family: 'Playfair Display', serif; font-size: 5rem; color: var(--olkv-blue); opacity: 0.15; line-height: 1; }
+    .motiver-boks::before { content: '"'; position: absolute; top: -10px; left: 8px; font-size: 5rem; color: var(--olkv-blue); opacity: 0.15; line-height: 1; }
 
     .badge-pille { cursor: default; border: none; font-size: 0.8rem; padding: 0.3rem 0.7rem; }
 
@@ -94,7 +93,7 @@
             <div class="varsel-dropdown-header">Varsler</div>
           </div>
         </div>
-        <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</div>
+        <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</div>
         <button class="btn btn-secondary btn-liten edit-owner-only nav-skjul-mobil" id="toggleEditBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rediger profil</button>
         <button class="btn btn-ghost btn-liten nav-skjul-mobil" onclick="history.back()">← Tilbake</button>
       </div>
@@ -132,7 +131,7 @@
             <circle id="matchCircle" cx="40" cy="40" r="34" fill="none" stroke="white" stroke-width="8" stroke-linecap="round"
               stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 40 40)"
               style="transition:stroke-dashoffset 1.2s ease;"/>
-            <text id="matchText" x="40" y="46" text-anchor="middle" fill="white" font-family="'Playfair Display',serif" font-size="16" font-weight="700">—</text>
+            <text id="matchText" x="40" y="46" text-anchor="middle" fill="white" font-family="'DM Sans',sans-serif" font-size="16" font-weight="600">—</text>
           </svg>
           <div style="color:rgba(255,255,255,0.85);font-size:0.7rem;margin-top:2px;font-family:'DM Sans',sans-serif;">Matchingscore</div>
         </div>
@@ -143,7 +142,7 @@
         <div id="profil-hode-flex" style="display:flex;align-items:flex-end;gap:1.25rem;margin-top:-44px;flex-wrap:wrap;">
           <!-- Avatar -->
           <div style="position:relative;flex-shrink:0;">
-            <div id="profil-avatar" class="avatar" style="width:88px;height:88px;border:4px solid white;font-size:2rem;font-family:'Playfair Display',serif;font-weight:700;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.15);">?</div>
+            <div id="profil-avatar" class="avatar" style="width:88px;height:88px;border:4px solid white;font-size:2rem;font-weight:600;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.15);">?</div>
             <button id="avatarEditBtn" class="edit-only skjult" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--olkv-red);color:white;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.2);">+</button>
             <input type="file" id="avatarInput" accept="image/*" class="skjult" />
           </div>
@@ -151,7 +150,7 @@
           <!-- Navn og sub-info -->
           <div style="flex:1;padding-top:3rem;">
             <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-              <h1 id="profil-navn" style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin:0;color:var(--olkv-dark);">—</h1>
+              <h1 id="profil-navn" style="font-size:1.5rem;font-weight:600;margin:0;color:var(--olkv-dark);">—</h1>
               <span class="badge badge-gronn"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verifisert av OLKV</span>
             </div>
             <p id="profil-sub" style="margin:0.35rem 0 0;font-family:'DM Sans',sans-serif;color:var(--olkv-gray);font-size:0.9rem;">—</p>
@@ -182,7 +181,7 @@
     <!-- SEKSJON: OM MEG (BIO) -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Om meg</h2>
+        <h2 class="kort-tittel">Om meg</h2>
       </div>
       <div id="bio-visning">
         <p id="bio-tekst" style="font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);"></p>
@@ -198,7 +197,7 @@
     <!-- SEKSJON 2: VIDEOPRESENTASJON -->
     <section class="kort" id="video-seksjon" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Bli kjent med meg</h2>
+        <h2 class="kort-tittel">Bli kjent med meg</h2>
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <span id="video-filnavn-vis" style="font-size:0.8rem;color:var(--olkv-gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
           <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" onclick="slettVideo()" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett video</button>
@@ -246,7 +245,7 @@
     <!-- SEKSJON 3: REFERANSER -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Referanser fra skolen</h2>
+        <h2 class="kort-tittel">Referanser fra skolen</h2>
       </div>
       <div id="referanser-liste"></div>
       <div class="edit-only skjult" id="referanse-form" style="margin-top:1rem;padding:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius);">
@@ -272,7 +271,7 @@
     <!-- SEKSJON 4: FERDIGHETER -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Ferdigheter</h2>
+        <h2 class="kort-tittel">Ferdigheter</h2>
       </div>
       <div id="ferdigheter-liste"></div>
       <div class="edit-only skjult" id="ferdigheter-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
@@ -290,7 +289,7 @@
     <!-- SEKSJON 5: PORTEFØLJE -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Portefølje</h2>
+        <h2 class="kort-tittel">Portefølje</h2>
       </div>
       <div id="portefolje-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;"></div>
       <div class="edit-only skjult" id="portefolje-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
@@ -315,7 +314,7 @@
     <!-- SEKSJON 6: MOTIVASJON -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Hvorfor dette faget?</h2>
+        <h2 class="kort-tittel">Hvorfor dette faget?</h2>
       </div>
       <div class="motiver-boks">
         <p id="motivasjon-tekst" style="position:relative;margin:0;font-family:'DM Sans',sans-serif;font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);"></p>
@@ -332,7 +331,7 @@
     <!-- SEKSJON 7: CV OG ERFARING -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header" style="justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">CV og erfaring</h2>
+        <h2 class="kort-tittel">CV og erfaring</h2>
         <a id="btn-last-cv-2" class="btn btn-secondary btn-liten skjult" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Last ned CV</a>
       </div>
       <div class="tidslinje-container" id="tidslinje-liste"></div>
@@ -370,7 +369,7 @@
     <!-- SEKSJON 7B: CV-OPPLASTING -->
     <section class="kort" style="margin-bottom:1.5rem;" id="cv-seksjon">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Min CV</h2>
+        <h2 class="kort-tittel">Min CV</h2>
       </div>
 
       <!-- Vis-tilstand: CV finnes -->
@@ -410,7 +409,7 @@
     <!-- SEKSJON 8: TILGJENGELIGHET -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Tilgjengelighet</h2>
+        <h2 class="kort-tittel">Tilgjengelighet</h2>
       </div>
       <div id="tilgjengelighet-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
         <div>
@@ -441,7 +440,7 @@
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
           <div>
-            <h3 style="color:white;margin:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1rem;">OLKV AI-assistent</h3>
+            <h3 style="color:white;margin:0;font-weight:600;font-size:1rem;">OLKV AI-assistent</h3>
             <p style="color:rgba(255,255,255,0.85);margin:0;font-size:0.82rem;font-family:'DM Sans',sans-serif;">Spør om lærlingen eller få hjelp til intervjuspørsmål</p>
           </div>
         </div>

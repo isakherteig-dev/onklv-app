@@ -318,7 +318,7 @@ function renderReferanser() {
       <div style="display:flex;align-items:center;gap:0.75rem;">
         <div class="avatar" style="width:40px;height:40px;min-width:40px;background:var(--olkv-blue);color:white;font-size:0.85rem;display:flex;align-items:center;justify-content:center;border-radius:50%;">${initialFra(ref.navn || '?')}</div>
         <div style="flex:1;">
-          <p style="margin:0;font-weight:700;font-family:'DM Sans',sans-serif;">${ref.navn || '—'}</p>
+          <p style="margin:0;font-weight:600;">${ref.navn || '—'}</p>
           <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);">${ref.rolle || '—'}</p>
         </div>
         ${ref.verifisert ? '<span style="margin-left:auto;font-size:0.8rem;color:#16a34a;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'20 6 9 17 4 12\'/></svg> Verifisert</span>' : ''}
