@@ -114,6 +114,18 @@ function renderProfilhode() {
     img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
     img.onerror = () => { av.innerHTML = initialFra(tb.navn || '?'); av.style.overflow = ''; };
     av.appendChild(img);
+
+    const navAv = document.getElementById('nav-avatar');
+    if (navAv && tb.avatar_url) {
+      navAv.innerHTML = '';
+      navAv.style.overflow = 'hidden';
+      const navImg = document.createElement('img');
+      navImg.src = tb.avatar_url;
+      navImg.alt = tb.navn || 'Profilbilde';
+      navImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      navImg.onerror = () => { navAv.textContent = initialFra(tb.navn || '?'); navAv.style.overflow = ''; };
+      navAv.appendChild(navImg);
+    }
   } else {
     av.textContent = initialFra(tb.navn || '?');
   }
@@ -200,6 +212,19 @@ function renderProfilhode() {
         if (res.ok) {
           const data = await res.json();
           targetBruker.avatar_url = data.avatar_url;
+
+          const navAv = document.getElementById('nav-avatar');
+          if (navAv) {
+            navAv.innerHTML = '';
+            navAv.style.overflow = 'hidden';
+            const navImg = document.createElement('img');
+            navImg.src = data.avatar_url;
+            navImg.alt = targetBruker.navn || 'Profilbilde';
+            navImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+            navImg.onerror = () => { navAv.textContent = initialFra(targetBruker.navn || '?'); navAv.style.overflow = ''; };
+            navAv.appendChild(navImg);
+          }
+
           visMelding('Profilbilde er lagret!', true);
         } else {
           const data = await res.json().catch(() => ({}));
