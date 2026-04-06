@@ -14,7 +14,7 @@ export async function forbedreProfil(laerling) {
     : 'Ingen ferdigheter lagt til';
 
   const referanserTekst = (laerling.referanser || []).length > 0
-    ? laerling.referanser.map(r => `${r.navn} (${r.rolle}): "${r.tekst}"`).join('\n  ')
+    ? laerling.referanser.map((r, i) => `Referanse ${i + 1} (${r.rolle}): "${r.tekst}"`).join('\n  ')
     : 'Ingen referanser';
 
   const tidslinjeTekst = (laerling.tidslinje || []).length > 0

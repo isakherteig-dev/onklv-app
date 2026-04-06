@@ -189,13 +189,13 @@ ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
     const profilData = profilDoc.exists ? profilDoc.data() : {};
 
     systemPrompt = `Du er OLKV sin AI-assistent. Her er lærlingprofilen du hjelper med:
-Navn: ${brukerData.navn || 'Ikke oppgitt'}
+Navn: [anonymisert]
 Fagområde: ${brukerData.utdanningsprogram || 'Ikke oppgitt'}
 Sted: ${profilData.sted || 'Ikke oppgitt'}
 Motivasjon: ${profilData.motivasjon || 'Ikke oppgitt'}
 Ferdigheter: ${(profilData.ferdigheter || []).map(f => f.navn + ' ' + f.prosent + '%').join(', ') || 'Ikke oppgitt'}
 Erfaring: ${(profilData.tidslinje || []).map(t => t.tittel).join(', ') || 'Ikke oppgitt'}
-Referanser fra: ${(profilData.referanser || []).map(r => r.navn + ' (' + r.rolle + ')').join(', ') || 'Ingen'}
+Referanser fra: ${(profilData.referanser || []).map((r, i) => 'Referanse ' + (i + 1) + ' (' + r.rolle + ')').join(', ') || 'Ingen'}
 Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
   } catch (profilErr) {
     console.error('Kunne ikke hente profildata for AI-chat:', profilErr.message);
