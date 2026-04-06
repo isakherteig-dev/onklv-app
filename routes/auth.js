@@ -401,11 +401,37 @@ ruter.delete('/slett-konto', krevAuth, async (req, res) => {
       adminDB.collection('chat_meldinger').where('avsender_id', '==', uid).get()
     ]);
 
+    // Slett vedlegg fra Storage for alle søknader
+    const vedleggSletting = soknaderSnap.docs
+      .map(d => d.data().vedlegg)
+      .filter(url => url && url.includes('storage.googleapis.com'))
+      .map(url => {
+        try {
+          const parsedUrl = new URL(url);
+          const filnavn = decodeURIComponent(parsedUrl.pathname.replace(`/${bucket.name}/`, ''));
+          return bucket.file(filnavn).delete().catch(() => {});
+        } catch { return Promise.resolve(); }
+      });
+    await Promise.all(vedleggSletting);
+
+    // Hent chatmeldinger der brukeren er mottaker (via søknader)
+    const soknadIder = soknaderSnap.docs.map(d => d.id);
+    let chatMottakerDocs = [];
+    if (soknadIder.length > 0) {
+      const chunks = [];
+      for (let i = 0; i < soknadIder.length; i += 30) chunks.push(soknadIder.slice(i, i + 30));
+      const chunkResults = await Promise.all(
+        chunks.map(chunk => adminDB.collection('chat_meldinger').where('soknad_id', 'in', chunk).get())
+      );
+      chatMottakerDocs = chunkResults.flatMap(s => s.docs);
+    }
+
     const batch = adminDB.batch();
     soknaderSnap.docs.forEach(d => batch.delete(d.ref));
     laereplasserSnap.docs.forEach(d => batch.delete(d.ref));
     varslerSnap.docs.forEach(d => batch.delete(d.ref));
     chatSnap.docs.forEach(d => batch.delete(d.ref));
+    chatMottakerDocs.forEach(d => batch.delete(d.ref));
 
     // Slett profilData subcollection
     if (profilDoc.exists) batch.delete(profilDoc.ref);

@@ -137,7 +137,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), async (req, res) => {
   const laerplassId = String(req.body.laerplass_id || '').trim();
   const { melding, erfaring, vg1, vg2, telefon, vedlegg_base64, vedlegg_filnavn } = req.body;
 
-  console.log('[SØKNAD] Mottatt:', { laerplassId, melding: melding?.slice(0, 30), harVedlegg: !!vedlegg_base64 });
+  console.log('[SØKNAD] Mottatt:', { laerplassId, harVedlegg: !!vedlegg_base64 });
 
   if (!laerplassId) return res.status(400).json({ feil: 'Mangler laerplass_id' });
   if (!melding || melding.trim().length < 10) {
@@ -165,6 +165,19 @@ ruter.post('/', krevAuth, krevRolle('laerling'), async (req, res) => {
     let vedleggUrl = null;
     const vedleggOriginalnavn = vedlegg_filnavn || null;
     if (vedlegg_base64 && vedlegg_filnavn) {
+      if (vedlegg_base64.length > 7 * 1024 * 1024 * 4 / 3) {
+        return res.status(400).json({ feil: 'Vedlegget er for stort. Maks filstørrelse er 5 MB.' });
+      }
+      const ext = path.extname(vedlegg_filnavn).toLowerCase();
+      if (ext !== '.pdf' && ext !== '.docx') {
+        return res.status(400).json({ feil: 'Vedlegg må være PDF eller DOCX.' });
+      }
+      const magic = Buffer.from(vedlegg_base64.slice(0, 8), 'base64');
+      const isPdf  = magic[0] === 0x25 && magic[1] === 0x50 && magic[2] === 0x44 && magic[3] === 0x46;
+      const isDocx = magic[0] === 0x50 && magic[1] === 0x4B && magic[2] === 0x03 && magic[3] === 0x04;
+      if (!isPdf && !isDocx) {
+        return res.status(400).json({ feil: 'Filinnholdet samsvarer ikke med en gyldig PDF eller DOCX.' });
+      }
       const buffer = Buffer.from(vedlegg_base64, "base64");
       vedleggUrl = await lastOppTilStorage(buffer, vedlegg_filnavn, req.user.uid);
     }
