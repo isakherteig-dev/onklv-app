@@ -157,7 +157,7 @@
       const tbody = document.getElementById('soknader-tbody');
 
       if (!soknader.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="tom-tilstand"><div class="tom-tilstand-ikon">📋</div><h3>Ingen søknader funnet</h3></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6"><div class="tom-tilstand"><div class="tom-tilstand-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><h3>Ingen søknader funnet</h3></div></td></tr>`;
         return;
       }
 
@@ -216,12 +216,12 @@
             ${s.behandlet_dato ? `<div><div class="hint">Behandlet</div>${formaterDato(s.behandlet_dato)}</div>` : ''}
           </div>
           <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
-            ${s.status !== 'godkjent' ? `<button class="btn btn-liten" style="background:#e8f5e9;color:#1B5E20;border:none;" onclick="settStatus(${s.id},'godkjent','Godkjenn denne søknaden?')">✓ Godkjenn</button>` : ''}
-            ${s.status !== 'avslatt' ? `<button class="btn btn-liten" style="background:#FDECEA;color:#922B21;border:none;" onclick="settStatus(${s.id},'avslatt','Avslå denne søknaden?')">✕ Avslå</button>` : ''}
-            <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;" id="ai-oppsummer-btn" onclick="aiOppsummer(${s.id})">✨ AI-sammendrag</button>
+            ${s.status !== 'godkjent' ? `<button class="btn btn-liten" style="background:#e8f5e9;color:#1B5E20;border:none;" onclick="settStatus(${s.id},'godkjent','Godkjenn denne søknaden?')">Godkjenn</button>` : ''}
+            ${s.status !== 'avslatt' ? `<button class="btn btn-liten" style="background:#FDECEA;color:#922B21;border:none;" onclick="settStatus(${s.id},'avslatt','Avslå denne søknaden?')">Avslå</button>` : ''}
+            <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;" id="ai-oppsummer-btn" onclick="aiOppsummer(${s.id})">AI-sammendrag</button>
           </div>
           <div id="ai-oppsummer-boks" style="display:none;margin-top:0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;">
-            <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.4rem;">✨ AI-sammendrag</span>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.4rem;">AI-sammendrag</span>
             <span id="ai-oppsummer-tekst">Laster…</span>
           </div>
         </div>`;
@@ -267,7 +267,7 @@
         await lastSoknader();
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.textContent = `✓ Status satt til "${statusTekst(status)}"`;
+        toast.textContent = `Status satt til "${statusTekst(status)}"`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       };

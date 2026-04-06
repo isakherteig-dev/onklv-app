@@ -95,7 +95,7 @@
           </div>
         </div>
         <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</div>
-        <button class="btn btn-secondary btn-liten edit-owner-only nav-skjul-mobil" id="toggleEditBtn">✏️ Rediger profil</button>
+        <button class="btn btn-secondary btn-liten edit-owner-only nav-skjul-mobil" id="toggleEditBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rediger profil</button>
         <button class="btn btn-ghost btn-liten nav-skjul-mobil" onclick="history.back()">← Tilbake</button>
       </div>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
@@ -107,17 +107,17 @@
   <div class="mobil-meny skjult" id="slide-meny">
     <div class="mobil-meny-topp">
       <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
-      <button class="mobil-meny-lukk" id="meny-lukk">✕</button>
+      <button class="mobil-meny-lukk" id="meny-lukk"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <a href="/laerling/dashboard.html" class="mobil-meny-lenke">🏠 Dashbord</a>
-    <a href="/laerling/laereplasser.html" class="mobil-meny-lenke">🔍 Finn læreplasser</a>
-    <a href="/laerling/mine-soknader.html" class="mobil-meny-lenke">📄 Mine søknader</a>
-    <a href="/laerling/profil.html" class="mobil-meny-lenke">👤 Min profil</a>
-    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut">🚪 Logg ut</button>
+    <a href="/laerling/dashboard.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Dashbord</a>
+    <a href="/laerling/laereplasser.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Finn læreplasser</a>
+    <a href="/laerling/mine-soknader.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Mine søknader</a>
+    <a href="/laerling/profil.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Min profil</a>
+    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logg ut</button>
   </div>
 
   <!-- REDIGERINGSMODUS-BANNER -->
-  <div id="editBanner" class="varsel varsel-info skjult" style="text-align:center;border-radius:0;padding:0.75rem;">✏️ Redigeringsmodus aktiv — klikk «Ferdig» for å avslutte</div>
+  <div id="editBanner" class="varsel varsel-info skjult" style="text-align:center;border-radius:0;padding:0.75rem;">Redigeringsmodus aktiv — klikk «Ferdig» for å avslutte</div>
 
   <main class="hoveddel page-content" style="max-width:900px;margin:0 auto;">
 
@@ -152,10 +152,10 @@
           <div style="flex:1;padding-top:3rem;">
             <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
               <h1 id="profil-navn" style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin:0;color:var(--olkv-dark);">—</h1>
-              <span class="badge badge-gronn">✅ Verifisert av OLKV</span>
+              <span class="badge badge-gronn"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verifisert av OLKV</span>
             </div>
             <p id="profil-sub" style="margin:0.35rem 0 0;font-family:'DM Sans',sans-serif;color:var(--olkv-gray);font-size:0.9rem;">—</p>
-            <button class="btn btn-secondary btn-liten edit-owner-only profil-rediger-mobil" id="toggleEditBtnMobil" style="margin-top:0.75rem;display:none;">✏️ Rediger profil</button>
+            <button class="btn btn-secondary btn-liten edit-owner-only profil-rediger-mobil" id="toggleEditBtnMobil" style="margin-top:0.75rem;display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rediger profil</button>
 
             <!-- Redigeringsskjema for profilhode -->
             <div class="edit-only skjult" id="hode-edit-form" style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
@@ -170,8 +170,8 @@
 
         <!-- Handlingsknapper -->
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.25rem;">
-          <a id="btn-last-cv" class="btn btn-secondary btn-liten skjult" href="#">📄 Last ned CV</a>
-          <button id="btn-book-intervju" class="btn btn-ghost btn-liten" disabled title="Bookingfunksjon er ikke tilgjengelig ennå" style="opacity:0.5;cursor:not-allowed;">📅 Book intervju</button>
+          <a id="btn-last-cv" class="btn btn-secondary btn-liten skjult" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Last ned CV</a>
+          <button id="btn-book-intervju" class="btn btn-ghost btn-liten" disabled title="Bookingfunksjon er ikke tilgjengelig ennå" style="opacity:0.5;cursor:not-allowed;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Book intervju</button>
         </div>
 
         <!-- Badge-rad -->
@@ -182,7 +182,7 @@
     <!-- SEKSJON: OM MEG (BIO) -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">👋 Om meg</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Om meg</h2>
       </div>
       <div id="bio-visning">
         <p id="bio-tekst" style="font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);"></p>
@@ -198,10 +198,10 @@
     <!-- SEKSJON 2: VIDEOPRESENTASJON -->
     <section class="kort" id="video-seksjon" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🎬 Bli kjent med meg</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Bli kjent med meg</h2>
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <span id="video-filnavn-vis" style="font-size:0.8rem;color:var(--olkv-gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" onclick="slettVideo()" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;">🗑️ Slett video</button>
+          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" onclick="slettVideo()" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett video</button>
         </div>
       </div>
 
@@ -214,7 +214,7 @@
       <!-- Tilstand: tom (ikke-eier, ingen video) -->
       <div id="video-tom-visning" class="skjult">
         <div style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
-          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">🎬</div>
+          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
           <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Ingen presentasjonsvideo lagt til ennå</p>
         </div>
       </div>
@@ -226,7 +226,7 @@
           onclick="document.getElementById('videoInput').click()"
           onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
           onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
-          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">📤</div>
+          <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
           <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Klikk for å velge video</p>
           <p style="margin:0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;text-align:center;padding:0 1rem;">MP4, WebM eller MOV · maks 100 MB</p>
           <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" style="display:none;" />
@@ -246,11 +246,11 @@
     <!-- SEKSJON 3: REFERANSER -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🏫 Referanser fra skolen</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Referanser fra skolen</h2>
       </div>
       <div id="referanser-liste"></div>
       <div class="edit-only skjult" id="referanse-form" style="margin-top:1rem;padding:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius);">
-        <p style="margin:0 0 1rem;font-weight:600;font-size:0.9rem;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">➕ Legg til ny referanse</p>
+        <p style="margin:0 0 1rem;font-weight:600;font-size:0.9rem;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Legg til ny referanse</p>
         <div class="form-gruppe" style="margin-bottom:0.75rem;">
           <label style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);display:block;margin-bottom:0.3rem;">Hva sier de om deg?</label>
           <textarea id="ref-tekst" rows="3" placeholder="F.eks. «En engasjert og pliktoppfyllende elev som alltid møter forberedt...»" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
@@ -265,14 +265,14 @@
             <input type="text" id="ref-rolle" placeholder="F.eks. «Kontaktlærer, Voss vgs»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
           </div>
         </div>
-        <button class="btn btn-primary btn-liten" onclick="leggTilReferanse()">✓ Legg til referanse</button>
+        <button class="btn btn-primary btn-liten" onclick="leggTilReferanse()">Legg til referanse</button>
       </div>
     </section>
 
     <!-- SEKSJON 4: FERDIGHETER -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">⚡ Ferdigheter</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Ferdigheter</h2>
       </div>
       <div id="ferdigheter-liste"></div>
       <div class="edit-only skjult" id="ferdigheter-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
@@ -284,13 +284,13 @@
           <button class="btn btn-primary btn-liten" onclick="leggTilFerdighet()">+ Legg til</button>
         </div>
       </div>
-      <button class="btn btn-secondary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreFerdigheter()">💾 Lagre ferdigheter</button>
+      <button class="btn btn-secondary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreFerdigheter()">Lagre ferdigheter</button>
     </section>
 
     <!-- SEKSJON 5: PORTEFØLJE -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">🖼️ Portefølje</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Portefølje</h2>
       </div>
       <div id="portefolje-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;"></div>
       <div class="edit-only skjult" id="portefolje-form" style="margin-top:1rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
@@ -315,7 +315,7 @@
     <!-- SEKSJON 6: MOTIVASJON -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">💬 Hvorfor dette faget?</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Hvorfor dette faget?</h2>
       </div>
       <div class="motiver-boks">
         <p id="motivasjon-tekst" style="position:relative;margin:0;font-family:'DM Sans',sans-serif;font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);"></p>
@@ -332,8 +332,8 @@
     <!-- SEKSJON 7: CV OG ERFARING -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header" style="justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📄 CV og erfaring</h2>
-        <a id="btn-last-cv-2" class="btn btn-secondary btn-liten skjult" href="#">⬇️ Last ned CV</a>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">CV og erfaring</h2>
+        <a id="btn-last-cv-2" class="btn btn-secondary btn-liten skjult" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Last ned CV</a>
       </div>
       <div class="tidslinje-container" id="tidslinje-liste"></div>
       <div class="edit-only skjult" id="tidslinje-form" style="margin-top:1.25rem;padding:1.25rem;background:var(--olkv-gray-light);border-radius:var(--radius);">
@@ -370,18 +370,18 @@
     <!-- SEKSJON 7B: CV-OPPLASTING -->
     <section class="kort" style="margin-bottom:1.5rem;" id="cv-seksjon">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📎 Min CV</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Min CV</h2>
       </div>
 
       <!-- Vis-tilstand: CV finnes -->
       <div id="cv-har-fil" class="skjult" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <span style="font-size:2rem;">📄</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
         <div style="flex:1;">
           <p id="cv-filnavn-vis" style="margin:0;font-weight:600;font-family:'DM Sans',sans-serif;">—</p>
           <p style="margin:0.2rem 0 0;font-size:0.82rem;color:var(--olkv-gray);">Lastet opp og synlig for bedrifter</p>
         </div>
-        <a id="cv-last-ned-lenke" href="#" target="_blank" class="btn btn-secondary btn-liten">⬇️ Last ned</a>
-        <button id="cv-slett-knapp" class="btn btn-ghost btn-liten edit-only skjult" style="color:#dc2626;" onclick="slettCv()">🗑️ Slett</button>
+        <a id="cv-last-ned-lenke" href="#" target="_blank" class="btn btn-secondary btn-liten"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Last ned</a>
+        <button id="cv-slett-knapp" class="btn btn-ghost btn-liten edit-only skjult" style="color:#dc2626;" onclick="slettCv()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett</button>
       </div>
 
       <!-- Vis-tilstand: ingen CV (ikke-eier) -->
@@ -396,7 +396,7 @@
           onclick="document.getElementById('cv-fil-input').click()"
           onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
           onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
-          <div style="font-size:2rem;margin-bottom:0.5rem;">📤</div>
+          <div style="margin-bottom:0.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
           <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Trykk for å velge fil eller ta bilde</p>
           <p style="margin:0.4rem 0 0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">PDF, Word eller bilde (JPG, PNG) · maks 10 MB</p>
           <input type="file" id="cv-fil-input" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,image/*" style="display:none;" />
@@ -410,7 +410,7 @@
     <!-- SEKSJON 8: TILGJENGELIGHET -->
     <section class="kort" style="margin-bottom:1.5rem;">
       <div class="kort-header">
-        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">📅 Tilgjengelighet</h2>
+        <h2 class="kort-tittel" style="font-family:'Playfair Display',serif;">Tilgjengelighet</h2>
       </div>
       <div id="tilgjengelighet-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
         <div>
@@ -432,14 +432,14 @@
         <p style="font-size:0.85rem;color:var(--olkv-gray);margin:0 0 0.75rem;">Tilgjengelige dager</p>
         <div id="dager-piller" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
-      <button class="btn btn-primary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreTilgjengelighet()">💾 Lagre tilgjengelighet</button>
+      <button class="btn btn-primary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreTilgjengelighet()">Lagre tilgjengelighet</button>
     </section>
 
     <!-- SEKSJON 9: AI-ASSISTENT -->
     <div class="ai-panel">
       <div style="background:linear-gradient(135deg,var(--olkv-blue),var(--olkv-blue-light));padding:1rem 1.5rem;">
         <div style="display:flex;align-items:center;gap:0.75rem;">
-          <span style="font-size:1.4rem;">🤖</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
           <div>
             <h3 style="color:white;margin:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1rem;">OLKV AI-assistent</h3>
             <p style="color:rgba(255,255,255,0.85);margin:0;font-size:0.82rem;font-family:'DM Sans',sans-serif;">Spør om lærlingen eller få hjelp til intervjuspørsmål</p>

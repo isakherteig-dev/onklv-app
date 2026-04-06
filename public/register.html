@@ -33,12 +33,12 @@
 
       <div class="rolle-valg-grid">
         <button class="rolle-kort laerling" onclick="byttTilSteg2('laerling')">
-          <span class="rolle-ikon">👷</span>
+          <span class="rolle-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
           <span class="rolle-tittel">Jeg er lærling</span>
           <span class="rolle-beskr">Finn din lærlingplass</span>
         </button>
         <button class="rolle-kort bedrift" onclick="byttTilSteg2('bedrift')">
-          <span class="rolle-ikon">🏢</span>
+          <span class="rolle-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
           <span class="rolle-tittel">Jeg er bedrift</span>
           <span class="rolle-beskr">Finn dine lærlinger</span>
         </button>
@@ -62,7 +62,7 @@
         <div id="varsel" class="varsel skjult"></div>
         <div id="suksess-boks" class="skjult">
           <div class="varsel varsel-suksess" style="margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">
-            ✅ <strong>Konto opprettet!</strong>
+            <strong>Konto opprettet!</strong>
           </div>
           <p id="suksess-tekst" style="margin-bottom: 1.5rem;"></p>
           <a href="/login.html" id="suksess-login-lenke" class="btn btn-primary" style="width: 100%; text-align: center;">Gå til innlogging →</a>
@@ -115,7 +115,7 @@
               <input type="text" id="skole" placeholder="f.eks. Åsane videregående skole" />
             </div>
             <div class="info-boks" style="font-size: 0.85rem;">
-              👤 Er du under 18 år? Appen behandler opplysningene dine utelukkende som del av lærlingordningen.
+              Er du under 18 år? Appen behandler opplysningene dine utelukkende som del av lærlingordningen.
               Du kan lese mer i vår <a href="/personvern.html" target="_blank">personvernerklæring</a>.
             </div>
           </div>
@@ -123,7 +123,7 @@
           <!-- BEDRIFT-FELT -->
           <div id="bedrift-felt" class="skjult">
             <div class="info-boks" style="font-size: 0.85rem;">
-              ⏳ Bedriftskontoer gjennomgås av Opplæringskontoret i Vestland og godkjennes vanligvis innen 1–2 virkedager.
+              Bedriftskontoer gjennomgås av Opplæringskontoret i Vestland og godkjennes vanligvis innen 1–2 virkedager.
             </div>
             <div class="form-gruppe">
               <label for="orgnr">Organisasjonsnummer *</label>
@@ -343,7 +343,7 @@
       const banner = document.createElement('div');
       banner.className = 'varsel';
       banner.style.cssText = 'margin-bottom:1.25rem;background:#eff6ff;border-color:var(--olkv-blue-light);color:var(--olkv-dark);font-size:0.9rem;';
-      banner.innerHTML = '✅ <strong>Google-konto koblet!</strong> Velg rolle, fyll ut feltene nedenfor og klikk <strong>«Registrer med Google»</strong> for å fullføre registreringen.';
+      banner.innerHTML = '<strong>Google-konto koblet!</strong> Velg rolle, fyll ut feltene nedenfor og klikk <strong>«Registrer med Google»</strong> for å fullføre registreringen.';
       document.getElementById('reg-form').insertBefore(banner, document.getElementById('reg-form').firstChild);
     }
 

@@ -262,7 +262,7 @@
       if (!confirm(`Godkjenn ${navn}?`)) return;
       try {
         await apiBedriftGodkjenn(uid);
-        const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = `✓ ${navn} er godkjent!`;
+        const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = `${navn} er godkjent!`;
         document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
         await lastBedrifter();
         await lastStats();

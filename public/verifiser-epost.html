@@ -22,7 +22,7 @@
   <main style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem 1rem 2rem;position:relative;z-index:10;">
     <div style="width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;animation:stegInn 0.4s cubic-bezier(0.16,1,0.3,1) both;">
 
-      <div style="font-size:3.5rem;margin-bottom:1.25rem;line-height:1;">✉️</div>
+      <div style="margin-bottom:1.25rem;line-height:1;"><svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
 
       <h1 style="color:#fff;font-size:1.6rem;font-weight:700;text-align:center;margin-bottom:0.5rem;">
         Bekreft e-posten din
@@ -227,7 +227,7 @@
 
         // Suksess
         sessionStorage.removeItem('olkv-verif-token');
-        visVarsel('E-posten din er bekreftet! 🎉', 'suksess');
+        visVarsel('E-posten din er bekreftet!', 'suksess');
         bekreftBtn.textContent = 'Sender deg videre…';
 
         // Hent rolle fra eksisterende Firebase-sesjon og redirect til riktig dashboard

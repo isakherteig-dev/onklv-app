@@ -152,13 +152,13 @@ function renderProfilhode() {
 
   const badgeRad = document.getElementById('badge-rad');
   const badges = [];
-  badges.push({ tekst: '🦺 HMS-kurs', klasse: 'badge-gronn' });
+  badges.push({ tekst: 'HMS-kurs', klasse: 'badge-gronn' });
   if (tb.utdanningsprogram) badges.push({ tekst: tb.utdanningsprogram, klasse: 'badge-blaa' });
-  badges.push({ tekst: '🔍 Aktiv søker', klasse: 'badge-roed' });
+  badges.push({ tekst: 'Aktiv søker', klasse: 'badge-roed' });
   const sted = profil.sted || tb.sted;
-  if (sted) badges.push({ tekst: '📍 ' + sted, klasse: 'badge-graa' });
-  if (beregnProfilkomplettering(tb) >= 80) badges.push({ tekst: '✅ Profil fullført', klasse: 'badge-graa' });
-  if (profil.harReferanse) badges.push({ tekst: '🏫 Anbefalt av skole', klasse: 'badge-gronn' });
+  if (sted) badges.push({ tekst: sted, klasse: 'badge-graa' });
+  if (beregnProfilkomplettering(tb) >= 80) badges.push({ tekst: 'Profil fullført', klasse: 'badge-graa' });
+  if (profil.harReferanse) badges.push({ tekst: 'Anbefalt av skole', klasse: 'badge-gronn' });
   badgeRad.innerHTML = badges.map(b => `<span class="badge ${b.klasse}">${b.tekst}</span>`).join('');
 
   const fagSelect = document.getElementById('edit-fag');
@@ -321,7 +321,7 @@ function renderReferanser() {
           <p style="margin:0;font-weight:700;font-family:'DM Sans',sans-serif;">${ref.navn || '—'}</p>
           <p style="margin:0;font-size:0.85rem;color:var(--olkv-gray);">${ref.rolle || '—'}</p>
         </div>
-        ${ref.verifisert ? '<span style="margin-left:auto;font-size:0.8rem;color:#16a34a;font-weight:600;white-space:nowrap;">✅ Verifisert</span>' : ''}
+        ${ref.verifisert ? '<span style="margin-left:auto;font-size:0.8rem;color:#16a34a;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'20 6 9 17 4 12\'/></svg> Verifisert</span>' : ''}
       </div>
     </div>
   `).join('');
@@ -980,9 +980,9 @@ function toggleEdit() {
     banner.classList.add('skjult');
   }
   const btn = document.getElementById('toggleEditBtn');
-  btn.textContent = editMode ? '✅ Ferdig' : '✏️ Rediger profil';
+  btn.textContent = editMode ? 'Ferdig' : 'Rediger profil';
   const btnMobil = document.getElementById('toggleEditBtnMobil');
-  if (btnMobil) btnMobil.textContent = editMode ? '✅ Ferdig' : '✏️ Rediger profil';
+  if (btnMobil) btnMobil.textContent = editMode ? 'Ferdig' : 'Rediger profil';
 
   document.querySelectorAll('.badge-pille').forEach(b => {
     b.style.cursor = editMode ? 'pointer' : 'default';

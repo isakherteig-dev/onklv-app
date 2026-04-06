@@ -202,7 +202,7 @@
 
       const tbody = document.getElementById('laereplasser-tbody');
       if (!plasser.length) {
-        tbody.innerHTML = `<tr><td colspan="8"><div class="tom-tilstand"><div class="tom-tilstand-ikon">📢</div><h3>Ingen læreplasser funnet</h3></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="tom-tilstand"><div class="tom-tilstand-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><h3>Ingen læreplasser funnet</h3></div></td></tr>`;
         return;
       }
       tbody.innerHTML = plasser.map(p => `
@@ -262,7 +262,7 @@
         document.getElementById('annonse-modal').classList.add('skjult');
         await lastLaereplasser();
         const toast = document.createElement('div');
-        toast.className = 'toast'; toast.textContent = '✓ Læreplass publisert!';
+        toast.className = 'toast'; toast.textContent = 'Læreplass publisert!';
         document.body.appendChild(toast); setTimeout(() => toast.remove(), 4000);
       } catch (err) {
         document.getElementById('annonse-varsel').className = 'varsel varsel-feil';

@@ -37,12 +37,12 @@
   <div class="mobil-meny skjult" id="slide-meny">
     <div class="mobil-meny-topp">
       <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
-      <button class="mobil-meny-lukk" id="meny-lukk">✕</button>
+      <button class="mobil-meny-lukk" id="meny-lukk"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <a href="/bedrift/dashboard.html" class="mobil-meny-lenke">🏠 Dashbord</a>
-    <a href="/bedrift/laereplasser.html" class="mobil-meny-lenke">📋 Mine læreplasser</a>
-    <a href="/bedrift/soknader.html" class="mobil-meny-lenke">📄 Innkomne søknader</a>
-    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut">🚪 Logg ut</button>
+    <a href="/bedrift/dashboard.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Dashbord</a>
+    <a href="/bedrift/laereplasser.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Mine læreplasser</a>
+    <a href="/bedrift/soknader.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Innkomne søknader</a>
+    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logg ut</button>
   </div>
 
   <div class="dashboard-layout">
@@ -230,7 +230,7 @@
       if (!soknader.length) {
         container.innerHTML = `
           <div class="tom-tilstand">
-            <div class="tom-tilstand-ikon">📋</div>
+            <div class="tom-tilstand-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
             <h3>Ingen søknader ennå</h3>
             <p>Det har ikke kommet inn søknader ennå.</p>
           </div>`;
@@ -254,7 +254,7 @@
             <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>
           </div>
           <div style="margin:0.5rem 0;font-size:0.83rem;color:var(--olkv-gray);">
-            ${s.utdanningsprogram ? `📚 ${escHtml(s.utdanningsprogram)}` : ''}
+            ${s.utdanningsprogram ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> ${escHtml(s.utdanningsprogram)}` : ''}
             ${s.vg1 ? ` · VG1: ${escHtml(s.vg1)}` : ''}
             ${s.vg2 ? ` · VG2: ${escHtml(s.vg2)}` : ''}
           </div>
@@ -270,7 +270,7 @@
               ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${jsSoknadId},'under_behandling')">Under behandling</button>` : ''}
               ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${jsSoknadId},'godkjent')">Godkjenn</button>` : ''}
               ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${jsSoknadId},'avslatt')">Avslå</button>` : ''}
-              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${jsSoknadId})">💬 Meldinger <span id="chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span></button>
+              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${jsSoknadId})" style="display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Meldinger <span id="chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span></button>
             </div>
           </div>
           <div id="chat-panel-${soknadId}" class="skjult" style="margin-top:0.75rem;">
@@ -332,7 +332,7 @@
         await lastSoknader();
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.textContent = `✓ Status oppdatert til "${statusTekst(status)}"`;
+        toast.textContent = `Status oppdatert til "${statusTekst(status)}"`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       } catch (err) {
