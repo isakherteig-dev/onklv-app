@@ -3,7 +3,7 @@
    "Fremtiden er din"
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap');
 
 /* ===== CSS VARIABLER ===== */
 :root {
@@ -40,19 +40,55 @@
 
   /* Grenser og skygger */
   --olkv-border: rgba(0, 0, 0, 0.06);
-  --olkv-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --olkv-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --olkv-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --olkv-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --olkv-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --olkv-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
 
   /* Design tokens */
-  --radius: 12px;
-  --radius-stor: 16px;
+  --radius: 10px;
+  --radius-stor: 10px;
   --radius-pill: 50px;
-  --skygge: var(--olkv-shadow-sm);
-  --skygge-hover: var(--olkv-shadow-md);
-  --overgang: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --skygge: 0 1px 3px rgba(0,0,0,0.04);
+  --skygge-hover: 0 2px 8px rgba(0,0,0,0.06);
+  --overgang: all 0.15s ease-out;
   --bredde-maks: 1100px;
   --avstand: 1.5rem;
+
+  /* SKILL.md design tokens */
+  --color-primary: #1B3A6B;
+  --color-primary-hover: #15305A;
+  --color-primary-light: #EFF6FF;
+  --color-text: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-bg: #FAFBFC;
+  --color-bg-card: #FFFFFF;
+  --color-bg-hover: #F8FAFC;
+  --color-bg-active: #F1F5F9;
+  --color-border: rgba(0,0,0,0.06);
+  --color-border-strong: rgba(0,0,0,0.12);
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-warning: #CA8A04;
+  --color-warning-bg: #FEFCE8;
+  --color-accent: #E74C3C;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Timing */
+  --timing-hover: 100ms;
+  --timing-expand: 150ms;
+  --timing-slide: 250ms;
 }
 
 /* ===== RESET & BASE ===== */
@@ -90,15 +126,15 @@ h1, h2 {
 
 h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); }
 h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
-h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.4; color: var(--olkv-dark); font-family: 'DM Sans', sans-serif; }
-h4 { font-size: 1rem; font-weight: 700; color: var(--olkv-dark); }
+h3 { font-size: 1rem; font-weight: 600; line-height: 1.4; color: var(--olkv-dark); font-family: 'DM Sans', sans-serif; }
+h4 { font-size: 1rem; font-weight: 600; color: var(--olkv-dark); }
 p  { color: var(--olkv-gray); line-height: 1.7; }
 
 /* ===== OLKV LOGO ===== */
 .nav-logo {
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
   display: flex;
@@ -135,37 +171,33 @@ p  { color: var(--olkv-gray); line-height: 1.7; }
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: 48px;
-  padding: 12px 28px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  min-height: 40px;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   border: none;
-  border-radius: var(--radius-pill);
+  border-radius: 8px;
   cursor: pointer;
-  transition: var(--overgang);
+  transition: background-color var(--timing-hover) ease-out, box-shadow var(--timing-hover) ease-out, opacity var(--timing-hover) ease-out;
   text-decoration: none;
   white-space: nowrap;
   letter-spacing: 0.01em;
-  position: relative;
-  overflow: hidden;
 }
 
-.btn:hover { transform: translateY(-2px); text-decoration: none; }
-.btn:active { transform: scale(0.97) translateY(0); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+.btn:hover { text-decoration: none; }
+.btn:active { opacity: 0.88; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* Primær — rød (OLKV-brand) */
 .btn-primary {
   background-color: var(--olkv-red);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(192, 57, 43, 0.25);
 }
 
 .btn-primary:hover {
   background-color: var(--olkv-red-light);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(192, 57, 43, 0.35);
 }
 
 /* Sekundær — outline blå */
@@ -185,23 +217,22 @@ p  { color: var(--olkv-gray); line-height: 1.7; }
 .btn-suksess {
   background-color: var(--farge-suksess);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
 }
-.btn-suksess:hover { background-color: #15803d; color: #fff; box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3); }
+.btn-suksess:hover { background-color: #15803d; color: #fff; }
 
 /* Feil/slett */
 .btn-feil {
-  background-color: var(--olkv-red);
-  color: #fff;
+  background-color: var(--color-error-bg);
+  color: #991B1B;
 }
-.btn-feil:hover { background-color: var(--olkv-red-light); color: #fff; }
+.btn-feil:hover { background-color: #FEE2E2; color: #7F1D1D; }
 
 /* Ghost */
 .btn-ghost {
   background-color: transparent;
   color: var(--olkv-gray);
   border: 1px solid var(--olkv-border);
-  border-radius: var(--radius-pill);
+  border-radius: 8px;
 }
 .btn-ghost:hover { background-color: var(--olkv-gray-light); color: var(--olkv-dark); }
 
@@ -209,7 +240,7 @@ p  { color: var(--olkv-gray); line-height: 1.7; }
 .btn-hvit {
   background-color: #fff;
   color: var(--olkv-blue);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: var(--skygge);
 }
 .btn-hvit:hover { background-color: var(--olkv-blue-pale); color: var(--olkv-blue); }
 
@@ -291,32 +322,12 @@ select {
   border: 1px solid var(--olkv-border);
   border-radius: var(--radius-stor);
   padding: 1.5rem;
-  box-shadow: var(--olkv-shadow-sm);
-  transition: var(--overgang);
-  position: relative;
-  overflow: hidden;
-}
-
-.kort::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--olkv-blue), var(--olkv-red));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--skygge);
+  transition: box-shadow var(--timing-hover) ease-out;
 }
 
 .kort:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--olkv-shadow-md);
-}
-
-.kort:hover::before {
-  transform: scaleX(1);
+  box-shadow: var(--skygge-hover);
 }
 
 .kort-header {
@@ -328,8 +339,8 @@ select {
 }
 
 .kort-tittel {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--olkv-dark);
   margin-bottom: 0.2rem;
   font-family: 'DM Sans', sans-serif;
@@ -352,10 +363,10 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 4px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
   white-space: nowrap;
   letter-spacing: 0.01em;
   font-family: 'DM Sans', sans-serif;
@@ -461,30 +472,17 @@ select {
   border: 1px solid var(--olkv-border);
   border-radius: var(--radius-stor);
   padding: 1.75rem 1.5rem;
-  box-shadow: var(--olkv-shadow-sm);
+  box-shadow: var(--skygge);
   text-align: center;
-  transition: var(--overgang);
-  position: relative;
-  overflow: hidden;
+  transition: box-shadow var(--timing-hover) ease-out;
 }
 
-.stat-boks::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 3px;
-  background: linear-gradient(90deg, var(--olkv-blue), var(--olkv-red));
-  opacity: 0;
-  transition: var(--overgang);
-}
-
-.stat-boks:hover { transform: translateY(-3px); box-shadow: var(--olkv-shadow-md); }
-.stat-boks:hover::after { opacity: 1; }
+.stat-boks:hover { box-shadow: var(--skygge-hover); }
 
 .stat-tall {
-  font-size: 2.6rem;
-  font-weight: 900;
-  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
   color: var(--olkv-blue);
   line-height: 1;
   margin-bottom: 0.5rem;
@@ -513,10 +511,8 @@ table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 th {
   padding: 0.9rem 1.1rem;
   text-align: left;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--olkv-gray);
   background-color: var(--olkv-gray-light);
   border-bottom: 1px solid var(--olkv-border);
@@ -652,7 +648,7 @@ tr:hover td {
 
 .sidebar-seksjon-tittel {
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--olkv-gray);
@@ -683,17 +679,15 @@ tr:hover td {
 }
 
 .sidebar-lenke:hover {
-  background-color: var(--olkv-blue-pale);
-  color: var(--olkv-blue);
+  background-color: var(--color-bg-hover);
+  color: var(--color-primary);
   text-decoration: none;
-  transform: translateX(4px);
 }
 
 .sidebar-lenke.aktiv {
-  background-color: var(--olkv-blue-pale);
-  color: var(--olkv-blue);
-  font-weight: 700;
-  border-left: 3px solid var(--olkv-blue);
+  background-color: var(--color-bg-active);
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .sidebar-ikon { font-size: 1.1rem; }
@@ -1159,7 +1153,7 @@ tr:hover td {
     transform: none !important;
   }
 
-  .sidebar-lenke.aktiv { border-left: none; border-bottom: 3px solid var(--olkv-blue); }
+  .sidebar-lenke.aktiv { border-bottom: 3px solid var(--olkv-blue); }
 
   .sidebar-seksjon-tittel { display: none; }
   .hoveddel { padding: 1.5rem var(--avstand); }
@@ -1238,8 +1232,7 @@ tr:hover td {
 
 .btn-google:hover {
   border-color: #4285F4;
-  box-shadow: var(--olkv-shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: var(--skygge);
 }
 
 /* ===== TOAST-MELDING ===== */
@@ -1391,7 +1384,7 @@ tr:hover td {
 .filter-rad select {
   padding: 0.5rem 0.75rem;
   border: 1.5px solid var(--farge-kant);
-  border-radius: var(--radius-pill);
+  border-radius: 8px;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
   background: #fff;
@@ -1412,7 +1405,7 @@ tr:hover td {
   font-size: 0.78rem;
   font-weight: 500;
   padding: 3px 10px;
-  border-radius: var(--radius-pill);
+  border-radius: 6px;
 }
 .frist-badge.ok     { background: #e8f5e9; color: #1B5E20; }
 .frist-badge.kritisk {
@@ -1464,7 +1457,7 @@ tr:hover td {
 .btn-mini {
   padding: 4px 10px;
   font-size: 0.78rem;
-  border-radius: var(--radius-pill);
+  border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
   border: none;
@@ -1861,7 +1854,6 @@ tr:hover td {
   align-items: center;
   padding: 0.5rem 0 max(0.5rem, env(safe-area-inset-bottom));
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
 }
 .bunn-nav-lenke {
   display: flex;
