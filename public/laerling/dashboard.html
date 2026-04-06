@@ -295,7 +295,19 @@
     document.getElementById('hilsen').textContent = `Hei, ${bruker.navn.split(' ')[0]}!`;
     document.getElementById('hilsen-tekst').textContent =
       `Her er læreplasser tilpasset ${bruker.utdanningsprogram || 'deg'}.`;
-    document.getElementById('profil-avatar').textContent = initialFra(bruker.navn);
+    const profilAv = document.getElementById('profil-avatar');
+    if (bruker.avatar_url) {
+      profilAv.innerHTML = '';
+      profilAv.style.overflow = 'hidden';
+      const img = document.createElement('img');
+      img.src = bruker.avatar_url;
+      img.alt = bruker.navn || '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      img.onerror = () => { profilAv.textContent = initialFra(bruker.navn); profilAv.style.overflow = ''; };
+      profilAv.appendChild(img);
+    } else {
+      profilAv.textContent = initialFra(bruker.navn);
+    }
     document.getElementById('profil-navn').textContent = bruker.navn;
     document.getElementById('profil-program').textContent =
       (bruker.utdanningsprogram || '—') + (bruker.skole ? ' · ' + bruker.skole : '');
