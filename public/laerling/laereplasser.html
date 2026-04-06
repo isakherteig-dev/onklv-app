@@ -224,7 +224,20 @@
 
     document.getElementById('nav-navn').textContent = bruker.navn || '';
     const navAvatar = document.getElementById('nav-avatar');
-    if (navAvatar) navAvatar.textContent = initialFra(bruker.navn);
+    if (navAvatar) {
+      if (bruker.avatar_url) {
+        navAvatar.innerHTML = '';
+        navAvatar.style.overflow = 'hidden';
+        const navImg = document.createElement('img');
+        navImg.src = bruker.avatar_url;
+        navImg.alt = bruker.navn || '';
+        navImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        navImg.onerror = () => { navAvatar.textContent = initialFra(bruker.navn); navAvatar.style.overflow = ''; };
+        navAvatar.appendChild(navImg);
+      } else {
+        navAvatar.textContent = initialFra(bruker.navn);
+      }
+    }
     document.getElementById('logg-ut-btn').addEventListener('click', async () => { await loggUt(); });
 
     // Fyll fagomraade-filter
