@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import './firebase/config.js';  // Initialiser Firebase Admin SDK
 import { pathToFileURL } from 'node:url';
+import { Readable } from 'node:stream';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { adminDB } from './firebase/config.js';
@@ -20,6 +21,23 @@ const port = process.env.PORT ?? 3000;
 const isDirectRun = process.argv[1]
   ? import.meta.url === pathToFileURL(process.argv[1]).href
   : false;
+
+// Fix: Firebase Cloud Functions konsumerer body-stream før multer.
+// Denne middleware gjenskaper streamen fra rawBody for multipart-requests.
+app.use((req, res, next) => {
+  if (req.rawBody && req.headers['content-type']?.startsWith('multipart/form-data')) {
+    const stream = Readable.from(req.rawBody);
+    Object.assign(req, {
+      read: stream.read.bind(stream),
+      on: stream.on.bind(stream),
+      pipe: stream.pipe.bind(stream),
+      unpipe: stream.unpipe.bind(stream),
+      removeListener: stream.removeListener.bind(stream),
+      headers: { ...req.headers, 'content-length': String(req.rawBody.length) }
+    });
+  }
+  next();
+});
 
 // Middleware
 app.use((_req, res, next) => {
