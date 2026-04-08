@@ -208,7 +208,7 @@
       tbody.innerHTML = plasser.map(p => `
         <tr>
           <td><strong>${escHtml(p.tittel)}</strong></td>
-          <td>${escHtml(p.bedrift_naam || '—')}</td>
+          <td>${escHtml(p.bedrift_navn || p.bedrift_naam || '—')}</td>
           <td>${escHtml(p.fagomraade || p.bransje || '—')}</td>
           <td>${escHtml(p.sted || '—')}</td>
           <td>${formaterDato(p.frist)}</td>
@@ -257,7 +257,7 @@
           frist: document.getElementById('a-frist').value,
           antall_plasser: parseInt(document.getElementById('a-antall').value) || 1,
           bedrift_user_id: bedriftSel.value,
-          bedrift_naam: valgtOpt?.dataset.navn || ''
+          bedrift_navn: valgtOpt?.dataset.navn || ''
         });
         document.getElementById('annonse-modal').classList.add('skjult');
         await lastLaereplasser();

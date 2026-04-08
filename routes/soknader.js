@@ -185,7 +185,7 @@ ruter.post('/', krevAuth, krevRolle('laerling'), async (req, res) => {
     console.log('[SØKNAD] Lagrer søknad...');
     const ref = await adminDB.collection('soknader').add({
       laerling_user_id:  req.user.uid,
-      laerling_naam:     req.user.navn || null,
+      laerling_navn:     req.user.navn || null,
       laerling_epost:    req.user.epost || null,
       utdanningsprogram: req.user.utdanningsprogram || null,
       skole:             req.user.skole || null,
@@ -277,7 +277,7 @@ ruter.patch('/:id/status', krevAuth, krevRolle('bedrift', 'admin'), async (req, 
       try {
         await sendStatusEpost(
           soknad.laerling_epost,
-          soknad.laerling_naam,
+          soknad.laerling_navn || soknad.laerling_naam,
           plass.tittel,
           status
         );

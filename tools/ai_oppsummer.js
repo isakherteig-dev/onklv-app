@@ -8,13 +8,13 @@ Maks 3 setninger. Norsk bokmål. Fokuser på relevant bakgrunn og motivasjon.`;
  * Lager en kort oppsummering av en søknad for admin.
  * @param {{ navn: string, bio: string, utdanningsprogram: string }} laerling
  * @param {{ melding: string, erfaring: string }} soknad
- * @param {{ tittel: string, bedrift_naam: string }} laerplass
+ * @param {{ tittel: string, bedrift_navn: string }} laerplass
  * @returns {Promise<string>} - Oppsummering på 2-3 setninger
  */
 export async function oppsummerSoknad(laerling, soknad, laerplass) {
   const user = `
 Søknad fra: ${laerling.navn}
-Søker på: ${laerplass.tittel} hos ${laerplass.bedrift_naam}
+Søker på: ${laerplass.tittel} hos ${laerplass.bedrift_navn}
 Utdanningsprogram: ${laerling.utdanningsprogram || 'Ikke oppgitt'}
 Om søkeren: ${laerling.bio || 'Ingen beskrivelse'}
 Søknadsmelding: ${soknad.melding || 'Ingen melding'}

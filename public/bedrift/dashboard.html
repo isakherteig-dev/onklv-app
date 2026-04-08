@@ -307,9 +307,9 @@
         <div class="kort" style="margin-bottom: 1rem;">
           <div class="kort-header">
             <div class="rad" style="gap: 0.75rem; align-items: center;">
-              <div class="avatar">${(s.laerling_naam || '?').trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}</div>
+              <div class="avatar">${((s.laerling_navn || s.laerling_naam) || '?').trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}</div>
               <div>
-                <div class="kort-tittel">${escHtml(s.laerling_naam || '—')}</div>
+                <div class="kort-tittel">${escHtml(s.laerling_navn || s.laerling_naam || '—')}</div>
                 <div class="kort-undertittel">${[s.utdanningsprogram, s.skole].filter(Boolean).map(escHtml).join(' · ') || '—'}</div>
               </div>
             </div>

@@ -164,7 +164,7 @@
       tbody.innerHTML = soknader.map(s => `
         <tr style="cursor:pointer;" onclick="visDetaljer(${s.id})">
           <td>
-            <strong>${escHtml(s.laerling_naam || '—')}</strong><br/>
+            <strong>${escHtml(s.laerling_navn || s.laerling_naam || '—')}</strong><br/>
             <span style="font-size:0.8rem;color:var(--olkv-gray);">${escHtml(s.laerling_epost || '')}</span>
           </td>
           <td>${escHtml(s.laerplass_tittel || '—')}</td>
@@ -187,11 +187,11 @@
     window.visDetaljer = function(id) {
       const s = alleSoknader.find(x => x.id === id);
       if (!s) return;
-      document.getElementById('detaljer-tittel').textContent = `${s.laerling_naam || 'Søker'} → ${s.laerplass_tittel || 'Læreplass'}`;
+      document.getElementById('detaljer-tittel').textContent = `${s.laerling_navn || s.laerling_naam || 'Søker'} → ${s.laerplass_tittel || 'Læreplass'}`;
       document.getElementById('detaljer-innhold').innerHTML = `
         <div style="display:grid;gap:1rem;">
           <div class="rad" style="gap:1rem;flex-wrap:wrap;">
-            <div style="flex:1;"><div class="hint">Søker</div><strong>${escHtml(s.laerling_naam || '—')}</strong><br/><span style="font-size:0.85rem;">${escHtml(s.laerling_epost || '')}</span></div>
+            <div style="flex:1;"><div class="hint">Søker</div><strong>${escHtml(s.laerling_navn || s.laerling_naam || '—')}</strong><br/><span style="font-size:0.85rem;">${escHtml(s.laerling_epost || '')}</span></div>
             <div><div class="hint">Status</div><span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span></div>
           </div>
           <div class="rad" style="gap:1rem;flex-wrap:wrap;">

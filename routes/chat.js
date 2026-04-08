@@ -21,11 +21,11 @@ async function hentSoknadMedTilgang(soknadId, uid, rolle) {
   const soknad = {
     id: doc.id,
     laerling_user_id: s.laerling_user_id,
-    laerling_naam: s.laerling_naam,
+    laerling_navn: s.laerling_navn || s.laerling_naam,
     laerling_epost: s.laerling_epost,
     bedrift_user_id: plass.bedrift_user_id,
     laerplass_tittel: plass.tittel,
-    bedrift_naam: plass.bedrift_navn
+    bedrift_navn: plass.bedrift_navn
   };
 
   const harTilgang =
@@ -108,7 +108,7 @@ ruter.post('/:soknad_id', krevAuth, async (req, res) => {
     // Varsle mottakeren
     const erLaerling = req.user.rolle === 'laerling';
     const mottakerId = erLaerling ? soknad.bedrift_user_id : soknad.laerling_user_id;
-    const avsenderNavn = req.user.navn || (erLaerling ? 'Lærlingen' : soknad.bedrift_naam || 'Bedriften');
+    const avsenderNavn = req.user.navn || (erLaerling ? 'Lærlingen' : soknad.bedrift_navn || 'Bedriften');
     const lenke = erLaerling ? '/bedrift/soknader.html' : '/laerling/mine-soknader.html';
 
     await lagVarsel(

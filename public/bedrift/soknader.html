@@ -247,7 +247,7 @@
         <div class="kort" style="margin-bottom:1rem;">
           <div class="kort-header">
             <div>
-              <div class="kort-tittel">${escHtml(s.laerling_naam || '—')}</div>
+              <div class="kort-tittel">${escHtml(s.laerling_navn || s.laerling_naam || '—')}</div>
               <div class="kort-undertittel">${escHtml(s.laerling_epost || '')} ${s.skole ? '· ' + escHtml(s.skole) : ''}</div>
             </div>
             <span class="${statusBadgeKlasse(s.status)}">${statusTekst(s.status)}</span>

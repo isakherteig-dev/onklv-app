@@ -146,7 +146,7 @@ ruter.get('/alle-soknader', async (req, res) => {
     if (sok) {
       const s = sok.toLowerCase();
       resultat = resultat.filter(r =>
-        r.laerling_naam?.toLowerCase().includes(s) ||
+        (r.laerling_navn || r.laerling_naam)?.toLowerCase().includes(s) ||
         r.laerplass_tittel?.toLowerCase().includes(s) ||
         r.bedrift_navn?.toLowerCase().includes(s)
       );
@@ -199,7 +199,7 @@ ruter.patch('/soknader/:id/status', async (req, res) => {
       try {
         await sendStatusEpost(
           soknad.laerling_epost,
-          soknad.laerling_naam,
+          soknad.laerling_navn || soknad.laerling_naam,
           plassTittel,
           status
         );

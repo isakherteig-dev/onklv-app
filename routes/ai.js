@@ -96,7 +96,7 @@ ruter.post('/oppsummer', krevAuth, aiLimit, krevRolle('admin'), async (req, res)
     const laerlingData = userDoc.exists ? userDoc.data() : {};
 
     const laerling = {
-      navn: soknad.laerling_naam || laerlingData.navn || 'Ukjent',
+      navn: soknad.laerling_navn || soknad.laerling_naam || laerlingData.navn || 'Ukjent',
       bio: laerlingData.bio || null,
       utdanningsprogram: soknad.utdanningsprogram || laerlingData.utdanningsprogram || null
     };
@@ -105,7 +105,7 @@ ruter.post('/oppsummer', krevAuth, aiLimit, krevRolle('admin'), async (req, res)
 
     const laerplass = {
       tittel: plassData.tittel,
-      bedrift_naam: plassData.bedrift_navn
+      bedrift_navn: plassData.bedrift_navn
     };
 
     const oppsummering = await oppsummerSoknad(laerling, soknadData, laerplass);
