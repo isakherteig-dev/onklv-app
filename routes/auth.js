@@ -15,6 +15,7 @@ function ipRateLimiter(maks = 5, vindusMs = 600_000) {
 
 const registerLimit = ipRateLimiter(5, 10 * 60 * 1000); // 5 per 10 min per IP
 const verifiseringLimit = rateLimiter(3, 10 * 60 * 1000); // 3 per 10 min per bruker
+const verifiserKodeIpLimit = ipRateLimiter(10, 15 * 60 * 1000); // 10 per 15 min per IP
 
 const ruter = Router();
 
@@ -128,7 +129,7 @@ ruter.post('/send-verifisering', verifiseringLimit, async (req, res) => {
  * POST /api/auth/verifiser-kode
  * Sjekker kode mot Firestore, markerer brukeren som verifisert.
  */
-ruter.post('/verifiser-kode', async (req, res) => {
+ruter.post('/verifiser-kode', verifiserKodeIpLimit, async (req, res) => {
   const { uid, kode } = req.body;
   if (!uid || !kode) return res.status(400).json({ feil: 'Mangler uid eller kode' });
 
