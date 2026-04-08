@@ -258,8 +258,6 @@
       initScrollReveal,
       initVarselBjelle,
       getToken,
-      lastOppCV,
-      slettCV,
       slettMinKonto,
       escHtml
     } from '../app.js';
@@ -311,7 +309,6 @@
     document.getElementById('profil-navn').textContent = bruker.navn;
     document.getElementById('profil-program').textContent =
       (bruker.utdanningsprogram || '—') + (bruker.skole ? ' · ' + bruker.skole : '');
-    document.getElementById('profil-epost')?.textContent && (document.getElementById('profil-epost').textContent = bruker.epost);
     document.getElementById('program-badge').textContent =
       bruker.utdanningsprogram ? 'Basert på ' + bruker.utdanningsprogram : 'Alle programmer';
 
@@ -418,109 +415,6 @@
         </div>
       `;
     }
-
-    // ===== CV — HJELPE-FUNKSJONER =====
-    function visCVStatus(harCV) {
-      const lastNed = document.getElementById('cv-last-ned');
-      const slettBtn = document.getElementById('cv-slett-btn');
-      const labelTekst = document.getElementById('cv-label-tekst');
-      if (harCV) {
-        lastNed?.classList.remove('skjult');
-        slettBtn?.classList.remove('skjult');
-        if (labelTekst) labelTekst.textContent = 'Bytt CV';
-      } else {
-        lastNed?.classList.add('skjult');
-        slettBtn?.classList.add('skjult');
-        if (labelTekst) labelTekst.textContent = 'Last opp CV';
-      }
-    }
-
-    // Sett initial CV-status basert på innlogget bruker
-    visCVStatus(!!bruker.cv_filnavn);
-
-    // ===== CV OPPLASTING =====
-    document.getElementById('cv-input')?.addEventListener('change', async (e) => {
-      const fil = e.target.files[0];
-      if (!fil) return;
-
-      const label = document.getElementById('cv-label');
-      const varselEl = document.getElementById('cv-varsel');
-      label.style.opacity = '0.6';
-      label.style.pointerEvents = 'none';
-      document.getElementById('cv-label-tekst').textContent = 'Laster opp…';
-
-      try {
-        const resultat = await lastOppCV(fil);
-        bruker.cv_filnavn = resultat.cv_filnavn;
-        bruker.cv_lastet_opp = true;
-
-        varselEl.className = 'varsel varsel-suksess';
-        varselEl.textContent = `CV lastet opp: ${resultat.cv_filnavn}`;
-        varselEl.classList.remove('skjult');
-
-        visCVStatus(true);
-        oppdaterProfildisplay(bruker);
-      } catch (err) {
-        varselEl.className = 'varsel varsel-feil';
-        varselEl.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
-        varselEl.classList.remove('skjult');
-      } finally {
-        label.style.opacity = '';
-        label.style.pointerEvents = '';
-        visCVStatus(!!bruker.cv_filnavn);
-        e.target.value = ''; // Reset slik at samme fil kan lastes opp igjen
-      }
-    });
-
-    // ===== CV NEDLASTING =====
-    document.getElementById('cv-last-ned')?.addEventListener('click', async () => {
-      const varselEl = document.getElementById('cv-varsel');
-      try {
-        const token = await getToken();
-        const res = await fetch('/api/cv/min', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-        if (!res.ok) {
-          const json = await res.json().catch(() => ({}));
-          throw new Error(json.feil || 'Kunne ikke laste ned CV.');
-        }
-        const blob = await res.blob();
-        const filnavn = bruker.cv_filnavn || 'cv';
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filnavn;
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        varselEl.className = 'varsel varsel-feil';
-        varselEl.textContent = err.message || 'Kunne ikke laste ned CV.';
-        varselEl.classList.remove('skjult');
-      }
-    });
-
-    // ===== CV SLETTING =====
-    document.getElementById('cv-slett-btn')?.addEventListener('click', async () => {
-      if (!confirm('Er du sikker på at du vil slette CV-en din?')) return;
-
-      const varselEl = document.getElementById('cv-varsel');
-      try {
-        await slettCV();
-        bruker.cv_filnavn = null;
-        bruker.cv_lastet_opp = false;
-
-        varselEl.className = 'varsel varsel-suksess';
-        varselEl.textContent = 'CV er slettet.';
-        varselEl.classList.remove('skjult');
-
-        visCVStatus(false);
-        oppdaterProfildisplay(bruker);
-      } catch (err) {
-        varselEl.className = 'varsel varsel-feil';
-        varselEl.textContent = err.message || 'Kunne ikke slette CV. Prøv igjen.';
-        varselEl.classList.remove('skjult');
-      }
-    });
 
     // ===== SØKNAD-MODAL =====
     let valgtLaerplass = null;
@@ -650,17 +544,6 @@
     });
 
     // ===== REDIGER PROFIL MODAL =====
-    document.getElementById('rediger-profil-btn')?.addEventListener('click', () => {
-      document.getElementById('edit-navn').value = bruker.navn || '';
-      document.getElementById('edit-bio').value = bruker.bio || '';
-      document.getElementById('profil-modal').classList.remove('skjult');
-    });
-    document.getElementById('oppdater-bio-btn')?.addEventListener('click', () => {
-      document.getElementById('edit-navn').value = bruker.navn || '';
-      document.getElementById('edit-bio').value = bruker.bio || '';
-      document.getElementById('profil-modal').classList.remove('skjult');
-    });
-
     function lukkProfilModal() {
       document.getElementById('profil-modal').classList.add('skjult');
     }
@@ -709,7 +592,6 @@
       document.getElementById('slett-konto-modal').classList.add('skjult');
     }
 
-    document.getElementById('slett-konto-btn')?.addEventListener('click', apneSlettKontoModal);
     document.getElementById('slett-konto-lukk').addEventListener('click', lukkSlettKontoModal);
     document.getElementById('slett-konto-avbryt').addEventListener('click', lukkSlettKontoModal);
     document.getElementById('slett-konto-modal').addEventListener('click', (e) => {
