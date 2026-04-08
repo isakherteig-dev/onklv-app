@@ -146,7 +146,7 @@
   <script type="module">
     import {
       krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, oppdaterAnnonse, slettAnnonse,
-      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml, tilJsStr
+      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -243,20 +243,20 @@
           <div class="kort-footer">
             <span class="badge badge-blaa">${a.antall_soknader || 0} søknader</span>
             <div class="tabell-handlinger">
-              <button class="btn-mini btn-mini-blaa" onclick="redigerKlikk(${tilJsStr(String(a.id))})">Rediger</button>
-              <button class="btn-mini btn-mini-roed" onclick="slettKlikk(${tilJsStr(String(a.id))})">Slett</button>
+              <button class="btn-mini btn-mini-blaa rediger-btn" data-id="${escHtml(String(a.id))}">Rediger</button>
+              <button class="btn-mini btn-mini-roed slett-btn" data-id="${escHtml(String(a.id))}">Slett</button>
             </div>
           </div>
         </div>`).join('');
     }
 
-    window.redigerKlikk = function(id) {
+    function redigerKlikk(id) {
       const annonse = annonser.find((a) => String(a.id) === String(id));
       if (!annonse) return;
       apneAnnonseModal(annonse);
-    };
+    }
 
-    window.slettKlikk = async function(id) {
+    async function slettKlikk(id) {
       if (!confirm('Er du sikker på at du vil slette denne læreplassen?')) return;
       try {
         await slettAnnonse(id);
@@ -264,7 +264,15 @@
       } catch (err) {
         alert(err.message);
       }
-    };
+    }
+
+    document.addEventListener('click', (e) => {
+      const redigerBtn = e.target.closest('.rediger-btn');
+      if (redigerBtn) { redigerKlikk(redigerBtn.dataset.id); return; }
+
+      const slettBtn = e.target.closest('.slett-btn');
+      if (slettBtn) { slettKlikk(slettBtn.dataset.id); return; }
+    });
 
     document.getElementById('ny-annonse-btn').addEventListener('click', () => {
       apneAnnonseModal();
