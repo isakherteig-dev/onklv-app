@@ -75,7 +75,7 @@
             Registrer med Google
           </button>
 
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0;">
+          <div id="eller-skillelinje" style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0;">
             <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
             <span style="font-size: 0.78rem; color: var(--olkv-gray);">eller</span>
             <div style="flex: 1; height: 1px; background: var(--olkv-border);"></div>
@@ -320,6 +320,9 @@
     // Pre-fyll fra URL-params og hopp til steg 2 om rolle er satt
     const fraGoogle = !!params.get('uid');
 
+    // Lagre Google-resultat mellom popup og "Fullfør registrering"
+    let googleResultat = null; // { uid, epost, navn, token }
+
     if (params.get('rolle')) {
       rolle = params.get('rolle') === 'bedrift' ? 'bedrift' : 'laerling';
       oppdaterSkjema();
@@ -345,6 +348,31 @@
       banner.style.cssText = 'margin-bottom:1.25rem;background:#eff6ff;border-color:var(--olkv-blue-light);color:var(--olkv-dark);font-size:0.9rem;';
       banner.innerHTML = '<strong>Google-konto koblet!</strong> Velg rolle, fyll ut feltene nedenfor og klikk <strong>«Registrer med Google»</strong> for å fullføre registreringen.';
       document.getElementById('reg-form').insertBefore(banner, document.getElementById('reg-form').firstChild);
+    }
+
+    function aktiverGoogleFullforMode() {
+      // Skjul Google-knapp og passord-seksjon
+      document.getElementById('google-btn').classList.add('skjult');
+      document.getElementById('passord-seksjon').classList.add('skjult');
+
+      // Pre-fyll navn og epost, gjør epost readonly
+      document.getElementById('navn').value = googleResultat.navn;
+      document.getElementById('epost').value = googleResultat.epost;
+      document.getElementById('epost').readOnly = true;
+
+      // Skjul "eller"-skillelinje
+      document.getElementById('eller-skillelinje').classList.add('skjult');
+
+      // Vis veiledningsbanner
+      const banner = document.createElement('div');
+      banner.id = 'google-banner';
+      banner.className = 'varsel';
+      banner.style.cssText = 'margin-bottom:1.25rem;background:#eff6ff;border-color:var(--olkv-blue-light);color:var(--olkv-dark);font-size:0.9rem;';
+      banner.innerHTML = '<strong>Google-konto koblet!</strong> Fyll ut de resterende feltene og klikk <strong>«Fullfør registrering»</strong>.';
+      document.getElementById('reg-form').insertBefore(banner, document.getElementById('reg-form').firstChild);
+
+      // Endre tekst på submit-knappen
+      document.getElementById('reg-btn').textContent = 'Fullfør registrering →';
     }
 
     // Passordstyrkeindikator
@@ -394,6 +422,42 @@
 
     document.getElementById('reg-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // GOOGLE-FLYT: valider rollespesifikke felter + samtykke, deretter kall backend
+      if (googleResultat) {
+        const samtykke = document.getElementById('samtykke').checked;
+        if (!samtykke) {
+          visFeilmelding('Du må godta personvernerklæringen for å registrere deg'); return;
+        }
+        if (rolle === 'laerling' && !document.getElementById('utdanningsprogram').value) {
+          visFeilmelding('Velg utdanningsprogram'); return;
+        }
+        if (rolle === 'bedrift') {
+          const orgnr = document.getElementById('orgnr').value.trim();
+          if (!orgnr || !/^\d{9}$/.test(orgnr)) {
+            visFeilmelding('Fyll inn et gyldig organisasjonsnummer (9 siffer)'); return;
+          }
+          if (!document.getElementById('bransje').value) {
+            visFeilmelding('Velg bransje'); return;
+          }
+        }
+
+        const btn = document.getElementById('reg-btn');
+        btn.disabled = true;
+        btn.textContent = 'Fullfører registrering…';
+
+        try {
+          const data = await registrer(googleResultat.uid, googleResultat.epost, googleResultat.navn, googleResultat.token);
+          visBekreftelse(data.venterGodkjenning);
+        } catch (err) {
+          visFeilmelding(oversettFirebaseFeil(err.code) || err.message);
+          btn.disabled = false;
+          btn.textContent = 'Fullfør registrering →';
+        }
+        return;
+      }
+
+      // E-POST/PASSORD-FLYT (uendret)
       const navn    = document.getElementById('navn').value.trim();
       const epost   = document.getElementById('epost').value.trim();
       const passord = document.getElementById('passord').value;
@@ -466,40 +530,20 @@
     });
 
     document.getElementById('google-btn').addEventListener('click', async () => {
-      const feil = [];
-
-      if (!document.getElementById('samtykke').checked) {
-        feil.push('Godta personvernerklæringen');
-      }
-
-      if (rolle === 'laerling' && !document.getElementById('utdanningsprogram').value) {
-        feil.push('Velg utdanningsprogram');
-      }
-
-      if (rolle === 'bedrift') {
-        const orgnr = document.getElementById('orgnr').value.trim();
-        if (!orgnr || !/^\d{9}$/.test(orgnr)) {
-          feil.push('Fyll inn et gyldig organisasjonsnummer (9 siffer)');
-        }
-        if (!document.getElementById('bransje').value) {
-          feil.push('Velg bransje');
-        }
-      }
-
-      if (feil.length > 0) {
-        visFeilmelding('Fyll ut følgende før du fortsetter med Google:\n• ' + feil.join('\n• '));
-        return;
-      }
-
+      // Åpne Google-popup UMIDDELBART — ingen validering ennå
       try {
         const provider = new GoogleAuthProvider();
         const result   = await signInWithPopup(auth, provider);
         const token    = await result.user.getIdToken();
-        const navn     = result.user.displayName || document.getElementById('navn').value.trim() || 'Ukjent navn';
-        const epost    = result.user.email;
 
-        const data = await registrer(result.user.uid, epost, navn, token);
-        visBekreftelse(data.venterGodkjenning);
+        googleResultat = {
+          uid:   result.user.uid,
+          epost: result.user.email,
+          navn:  result.user.displayName || document.getElementById('navn').value.trim() || 'Ukjent navn',
+          token
+        };
+
+        aktiverGoogleFullforMode();
       } catch (err) {
         visFeilmelding(oversettFirebaseFeil(err.code) || err.message);
       }
