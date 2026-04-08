@@ -69,6 +69,7 @@ ruter.post('/register', registerLimit, async (req, res) => {
       samtykkeGitt: now,
       samtykkeVersjon: samtykkeVersjon || '1.0',
       aktiv: true,
+      erGoogle: false,
       utdanningsprogram: rolle === 'laerling' ? (utdanningsprogram || null) : null,
       skole: rolle === 'laerling' ? (skole || null) : null,
       bio: rolle === 'laerling' ? (bio || null) : null,
@@ -206,7 +207,9 @@ ruter.post('/login-update', async (req, res) => {
       return res.status(403).json({ feil: 'Du må verifisere e-posten din først.' });
     }
 
-    await ref.update({ sistInnlogget: new Date() });
+    const oppdatering = { sistInnlogget: new Date() };
+    if (data.erGoogle !== erGoogle) oppdatering.erGoogle = erGoogle;
+    await ref.update(oppdatering);
     res.json({ bruker: { ...data, sistInnlogget: new Date() } });
   } catch (err) {
     console.error('Login-update feil:', err);
