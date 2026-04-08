@@ -3,6 +3,7 @@ import { adminAuth, adminDB, adminStorage } from '../firebase/config.js';
 import { krevAuth } from '../middleware/auth.js';
 import { sendVerifiseringsEpost } from '../tools/epost.js';
 import { rateLimiter } from '../middleware/rateLimit.js';
+import { bedriftHarRelasjonTilLaerling } from '../utils/relasjonssjekk.js';
 
 // IP-basert rate limiter for uautentiserte endepunkter (register)
 function ipRateLimiter(maks = 5, vindusMs = 600_000) {
@@ -261,9 +262,17 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
 ruter.get('/bruker/:uid', krevAuth, async (req, res) => {
   const { uid } = req.params;
 
-  // Kun admin, bedrift eller brukeren selv kan hente brukerdata
-  if (req.user.uid !== uid && !['admin', 'bedrift'].includes(req.user.rolle)) {
-    return res.status(403).json({ feil: 'Ingen tilgang' });
+  if (req.user.uid !== uid) {
+    if (req.user.rolle === 'admin') {
+      // Admin har alltid tilgang
+    } else if (req.user.rolle === 'bedrift') {
+      const harRelasjon = await bedriftHarRelasjonTilLaerling(req.user.uid, uid);
+      if (!harRelasjon) {
+        return res.status(403).json({ feil: 'Ingen tilgang — ingen aktiv søknad/relasjon' });
+      }
+    } else {
+      return res.status(403).json({ feil: 'Ingen tilgang' });
+    }
   }
 
   try {
@@ -301,7 +310,14 @@ ruter.get('/profildata', krevAuth, async (req, res) => {
 
   // Kun innlogget bruker selv, admin eller bedrift kan se profildata
   if (targetUid && targetUid !== req.user.uid) {
-    if (!['admin', 'bedrift'].includes(req.user.rolle)) {
+    if (req.user.rolle === 'admin') {
+      // Admin har alltid tilgang
+    } else if (req.user.rolle === 'bedrift') {
+      const harRelasjon = await bedriftHarRelasjonTilLaerling(req.user.uid, targetUid);
+      if (!harRelasjon) {
+        return res.status(403).json({ feil: 'Ingen tilgang — ingen aktiv søknad/relasjon' });
+      }
+    } else {
       return res.status(403).json({ feil: 'Ingen tilgang' });
     }
   }
