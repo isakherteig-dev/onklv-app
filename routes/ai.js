@@ -6,6 +6,7 @@ import { adminDB } from '../firebase/config.js';
 import { matchLaerlingTilPlasser } from '../tools/ai_match.js';
 import { oppsummerSoknad } from '../tools/ai_oppsummer.js';
 import { forbedreProfil } from '../tools/ai_tips.js';
+import { bedriftHarRelasjonTilLaerling } from '../utils/relasjonssjekk.js';
 
 // Maks 10 AI-kall per bruker per minutt
 const aiLimit = rateLimiter(10, 60_000);
@@ -173,8 +174,17 @@ ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
   // Bygg system-prompt på serveren — aldri stol på klientens system-prompt
   const uid = target_uid || req.user.uid;
 
-  if (uid !== req.user.uid && !['admin', 'bedrift'].includes(req.user.rolle)) {
-    return res.status(403).json({ feil: 'Ingen tilgang' });
+  if (uid !== req.user.uid) {
+    if (req.user.rolle === 'admin') {
+      // Admin har alltid tilgang
+    } else if (req.user.rolle === 'bedrift') {
+      const harRelasjon = await bedriftHarRelasjonTilLaerling(req.user.uid, uid);
+      if (!harRelasjon) {
+        return res.status(403).json({ feil: 'Ingen tilgang — ingen aktiv søknad/relasjon' });
+      }
+    } else {
+      return res.status(403).json({ feil: 'Ingen tilgang' });
+    }
   }
 
   let systemPrompt = 'Du er OLKV sin AI-assistent. Svar alltid på norsk. Vær profesjonell og hjelpsom.';
