@@ -87,7 +87,7 @@
     import {
       krevInnlogging, loggUt, hentSoknaderBedriftMed, hentMineAnnonser, oppdaterSoknadStatus,
       statusTekst, statusBadgeKlasse, formaterDato, initScrollReveal, initVarselBjelle,
-      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml, tilJsStr
+      hentMeldinger, sendChatMelding, hentUlesteChatMeldinger, escHtml
     } from '../app.js';
 
     let bruker = null;
@@ -112,7 +112,7 @@
       history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }
 
-    window.toggleChat = async function(id, { scrollTilPanel = false } = {}) {
+    async function toggleChat(id, { scrollTilPanel = false } = {}) {
       const panel = document.getElementById(`chat-panel-${id}`);
       if (!panel) return;
       const erSkjult = panel.classList.contains('skjult');
@@ -156,7 +156,7 @@
       if (badge) badge.classList.add('skjult');
     }
 
-    window.sendBedriftChatMelding = async function(soknadId) {
+    async function sendBedriftChatMelding(soknadId) {
       const input = document.getElementById(`chat-input-${soknadId}`);
       const tekst = input.value.trim();
       if (!tekst) return;
@@ -175,17 +175,17 @@
       }
     };
 
-    window.chatInputKeydown = function(e, soknadId) {
+    function chatInputKeydown(e, soknadId) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendBedriftChatMelding(soknadId);
       }
-    };
+    }
 
-    window.chatInputResize = function(el) {
+    function chatInputResize(el) {
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-    };
+    }
 
     bruker = await krevInnlogging('bedrift');
     if (!bruker) { window.location.href = '/login.html'; }
@@ -238,8 +238,7 @@
       }
 
       container.innerHTML = soknader.map(s => {
-        const soknadId = String(s.id);
-        const jsSoknadId = tilJsStr(soknadId);
+        const soknadId = escHtml(String(s.id));
         const profilLenke = s.laerling_user_id
           ? `<a class="btn-mini btn-mini-blaa" href="/laerling/profil.html?uid=${encodeURIComponent(s.laerling_user_id)}">Se profil</a>`
           : '';
@@ -267,10 +266,10 @@
             <span style="font-size:0.82rem;color:var(--olkv-gray);">Sendt: ${formaterDato(s.sendt_dato)}</span>
             <div class="tabell-handlinger">
               ${profilLenke}
-              ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa" onclick="oppdater(${jsSoknadId},'under_behandling')">Under behandling</button>` : ''}
-              ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn" onclick="oppdater(${jsSoknadId},'godkjent')">Godkjenn</button>` : ''}
-              ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed" onclick="oppdater(${jsSoknadId},'avslatt')">Avslå</button>` : ''}
-              <button class="btn-mini btn-mini-blaa" onclick="toggleChat(${jsSoknadId})" style="display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Meldinger <span id="chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span></button>
+              ${s.status === 'sendt' ? `<button class="btn-mini btn-mini-blaa oppdater-btn" data-id="${soknadId}" data-status="under_behandling">Under behandling</button>` : ''}
+              ${s.status !== 'godkjent' && s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-gronn oppdater-btn" data-id="${soknadId}" data-status="godkjent">Godkjenn</button>` : ''}
+              ${s.status !== 'avslatt' ? `<button class="btn-mini btn-mini-roed oppdater-btn" data-id="${soknadId}" data-status="avslatt">Avslå</button>` : ''}
+              <button class="btn-mini btn-mini-blaa toggle-chat-btn" data-id="${soknadId}" style="display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Meldinger <span id="chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span></button>
             </div>
           </div>
           <div id="chat-panel-${soknadId}" class="skjult" style="margin-top:0.75rem;">
@@ -279,10 +278,8 @@
                 <div class="chat-tom">Laster…</div>
               </div>
               <div class="chat-skrivefelt">
-                <textarea id="chat-input-${soknadId}" placeholder="Skriv en melding…" rows="1"
-                  onkeydown="chatInputKeydown(event,${jsSoknadId})"
-                  oninput="chatInputResize(this)"></textarea>
-                <button class="chat-send-btn" onclick="sendBedriftChatMelding(${jsSoknadId})" aria-label="Send melding">
+                <textarea id="chat-input-${soknadId}" class="chat-input" data-id="${soknadId}" placeholder="Skriv en melding…" rows="1"></textarea>
+                <button class="chat-send-btn" data-id="${soknadId}" aria-label="Send melding">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
               </div>
@@ -320,7 +317,7 @@
       fjernChatFraUrl();
     }
 
-    window.oppdater = async function(id, status) {
+    async function oppdater(id, status) {
       const bekreft = {
         godkjent: 'Er du sikker på at du vil godkjenne denne søknaden?',
         avslatt: 'Er du sikker på at du vil avslå denne søknaden?'
@@ -339,6 +336,27 @@
         alert(err.message);
       }
     };
+
+    document.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('.toggle-chat-btn');
+      if (toggleBtn) { toggleChat(toggleBtn.dataset.id); return; }
+
+      const sendBtn = e.target.closest('.chat-send-btn');
+      if (sendBtn) { sendBedriftChatMelding(sendBtn.dataset.id); return; }
+
+      const oppdaterBtn = e.target.closest('.oppdater-btn');
+      if (oppdaterBtn) { oppdater(oppdaterBtn.dataset.id, oppdaterBtn.dataset.status); return; }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const input = e.target.closest('.chat-input');
+      if (input) chatInputKeydown(e, input.dataset.id);
+    });
+
+    document.addEventListener('input', (e) => {
+      const input = e.target.closest('.chat-input');
+      if (input) chatInputResize(input);
+    });
 
     await lastSoknader();
 
