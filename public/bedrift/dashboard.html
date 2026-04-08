@@ -200,8 +200,7 @@
       slettMinKonto,
       oppdaterSoknadStatus,
       hentUlesteChatMeldinger,
-      escHtml,
-      tilJsStr
+      escHtml
     } from '../app.js';
     initScrollReveal();
 
@@ -263,13 +262,13 @@
             <span>${a.antall_soknader} søknad${a.antall_soknader !== 1 ? 'er' : ''}</span>
           </div>
           <div class="rad" style="gap: 0.5rem;">
-            <button class="btn btn-ghost btn-liten" onclick="slettAnnonseMed(${tilJsStr(String(a.id))})" style="color: var(--farge-feil);">Slett</button>
+            <button class="btn btn-ghost btn-liten slett-annonse-btn" data-id="${escHtml(String(a.id))}" style="color: var(--farge-feil);">Slett</button>
           </div>
         </div>
       `).join('');
     }
 
-    window.slettAnnonseMed = async function(id) {
+    async function slettAnnonseMed(id) {
       const annonse = alleAnnonser.find(a => a.id === id);
       if (!annonse) return;
       if (!confirm(`Slett annonsen «${annonse.tittel}»?`)) return;
@@ -277,7 +276,7 @@
       visBekreftelse(`Annonsen «${annonse.tittel}» er slettet.`);
       await lastAnnonser();
       visStats();
-    };
+    }
 
     // ===== SØKNADER =====
     async function lastSoknader(filter = '') {
@@ -326,8 +325,8 @@
               <a class="btn btn-ghost btn-liten" href="/bedrift/soknader.html?${chatParams.toString()}" style="display:inline-flex;align-items:center;gap:0.4rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Meldinger <span id="dashboard-chat-badge-${soknadId}" class="chat-fane-badge skjult">0</span>
               </a>
-              <button class="btn btn-suksess btn-liten" onclick="oppdaterStatus('${s.id}', 'godkjent')" ${s.status === 'godkjent' ? 'disabled' : ''}>Aksepter</button>
-              <button class="btn btn-feil btn-liten" onclick="oppdaterStatus('${s.id}', 'avslatt')" ${s.status === 'avslatt' ? 'disabled' : ''}>Avvis</button>
+              <button class="btn btn-suksess btn-liten oppdater-status-btn" data-id="${escHtml(String(s.id))}" data-status="godkjent" ${s.status === 'godkjent' ? 'disabled' : ''}>Aksepter</button>
+              <button class="btn btn-feil btn-liten oppdater-status-btn" data-id="${escHtml(String(s.id))}" data-status="avslatt" ${s.status === 'avslatt' ? 'disabled' : ''}>Avvis</button>
             </div>
           </div>
         </div>
@@ -356,7 +355,7 @@
       }));
     }
 
-    window.oppdaterStatus = async function(id, nyStatus) {
+    async function oppdaterStatus(id, nyStatus) {
       try {
         await oppdaterSoknadStatus(id, nyStatus);
         await lastSoknader(document.getElementById('status-filter').value);
@@ -365,7 +364,19 @@
       } catch (err) {
         visFeilmelding(err.message || 'Kunne ikke oppdatere status');
       }
-    };
+    }
+
+    document.addEventListener('click', (e) => {
+      const slettBtn = e.target.closest('.slett-annonse-btn');
+      if (slettBtn) {
+        slettAnnonseMed(slettBtn.dataset.id);
+        return;
+      }
+      const statusBtn = e.target.closest('.oppdater-status-btn');
+      if (statusBtn) {
+        oppdaterStatus(statusBtn.dataset.id, statusBtn.dataset.status);
+      }
+    });
 
     document.getElementById('status-filter').addEventListener('change', (e) => {
       lastSoknader(e.target.value);
