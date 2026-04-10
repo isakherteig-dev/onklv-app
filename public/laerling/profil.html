@@ -93,9 +93,9 @@
             <div class="varsel-dropdown-header">Varsler</div>
           </div>
         </div>
-        <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">?</div>
+        <div id="nav-avatar" title="Min profil" style="width:34px;height:34px;border-radius:50%;background:var(--olkv-blue);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.85rem;flex-shrink:0;transition:opacity 0.2s;">?</div>
         <button class="btn btn-secondary btn-liten edit-owner-only nav-skjul-mobil" id="toggleEditBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rediger profil</button>
-        <button class="btn btn-ghost btn-liten nav-skjul-mobil" onclick="history.back()">← Tilbake</button>
+        <button class="btn btn-ghost btn-liten nav-skjul-mobil" id="tilbake-btn">← Tilbake</button>
       </div>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
         <span></span><span></span><span></span>
@@ -162,7 +162,7 @@
               <select id="edit-fag" style="padding:0.5rem 0.75rem;border:1px solid var(--olkv-gray-light);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.875rem;"></select>
               <input type="text" id="edit-sted" placeholder="Sted" style="padding:0.5rem 0.75rem;border:1px solid var(--olkv-gray-light);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.875rem;min-width:120px;" />
               <input type="number" id="edit-alder" placeholder="Alder" min="14" max="30" style="padding:0.5rem 0.75rem;border:1px solid var(--olkv-gray-light);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.875rem;width:80px;" />
-              <button class="btn btn-primary btn-liten" onclick="lagreHode()">Lagre</button>
+              <button class="btn btn-primary btn-liten" data-action="lagreHode">Lagre</button>
             </div>
           </div>
         </div>
@@ -189,7 +189,7 @@
       <div class="edit-only skjult" style="margin-top:1rem;">
         <textarea id="bio-input" rows="5" placeholder="Skriv litt om deg selv — hvem du er, hva du interesserer deg for, og hva slags lærlingplass du ser etter..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
         <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
-          <button class="btn btn-primary btn-liten" onclick="lagreBio()">Lagre</button>
+          <button class="btn btn-primary btn-liten" data-action="lagreBio">Lagre</button>
         </div>
       </div>
     </section>
@@ -200,7 +200,7 @@
         <h2 class="kort-tittel">Bli kjent med meg</h2>
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <span id="video-filnavn-vis" style="font-size:0.8rem;color:var(--olkv-gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" onclick="slettVideo()" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett video</button>
+          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" data-action="slettVideo" style="color:#dc2626;border-color:#dc2626;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett video</button>
         </div>
       </div>
 
@@ -222,9 +222,9 @@
       <div id="video-opplasting-wrapper" class="edit-only skjult">
         <div id="video-dra-slipp"
           style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-          onclick="document.getElementById('videoInput').click()"
-          onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
-          onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
+          data-action="apneVideoInput"
+          
+          >
           <div style="width:64px;height:64px;background:rgba(27,58,107,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
           <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Klikk for å velge video</p>
           <p style="margin:0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;text-align:center;padding:0 1rem;">MP4, WebM eller MOV · maks 100 MB</p>
@@ -264,7 +264,7 @@
             <input type="text" id="ref-rolle" placeholder="F.eks. «Kontaktlærer, Voss vgs»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
           </div>
         </div>
-        <button class="btn btn-primary btn-liten" onclick="leggTilReferanse()">Legg til referanse</button>
+        <button class="btn btn-primary btn-liten" data-action="leggTilReferanse">Legg til referanse</button>
       </div>
     </section>
 
@@ -280,10 +280,10 @@
             <label class="etikett">Ferdighet</label>
             <input type="text" id="ny-ferdighet-navn" placeholder="F.eks. «Sveising»" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;font-size:0.9rem;" />
           </div>
-          <button class="btn btn-primary btn-liten" onclick="leggTilFerdighet()">+ Legg til</button>
+          <button class="btn btn-primary btn-liten" data-action="leggTilFerdighet">+ Legg til</button>
         </div>
       </div>
-      <button class="btn btn-secondary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreFerdigheter()">Lagre ferdigheter</button>
+      <button class="btn btn-secondary btn-liten edit-only skjult" style="margin-top:1rem;" data-action="lagreFerdigheter">Lagre ferdigheter</button>
     </section>
 
     <!-- SEKSJON 5: PORTEFØLJE -->
@@ -306,7 +306,7 @@
             <label class="etikett">Beskrivelse</label>
             <input type="text" id="proj-beskrivelse" placeholder="Kort beskrivelse" style="width:100%;padding:0.6rem 0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;box-sizing:border-box;" />
           </div>
-          <button class="btn btn-secondary btn-liten" style="margin-bottom:1.25rem;" onclick="leggTilProsjekt()">Legg til</button>
+          <button class="btn btn-secondary btn-liten" style="margin-bottom:1.25rem;" data-action="leggTilProsjekt">Legg til</button>
         </div>
       </div>
     </section>
@@ -323,7 +323,7 @@
         <textarea id="motivasjon-input" rows="6" placeholder="Skriv om hvorfor du valgte dette faget, hva du brenner for og hva du ønsker å lære..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;"></textarea>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
           <span id="ordTeller" style="font-size:0.8rem;color:var(--olkv-gray);">0 ord</span>
-          <button class="btn btn-primary btn-liten" onclick="lagreMotiveasjon()">Lagre</button>
+          <button class="btn btn-primary btn-liten" data-action="lagreMotiveasjon">Lagre</button>
         </div>
       </div>
     </section>
@@ -361,7 +361,7 @@
               <option value="kurs">Kurs</option>
             </select>
           </div>
-          <button class="btn btn-secondary btn-liten" style="margin-bottom:1.25rem;" onclick="leggTilTidslinjePunkt()">Legg til</button>
+          <button class="btn btn-secondary btn-liten" style="margin-bottom:1.25rem;" data-action="leggTilTidslinjePunkt">Legg til</button>
         </div>
       </div>
     </section>
@@ -380,7 +380,7 @@
           <p style="margin:0.2rem 0 0;font-size:0.82rem;color:var(--olkv-gray);">Lastet opp og synlig for bedrifter</p>
         </div>
         <a id="cv-last-ned-lenke" href="#" target="_blank" class="btn btn-secondary btn-liten"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Last ned</a>
-        <button id="cv-slett-knapp" class="btn btn-ghost btn-liten edit-only skjult" style="color:#dc2626;" onclick="slettCv()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett</button>
+        <button id="cv-slett-knapp" class="btn btn-ghost btn-liten edit-only skjult" style="color:#dc2626;" data-action="slettCv"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Slett</button>
       </div>
 
       <!-- Vis-tilstand: ingen CV (ikke-eier) -->
@@ -392,9 +392,9 @@
       <div id="cv-opplasting" class="edit-only skjult" style="margin-top:1rem;">
         <div id="cv-dra-slipp"
           style="background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-          onclick="document.getElementById('cv-fil-input').click()"
-          onmouseover="this.style.borderColor='var(--olkv-blue)';this.style.background='#f0f7ff';"
-          onmouseout="this.style.borderColor='#d1d5db';this.style.background='var(--olkv-gray-light)';">
+          data-action="apneCvInput"
+          
+          >
           <div style="margin-bottom:0.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
           <p style="margin:0;font-weight:600;color:var(--olkv-dark);font-family:'DM Sans',sans-serif;">Trykk for å velge fil eller ta bilde</p>
           <p style="margin:0.4rem 0 0;font-size:0.8rem;color:var(--olkv-gray);font-family:'DM Sans',sans-serif;">PDF, Word eller bilde (JPG, PNG) · maks 10 MB</p>
@@ -431,7 +431,7 @@
         <p style="font-size:0.85rem;color:var(--olkv-gray);margin:0 0 0.75rem;">Tilgjengelige dager</p>
         <div id="dager-piller" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
-      <button class="btn btn-primary btn-liten edit-only skjult" style="margin-top:1rem;" onclick="lagreTilgjengelighet()">Lagre tilgjengelighet</button>
+      <button class="btn btn-primary btn-liten edit-only skjult" style="margin-top:1rem;" data-action="lagreTilgjengelighet">Lagre tilgjengelighet</button>
     </section>
 
     <!-- SEKSJON 9: AI-ASSISTENT -->
@@ -447,8 +447,8 @@
       </div>
       <div id="ai-chat"></div>
       <div style="background:white;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 var(--radius-stor) var(--radius-stor);padding:1rem 1.25rem;display:flex;gap:8px;">
-        <input type="text" id="ai-input" placeholder="Skriv et spørsmål..." style="flex:1;padding:0.5rem 0.75rem;border:1px solid var(--olkv-gray-light);border-radius:var(--radius-pill);font-family:'DM Sans',sans-serif;font-size:0.875rem;outline:none;" onkeydown="if(event.key==='Enter')sendAiMessage()" />
-        <button class="btn btn-primary btn-liten" onclick="sendAiMessage()">Send →</button>
+        <input type="text" id="ai-input" placeholder="Skriv et spørsmål..." style="flex:1;padding:0.5rem 0.75rem;border:1px solid var(--olkv-gray-light);border-radius:var(--radius-pill);font-family:'DM Sans',sans-serif;font-size:0.875rem;outline:none;" id="ai-input" />
+        <button class="btn btn-primary btn-liten" data-action="sendAiMessage">Send →</button>
       </div>
     </div>
 

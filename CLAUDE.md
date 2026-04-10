@@ -25,7 +25,17 @@ Stack: Node.js + Express (ESM), Firebase (Auth, Firestore, Storage, Cloud Functi
 - `index.js` er ENESTE entry point for Cloud Functions. `functions.js` skal IKKE eksistere.
 - Sjekk alltid om en funksjon allerede finnes i `app.js` før du lager en ny.
 
-### 5. Mobil-first
+### 5. Ingen inline scripts eller event handlers i HTML
+- **ALDRI** legg JS i `<script>`-tagger uten `src`-attributt i HTML-filer.
+- **ALDRI** bruk inline event handlers: `onclick=`, `onmouseover=`, `onmouseout=`, `onkeydown=`, `onchange=`, osv.
+- All side-JS skal ligge i en ekstern `.js`-fil med samme navn som HTML-siden (f.eks. `dashboard.html` → `dashboard.js`).
+- Delte scripts per mappe legges i `bunn-nav.js` (laerling/bedrift) eller egen dedikert fil.
+- For knapper som genereres dynamisk: bruk `data-action="fnNavn"` + event delegation i JS-filen.
+- For hover-effekter: bruk CSS i `style.css` eller `<style>`-blokk — **ikke** `onmouseover/out`.
+- **Hvorfor**: CSP-headeren i `server.js` setter `script-src 'self' ...` uten `'unsafe-inline'`. Inline scripts og handlers blokkeres av nettleseren og bryter siden helt.
+- Når du legger til en ny ekstern script (f.eks. Google SDK, Stripe, osv.) SKAL du også legge til domenet i `script-src` i `server.js` CSP-headeren. Gjør begge endringene i samme commit.
+
+### 6. Mobil-first
 - Alle CSS-endringer SKAL testes med viewport 375px bredde.
 - Bruk `min-height: 44px` på alle interaktive elementer.
 - Sjekk at `.skjult`-klassen fungerer korrekt (den bruker `display: none !important`).
@@ -64,7 +74,7 @@ public/               ← Frontend (statiske filer)
 - `getToken()` i `app.js` returnerer Firebase ID-token
 - Alle API-kall bruker `Authorization: Bearer ${token}`
 - Modaler bruker `.modal-bakgrunn.skjult` — toggle med `classList.add/remove('skjult')`
-- `tilJsStr()` i `app.js` — brukes for sikker JS-streng-escaping i onclick-attributter
+- `tilJsStr()` finnes ikke lenger — inline onclick-attributter er fjernet (se regel 5)
 
 ### Profil-siden (profil.html)
 - Har to moduser: visning (for bedrift/admin) og redigering (for eier)

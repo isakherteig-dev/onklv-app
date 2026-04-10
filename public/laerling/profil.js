@@ -1022,3 +1022,37 @@ function visMelding(tekst, suksess) {
   document.body.appendChild(toast);
   setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
 }
+
+// ===== DATA-ACTION LISTENERS (erstatter inline onclick/onkeydown) =====
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  const fns = {
+    lagreHode: () => window.lagreHode?.(),
+    lagreBio: () => window.lagreBio?.(),
+    leggTilReferanse: () => window.leggTilReferanse?.(),
+    leggTilFerdighet: () => window.leggTilFerdighet?.(),
+    lagreFerdigheter: () => window.lagreFerdigheter?.(),
+    leggTilProsjekt: () => window.leggTilProsjekt?.(),
+    lagreMotiveasjon: () => window.lagreMotiveasjon?.(),
+    leggTilTidslinjePunkt: () => window.leggTilTidslinjePunkt?.(),
+    lagreTilgjengelighet: () => window.lagreTilgjengelighet?.(),
+    slettVideo: () => window.slettVideo?.(),
+    slettCv: () => window.slettCv?.(),
+    sendAiMessage: () => window.sendAiMessage?.(),
+    apneVideoInput: () => document.getElementById('videoInput')?.click(),
+    apneCvInput: () => document.getElementById('cv-fil-input')?.click(),
+  };
+  fns[action]?.();
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'tilbake-btn') history.back();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.id === 'ai-input' && e.key === 'Enter') {
+    window.sendAiMessage?.();
+  }
+});

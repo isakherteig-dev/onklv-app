@@ -45,16 +45,14 @@
       <div id="varsel" class="varsel skjult" style="width:100%;margin-bottom:1rem;text-align:center;"></div>
 
       <button id="bekreft-btn" style="width:100%;padding:0.85rem;background:var(--olkv-blue-light);border:none;border-radius:var(--radius);color:#fff;font-size:1rem;font-weight:700;font-family:inherit;cursor:pointer;transition:var(--overgang);margin-bottom:1.25rem;"
-        onmouseover="this.style.background='var(--olkv-blue)'"
-        onmouseout="this.style.background='var(--olkv-blue-light)'">
+  >
         Bekreft kode →
       </button>
 
       <p style="color:rgba(255,255,255,0.45);font-size:0.85rem;text-align:center;">
         Fikk du ikke e-post?
         <button id="send-paa-nytt-btn" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:0.85rem;font-family:inherit;cursor:pointer;padding:0;text-decoration:underline;"
-          onmouseover="this.style.color='#fff'"
-          onmouseout="this.style.color='rgba(255,255,255,0.75)'">
+>
           Send koden på nytt
         </button>
       </p>
@@ -79,225 +77,11 @@
     .pin-felt.feil {
       border-color: var(--olkv-red) !important;
     }
+    #bekreft-btn:hover { background: var(--olkv-blue) !important; }
+    #send-paa-nytt-btn:hover { color: #fff !important; }
   </style>
 
-  <script type="module">
-    import { auth } from './firebase-config.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-
-    const params  = new URLSearchParams(window.location.search);
-
-    function sanitiserInternSti(sti) {
-      if (!sti || typeof sti !== 'string' || !sti.startsWith('/') || sti.startsWith('//')) {
-        return '';
-      }
-
-      try {
-        const url = new URL(sti, window.location.origin);
-        if (url.origin !== window.location.origin) return '';
-        return `${url.pathname}${url.search}${url.hash}`;
-      } catch {
-        return '';
-      }
-    }
-
-    const epost   = params.get('epost') || '';
-    const uid     = params.get('uid')   || '';
-    const returnTo = sanitiserInternSti(params.get('returnTo') || '');
-
-    document.getElementById('epost-visning').textContent = epost || 'e-postadressen din';
-
-    const felter      = Array.from(document.querySelectorAll('.pin-felt'));
-    const varselEl    = document.getElementById('varsel');
-    const bekreftBtn  = document.getElementById('bekreft-btn');
-    const sendPaaNytt = document.getElementById('send-paa-nytt-btn');
-
-    // Hent token — enten fra innlogget bruker eller lagret fra registrering
-    let cachetToken = sessionStorage.getItem('olkv-verif-token') || null;
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        cachetToken = await user.getIdToken();
-        sessionStorage.setItem('olkv-verif-token', cachetToken);
-      }
-    });
-
-    async function hentToken() {
-      // Prøv å hente fersk token fra innlogget bruker
-      if (auth.currentUser) {
-        return auth.currentUser.getIdToken();
-      }
-      return cachetToken;
-    }
-
-    // ===== PIN-NAVIGASJON =====
-    felter.forEach((felt, i) => {
-      felt.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace') {
-          if (felt.value) {
-            felt.value = '';
-          } else if (i > 0) {
-            felter[i - 1].focus();
-            felter[i - 1].value = '';
-          }
-          e.preventDefault();
-        } else if (e.key === 'ArrowLeft' && i > 0) {
-          felter[i - 1].focus();
-        } else if (e.key === 'ArrowRight' && i < felter.length - 1) {
-          felter[i + 1].focus();
-        }
-      });
-
-      felt.addEventListener('input', (e) => {
-        const val = e.target.value.replace(/\D/g, '');
-        if (!val) { felt.value = ''; return; }
-        felt.value = val[0];
-        felter.forEach(f => f.classList.remove('feil'));
-        skjulVarsel();
-        if (i < felter.length - 1) {
-          felter[i + 1].focus();
-        } else {
-          // Alle felt fylt — send automatisk
-          const kode = felter.map(f => f.value).join('');
-          if (kode.length === 6) sendKode(kode);
-        }
-      });
-
-      // Håndter liming av 6-sifret kode
-      felt.addEventListener('paste', (e) => {
-        e.preventDefault();
-        const tekst = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-        if (tekst.length >= 6) {
-          felter.forEach((f, idx) => { f.value = tekst[idx] || ''; });
-          felter[5].focus();
-          sendKode(tekst.slice(0, 6));
-        }
-      });
-    });
-
-    // Fokuser første felt ved lasting
-    felter[0].focus();
-
-    // ===== HJELPEFUNKSJONER =====
-    function visVarsel(tekst, type = 'feil') {
-      varselEl.className = type === 'suksess' ? 'varsel varsel-suksess' : 'varsel varsel-feil';
-      varselEl.textContent = tekst;
-      varselEl.classList.remove('skjult');
-    }
-    function skjulVarsel() {
-      varselEl.classList.add('skjult');
-    }
-    function markerFeil() {
-      felter.forEach(f => f.classList.add('feil'));
-    }
-    function nullstillFelter() {
-      felter.forEach(f => { f.value = ''; f.classList.remove('feil'); });
-      felter[0].focus();
-    }
-
-    // ===== BEKREFT KODE =====
-    async function sendKode(kode) {
-      if (!uid) {
-        visVarsel('Mangler bruker-ID. Prøv å registrere deg på nytt.');
-        return;
-      }
-
-      bekreftBtn.disabled = true;
-      bekreftBtn.textContent = 'Sjekker…';
-
-      try {
-        const res  = await fetch('/api/auth/verifiser-kode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid, kode })
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-          markerFeil();
-          visVarsel(data.feil || 'Feil kode. Prøv igjen.');
-          bekreftBtn.disabled = false;
-          bekreftBtn.textContent = 'Bekreft kode →';
-          // Tøm feltene ved utløpt eller for mange forsøk
-          if (data.feil?.includes('utløpt') || data.feil?.includes('Be om en ny kode')) {
-            nullstillFelter();
-          }
-          return;
-        }
-
-        // Suksess
-        sessionStorage.removeItem('olkv-verif-token');
-        visVarsel('E-posten din er bekreftet!', 'suksess');
-        bekreftBtn.textContent = 'Sender deg videre…';
-
-        // Hent rolle fra eksisterende Firebase-sesjon og redirect til riktig dashboard
-        setTimeout(async () => {
-          try {
-            const token = await hentToken();
-            const megRes = await fetch('/api/auth/meg', {
-              headers: token ? { Authorization: `Bearer ${token}` } : {}
-            });
-            const meg = megRes.ok ? await megRes.json() : null;
-            const rolle = meg?.rolle;
-            if (rolle === 'bedrift') {
-              window.location.href = '/bedrift/dashboard.html';
-            } else if (rolle === 'laerling') {
-              window.location.href = returnTo || '/laerling/dashboard.html';
-            } else {
-              window.location.href = '/login.html';
-            }
-          } catch {
-            window.location.href = '/login.html';
-          }
-        }, 2000);
-      } catch {
-        visVarsel('Noe gikk galt. Prøv igjen om litt.');
-        bekreftBtn.disabled = false;
-        bekreftBtn.textContent = 'Bekreft kode →';
-      }
-    }
-
-    bekreftBtn.addEventListener('click', () => {
-      const kode = felter.map(f => f.value).join('');
-      if (kode.length < 6) {
-        visVarsel('Fyll inn alle 6 sifrene.');
-        return;
-      }
-      sendKode(kode);
-    });
-
-    // ===== SEND PÅ NYTT =====
-    sendPaaNytt.addEventListener('click', async () => {
-      const token = await hentToken();
-      if (!token) {
-        visVarsel('Du må logge inn igjen for å sende ny kode. Gå til innlogging.');
-        return;
-      }
-
-      sendPaaNytt.disabled = true;
-      sendPaaNytt.textContent = 'Sender…';
-
-      try {
-        const res  = await fetch('/api/auth/send-verifisering', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-          visVarsel(data.feil || 'Kunne ikke sende kode. Prøv igjen.');
-        } else {
-          nullstillFelter();
-          visVarsel('Ny kode er sendt! Sjekk innboksen din.', 'suksess');
-        }
-      } catch {
-        visVarsel('Noe gikk galt. Prøv igjen om litt.');
-      } finally {
-        sendPaaNytt.disabled = false;
-        sendPaaNytt.textContent = 'Send koden på nytt';
-      }
-    });
-  </script>
+  <script type="module" src="/verifiser-epost.js"></script>
   <script src="/cookie-banner.js" defer></script>
 </body>
 </html>

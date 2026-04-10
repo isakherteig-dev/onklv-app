@@ -1950,3 +1950,18 @@ tr:hover td {
   .btn { min-height: 52px; }
   .btn-liten { min-height: 44px; }
 }
+
+/* Hover-effekter for nav-avatar (erstatter onmouseover/onmouseout) */
+#nav-avatar:hover { opacity: 0.8; }
+
+/* Google-knapp hover på login/register */
+#google-btn:hover {
+  border-color: var(--olkv-blue-light) !important;
+  background: var(--olkv-blue-pale) !important;
+}
+
+/* Video- og CV-opplastingsknapper i profil */
+.opplasting-omraade:hover {
+  border-color: var(--olkv-blue) !important;
+  background: #f0f7ff !important;
+}
