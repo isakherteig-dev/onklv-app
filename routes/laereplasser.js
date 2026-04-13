@@ -25,6 +25,10 @@ async function hentSoknadsantall(plassIds) {
   return antallMap;
 }
 
+function stripKontaktinfo({ kontakt_epost, kontaktperson, ...rest }) {
+  return rest;
+}
+
 function docTilObj(doc) {
   const d = doc.data();
   return {
@@ -42,7 +46,7 @@ ruter.get('/', async (_req, res) => {
       .where('aktiv', '==', true)
       .orderBy('opprettet', 'desc')
       .get();
-    res.json(snap.docs.map(docTilObj));
+    res.json(snap.docs.map(d => stripKontaktinfo(docTilObj(d))));
   } catch (err) {
     console.error(err);
     res.status(500).json({ feil: 'Kunne ikke hente læreplasser' });
@@ -108,7 +112,7 @@ ruter.get('/:id', async (req, res) => {
 
     const antallMap = await hentSoknadsantall([req.params.id]);
 
-    res.json({ ...docTilObj(doc), antall_soknader: antallMap[req.params.id] || 0 });
+    res.json(stripKontaktinfo({ ...docTilObj(doc), antall_soknader: antallMap[req.params.id] || 0 }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ feil: 'Kunne ikke hente læreplass' });
