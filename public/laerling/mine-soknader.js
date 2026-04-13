@@ -187,6 +187,7 @@ import {
           ${s.erfaring ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Erfaring</div><p style="background:var(--olkv-gray-light);padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;">${escHtml(s.erfaring)}</p></div>` : ''}
           ${(s.vg1 || s.vg2) ? `<div class="rad" style="gap:1rem;"><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG1</div>${escHtml(s.vg1 || '—')}</div><div><div style="font-size:0.8rem;color:var(--olkv-gray);">VG2</div>${escHtml(s.vg2 || '—')}</div></div>` : ''}
           ${s.admin_kommentar ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:4px;">Kommentar fra OLKV</div><p style="background:#FEF3E2;padding:0.75rem;border-radius:var(--radius);font-size:0.9rem;margin:0;border-left:3px solid #B7791F;">${escHtml(s.admin_kommentar)}</p></div>` : ''}
+          ${s.status === 'godkjent' ? `<div style="background:var(--color-success-bg);border:1px solid #bbf7d0;border-radius:var(--radius);padding:1.25rem;margin-top:1rem;"><p style="font-weight:600;color:#15803d;margin:0 0 0.5rem;">Neste steg</p><p style="margin:0;font-size:0.9rem;color:#166534;line-height:1.6;">Gratulerer! Opplæringskontoret i Vestland vil nå opprette lærekontrakten din. Du vil snart motta en invitasjon til <strong>fagbrev.io</strong>-appen, der du følger opp hele læretiden — dokumentering, vurderingssamtaler og kompetansemål.</p></div>` : ''}
         </div>`;
 
       document.getElementById('detaljer-handlinger').innerHTML = s.status === 'sendt'

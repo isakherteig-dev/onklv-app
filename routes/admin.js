@@ -283,6 +283,46 @@ ruter.delete('/laereplasser/:id', async (req, res) => {
 });
 
 /**
+ * GET /api/admin/soknader/:id/overlevering
+ */
+ruter.get('/soknader/:id/overlevering', async (req, res) => {
+  try {
+    const sokDoc = await adminDB.collection('soknader').doc(req.params.id).get();
+    if (!sokDoc.exists) return res.status(404).json({ feil: 'Søknad ikke funnet' });
+    const s = sokDoc.data();
+
+    const [plassDoc, brukerDoc, profilDoc] = await Promise.all([
+      adminDB.collection('laereplasser').doc(s.laerplass_id).get(),
+      adminDB.collection('users').doc(s.laerling_user_id).get(),
+      adminDB.collection('users').doc(s.laerling_user_id).collection('profilData').doc('main').get()
+    ]);
+
+    const plass = plassDoc.exists ? plassDoc.data() : {};
+    const bruker = brukerDoc.exists ? brukerDoc.data() : {};
+    const profil = profilDoc.exists ? profilDoc.data() : {};
+
+    res.json({
+      laerling_navn:       s.laerling_navn || bruker.navn || null,
+      laerling_epost:      s.laerling_epost || bruker.epost || null,
+      laerling_telefon:    profil.telefon || bruker.telefon || null,
+      utdanningsprogram:   s.utdanningsprogram || bruker.utdanningsprogram || profil.utdanningsprogram || null,
+      skole:               profil.skole || bruker.skole || null,
+      bedrift_navn:        plass.bedrift_navn || s.bedrift_navn || null,
+      laerplass_tittel:    plass.tittel || null,
+      fagomraade:          plass.fagomraade || null,
+      sted:                plass.sted || s.sted || null,
+      ferdigheter:         profil.ferdigheter || [],
+      motivasjon:          s.melding || null,
+      sendt_dato:          s.sendt_dato?.toDate?.()?.toISOString?.() ?? s.sendt_dato ?? null,
+      godkjent_dato:       s.behandlet_dato?.toDate?.()?.toISOString?.() ?? s.behandlet_dato ?? null
+    });
+  } catch (err) {
+    console.error('Feil ved henting av overleveringsdata:', err);
+    res.status(500).json({ feil: 'Kunne ikke hente overleveringsdata' });
+  }
+});
+
+/**
  * GET /api/admin/brukere
  */
 ruter.get('/brukere', async (req, res) => {

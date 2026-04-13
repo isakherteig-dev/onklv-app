@@ -87,11 +87,13 @@ import {
             ${s.status !== 'godkjent' ? `<button class="btn btn-liten" style="background:#e8f5e9;color:#1B5E20;border:none;" data-action="settStatus" data-id="${escHtml(String(s.id))}" data-status="godkjent" data-tekst="Godkjenn denne søknaden?">Godkjenn</button>` : ''}
             ${s.status !== 'avslatt' ? `<button class="btn btn-liten" style="background:#FDECEA;color:#922B21;border:none;" data-action="settStatus" data-id="${escHtml(String(s.id))}" data-status="avslatt" data-tekst="Avslå denne søknaden?">Avslå</button>` : ''}
             <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;" id="ai-oppsummer-btn" data-action="aiOppsummer" data-id="${escHtml(String(s.id))}">AI-sammendrag</button>
+            ${s.status === 'godkjent' ? `<button class="btn btn-liten" style="background:#E8EFF8;color:var(--olkv-blue);border:none;" data-action="overleveringSammendrag" data-id="${escHtml(String(s.id))}">Overlevering til fagbrev.io</button>` : ''}
           </div>
           <div id="ai-oppsummer-boks" style="display:none;margin-top:0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;">
             <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.4rem;">AI-sammendrag</span>
             <span id="ai-oppsummer-tekst">Laster…</span>
           </div>
+          <div id="overlevering-boks" style="display:none;margin-top:0.75rem;background:#E8EFF8;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;"></div>
         </div>`;
       document.getElementById('detaljer-modal').classList.remove('skjult');
     }
@@ -140,6 +142,47 @@ import {
         setTimeout(() => toast.remove(), 3000);
       };
       document.getElementById('bekreft-modal').classList.remove('skjult');
+    };
+
+    async function overleveringSammendrag(soknadId) {
+      const boks = document.getElementById('overlevering-boks');
+      boks.style.display = 'block';
+      boks.innerHTML = '<span style="color:var(--olkv-blue);">Henter overleveringsdata…</span>';
+
+      try {
+        const token = await getToken();
+        const res = await fetch(`/api/admin/soknader/${soknadId}/overlevering`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil || 'Kunne ikke hente overleveringsdata');
+
+        const rad = (label, verdi) => verdi
+          ? `<div style="margin-bottom:0.4rem;"><span style="font-weight:600;">${escHtml(label)}:</span> ${escHtml(String(verdi))}</div>`
+          : '';
+        const ferdigheter = Array.isArray(data.ferdigheter) && data.ferdigheter.length
+          ? `<div style="margin-bottom:0.4rem;"><span style="font-weight:600;">Ferdigheter:</span> ${data.ferdigheter.map(f => escHtml(String(f))).join(', ')}</div>`
+          : '';
+
+        boks.innerHTML = `
+          <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.6rem;">Overlevering til fagbrev.io</span>
+          ${rad('Navn', data.laerling_navn)}
+          ${rad('E-post', data.laerling_epost)}
+          ${rad('Telefon', data.laerling_telefon)}
+          ${rad('Utdanningsprogram', data.utdanningsprogram)}
+          ${rad('Skole', data.skole)}
+          ${rad('Bedrift', data.bedrift_navn)}
+          ${rad('Læreplass', data.laerplass_tittel)}
+          ${rad('Fagområde', data.fagomraade)}
+          ${rad('Sted', data.sted)}
+          ${ferdigheter}
+          ${rad('Motivasjon', data.motivasjon)}
+          ${rad('Sendt dato', data.sendt_dato ? new Date(data.sendt_dato).toLocaleDateString('nb-NO') : null)}
+          ${rad('Godkjent dato', data.godkjent_dato ? new Date(data.godkjent_dato).toLocaleDateString('nb-NO') : null)}`;
+      } catch (err) {
+        console.error(err);
+        boks.innerHTML = `<span style="color:#922B21;">${escHtml(err.message || 'Noe gikk galt.')}</span>`;
+      }
     };
 
     async function aiOppsummer(soknadId) {
@@ -191,6 +234,10 @@ import {
       if (el.dataset.action === 'lastNedVedlegg') {
         e.stopPropagation();
         lastNedVedlegg(id);
+      }
+      if (el.dataset.action === 'overleveringSammendrag') {
+        e.stopPropagation();
+        overleveringSammendrag(id);
       }
     });
 
