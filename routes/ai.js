@@ -161,7 +161,7 @@ ruter.post('/tips', krevAuth, aiLimit, krevRolle('laerling'), async (req, res) =
  * Fri samtale med AI-assistenten.
  */
 ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
-  const { target_uid, messages } = req.body;
+  const { target_uid, messages, soknad_id } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ feil: 'messages er påkrevd' });
@@ -171,8 +171,29 @@ ruter.post('/chat', krevAuth, aiLimit, async (req, res) => {
     return res.status(503).json({ feil: 'AI-tjenesten er ikke satt opp ennå' });
   }
 
+  // Hent søknadsdata hvis soknad_id er oppgitt
+  let soknadData = null;
+  let plassData = null;
+  if (soknad_id) {
+    if (req.user.rolle !== 'admin') {
+      return res.status(403).json({ feil: 'Kun admin kan bruke soknad_id' });
+    }
+    try {
+      const sokDoc = await adminDB.collection('soknader').doc(soknad_id).get();
+      if (sokDoc.exists) {
+        soknadData = sokDoc.data();
+        if (soknadData.laerplass_id) {
+          const plassDoc = await adminDB.collection('laereplasser').doc(soknadData.laerplass_id).get();
+          if (plassDoc.exists) plassData = plassDoc.data();
+        }
+      }
+    } catch (soknadErr) {
+      console.error('Kunne ikke hente søknadsdata for AI-chat:', soknadErr.message);
+    }
+  }
+
   // Bygg system-prompt på serveren — aldri stol på klientens system-prompt
-  const uid = target_uid || req.user.uid;
+  const uid = target_uid || (soknadData?.laerling_user_id) || req.user.uid;
 
   if (uid !== req.user.uid) {
     if (req.user.rolle === 'admin') {
@@ -205,8 +226,21 @@ Sted: ${profilData.sted || 'Ikke oppgitt'}
 Motivasjon: ${profilData.motivasjon || 'Ikke oppgitt'}
 Ferdigheter: ${(profilData.ferdigheter || []).map(f => f.navn + ' ' + f.prosent + '%').join(', ') || 'Ikke oppgitt'}
 Erfaring: ${(profilData.tidslinje || []).map(t => t.tittel).join(', ') || 'Ikke oppgitt'}
-Referanser fra: ${(profilData.referanser || []).map((r, i) => 'Referanse ' + (i + 1) + ' (' + r.rolle + ')').join(', ') || 'Ingen'}
-Svar alltid på norsk. Vær profesjonell og hjelpsom.`;
+Referanser fra: ${(profilData.referanser || []).map((r, i) => 'Referanse ' + (i + 1) + ' (' + r.rolle + ')').join(', ') || 'Ingen'}`;
+
+    if (soknadData && plassData) {
+      systemPrompt += `
+
+Søknad:
+Læreplass: ${plassData.tittel || 'Ikke oppgitt'} hos ${plassData.bedrift_navn || 'Ikke oppgitt'}
+Fagområde: ${plassData.fagomraade || 'Ikke oppgitt'}
+Motivasjon: ${soknadData.melding || 'Ikke oppgitt'}
+Erfaring: ${soknadData.erfaring || 'Ikke oppgitt'}
+Status: ${soknadData.status || 'Ikke oppgitt'}
+VG1: ${soknadData.vg1 || '—'} VG2: ${soknadData.vg2 || '—'}`;
+    }
+
+    systemPrompt += '\nSvar alltid på norsk. Vær profesjonell og hjelpsom.';
   } catch (profilErr) {
     console.error('Kunne ikke hente profildata for AI-chat:', profilErr.message);
   }

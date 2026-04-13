@@ -6,6 +6,8 @@ import {
     let bruker = null;
     let alleSoknader = [];
     let bekreftCallback = null;
+    let aiChatHistorikk = [];
+    let aktivAiSoknadId = null;
 
     bruker = await krevInnlogging('admin');
     if (!bruker) { window.location.href = '/login.html'; }
@@ -94,16 +96,39 @@ import {
           <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
             ${s.status !== 'godkjent' ? `<button class="btn btn-liten" style="background:#e8f5e9;color:#1B5E20;border:none;" data-action="settStatus" data-id="${escHtml(String(s.id))}" data-status="godkjent" data-tekst="Godkjenn denne søknaden?">Godkjenn</button>` : ''}
             ${s.status !== 'avslatt' ? `<button class="btn btn-liten" style="background:#FDECEA;color:#922B21;border:none;" data-action="settStatus" data-id="${escHtml(String(s.id))}" data-status="avslatt" data-tekst="Avslå denne søknaden?">Avslå</button>` : ''}
-            <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;" id="ai-oppsummer-btn" data-action="aiOppsummer" data-id="${escHtml(String(s.id))}">AI-sammendrag</button>
             ${s.status === 'godkjent' ? `<button class="btn btn-liten" style="background:#E8EFF8;color:var(--olkv-blue);border:none;" data-action="overleveringSammendrag" data-id="${escHtml(String(s.id))}">Overlevering til fagbrev.io</button>` : ''}
           </div>
-          <div id="ai-oppsummer-boks" style="display:none;margin-top:0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;">
-            <span style="font-size:0.75rem;font-weight:600;color:var(--olkv-blue);display:block;margin-bottom:0.4rem;">AI-sammendrag</span>
-            <span id="ai-oppsummer-tekst">Laster…</span>
+          <div id="ai-soknad-chat-wrapper" style="margin-top:1rem;">
+            <button class="btn btn-liten" style="background:#eff6ff;color:var(--olkv-blue);border:none;width:100%;" id="ai-chat-toggle-btn">AI-assistent for denne søknaden</button>
+            <div id="ai-soknad-chat" class="skjult" style="margin-top:0.75rem;">
+              <div class="chat-seksjon" style="height:320px;">
+                <div class="chat-meldinger" id="ai-chat-meldinger" style="background:#f8fafc;"></div>
+                <div class="chat-skrivefelt">
+                  <textarea id="ai-chat-input" class="chat-input" placeholder="Spør om søknaden, lærlingen, eller be om intervjuspørsmål…" rows="1"></textarea>
+                  <button class="chat-send-btn" id="ai-chat-send-btn" aria-label="Send melding">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="overlevering-boks" style="display:none;margin-top:0.75rem;background:#E8EFF8;border:1px solid #bfdbfe;border-radius:8px;padding:0.75rem;font-size:0.875rem;"></div>
         </div>`;
       document.getElementById('detaljer-modal').classList.remove('skjult');
+
+      initAiSoknadChat(id);
+
+      document.getElementById('ai-chat-toggle-btn')?.addEventListener('click', () => {
+        document.getElementById('ai-soknad-chat')?.classList.toggle('skjult');
+      });
+      document.getElementById('ai-chat-send-btn')?.addEventListener('click', sendAiSoknadMelding);
+      document.getElementById('ai-chat-input')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiSoknadMelding(); }
+      });
+      document.getElementById('ai-chat-input')?.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+      });
     }
 
     async function lastNedVedlegg(id) {
@@ -193,30 +218,63 @@ import {
       }
     };
 
-    async function aiOppsummer(soknadId) {
-      const boks = document.getElementById('ai-oppsummer-boks');
-      const tekst = document.getElementById('ai-oppsummer-tekst');
-      const btn = document.getElementById('ai-oppsummer-btn');
-      boks.style.display = 'block';
-      tekst.textContent = 'Analyserer søknaden…';
-      if (btn) btn.disabled = true;
+    function initAiSoknadChat(soknadId) {
+      aktivAiSoknadId = soknadId;
+      aiChatHistorikk = [];
+      const meldinger = document.getElementById('ai-chat-meldinger');
+      if (meldinger) {
+        meldinger.innerHTML = '<div class="chat-boble-wrapper dem"><div class="chat-boble">Hei! Jeg er OLKV sin AI-assistent. Spør meg om denne søknaden — jeg kan oppsummere, vurdere match, foreslå intervjuspørsmål, eller hjelpe med andre ting.</div></div>';
+      }
+    }
+
+    async function sendAiSoknadMelding() {
+      const input = document.getElementById('ai-chat-input');
+      const tekst = input.value.trim();
+      if (!tekst || !aktivAiSoknadId) return;
+
+      const meldinger = document.getElementById('ai-chat-meldinger');
+      const btn = document.getElementById('ai-chat-send-btn');
+
+      meldinger.innerHTML += '<div class="chat-boble-wrapper meg"><div class="chat-boble">' + escHtml(tekst) + '</div></div>';
+      input.value = '';
+      input.style.height = 'auto';
+      meldinger.scrollTop = meldinger.scrollHeight;
+
+      const skeleton = document.createElement('div');
+      skeleton.className = 'chat-boble-wrapper dem';
+      skeleton.innerHTML = '<div class="skeleton" style="width:200px;height:40px;border-radius:4px 12px 12px 12px;"></div>';
+      meldinger.appendChild(skeleton);
+      meldinger.scrollTop = meldinger.scrollHeight;
+      btn.disabled = true;
+
+      aiChatHistorikk.push({ role: 'user', content: tekst });
+      if (aiChatHistorikk.length > 20) aiChatHistorikk = aiChatHistorikk.slice(-20);
 
       try {
         const token = await getToken();
-        const res = await fetch('/api/ai/oppsummer', {
+        const res = await fetch('/api/ai/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ soknad_id: soknadId })
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ soknad_id: aktivAiSoknadId, messages: aiChatHistorikk })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.feil || 'AI-oppsummering feilet');
-        tekst.textContent = data.oppsummering;
+        const svar = res.ok ? (data.svar || 'Beklager, prøv igjen.') : 'AI-assistenten er ikke tilgjengelig akkurat nå.';
+
+        aiChatHistorikk.push({ role: 'assistant', content: svar });
+        if (aiChatHistorikk.length > 20) aiChatHistorikk = aiChatHistorikk.slice(-20);
+
+        skeleton.remove();
+        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">' + escHtml(svar) + '</div></div>';
+        meldinger.scrollTop = meldinger.scrollHeight;
       } catch (err) {
-        tekst.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+        console.error(err);
+        skeleton.remove();
+        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">Kunne ikke koble til AI-assistenten. Prøv igjen.</div></div>';
       } finally {
-        if (btn) btn.disabled = false;
+        btn.disabled = false;
+        input.focus();
       }
-    };
+    }
 
     document.getElementById('bekreft-ok').addEventListener('click', async () => {
       if (bekreftCallback) { try { await bekreftCallback(); } catch (err) { alert(err.message); } }
@@ -234,10 +292,6 @@ import {
       if (el.dataset.action === 'settStatus') {
         e.stopPropagation();
         settStatus(id, el.dataset.status, el.dataset.tekst);
-      }
-      if (el.dataset.action === 'aiOppsummer') {
-        e.stopPropagation();
-        aiOppsummer(id);
       }
       if (el.dataset.action === 'lastNedVedlegg') {
         e.stopPropagation();
