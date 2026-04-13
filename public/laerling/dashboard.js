@@ -449,9 +449,27 @@ import {
       }
     });
 
+    // ===== GODKJENT BANNER =====
+    async function visGodkjentBanner() {
+      const soknader = await hentSoknaderLaerling();
+      const godkjentSoknad = soknader.find(s => s.status === 'godkjent');
+      if (!godkjentSoknad) return;
+      const varselEl = document.getElementById('varsel');
+      varselEl.innerHTML = `<div style="background:#F0FDF4;border:2px solid #16a34a;border-radius:var(--radius);padding:1.5rem;">
+  <p style="font-size:1.15rem;font-weight:600;color:#15803d;margin:0 0 0.5rem;">Du har fått læreplassen!</p>
+  <p style="margin:0 0 0.75rem;font-size:0.95rem;color:#166534;line-height:1.7;">
+    Gratulerer med <strong>${escHtml(godkjentSoknad.tittel || godkjentSoknad.bedrift_navn || 'læreplassen')}</strong>!
+    Opplæringskontoret i Vestland tar det herfra — du vil motta en SMS med invitasjon til fagbrev.io på telefonnummeret ditt.
+  </p>
+  <a href="/laerling/mine-soknader.html" class="btn btn-liten" style="background:#16a34a;color:white;border:none;">Se søknaden din →</a>
+</div>`;
+      varselEl.classList.remove('skjult');
+    }
+
     // ===== INIT =====
     lastLaereplasser();
     lastSoknader();
+    visGodkjentBanner();
     initVarselBjelle();
 
 document.addEventListener('click', (e) => {

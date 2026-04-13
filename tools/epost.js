@@ -176,7 +176,7 @@ export async function sendStatusEpost(tilEpost, laerlingNavn, laereplassTittel, 
     godkjent: {
       emne: 'Søknaden din er godkjent',
       overskrift: 'Søknaden din er oppdatert',
-      melding: `Gratulerer! Din søknad på ${laereplassTittel} er godkjent.`
+      melding: `Gratulerer! Din søknad på ${laereplassTittel} er godkjent. Opplæringskontoret i Vestland vil nå opprette lærekontrakten din. Du vil snart motta en SMS med invitasjon til fagbrev.io, der du følger opp hele læretiden.`
     },
     avslatt: {
       emne: 'Søknaden din ble ikke innvilget',
