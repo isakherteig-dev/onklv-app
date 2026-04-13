@@ -100,8 +100,8 @@ import {
                     <td style="font-size:0.85rem;color:var(--farge-tekst-sekundaer);">${formaterDato(b.opprettet?.toDate ? b.opprettet.toDate().toISOString().split('T')[0] : (b.opprettet || ''))}</td>
                     <td>
                       <div class="rad" style="gap:0.5rem;flex-wrap:nowrap;">
-                        <button class="btn-mini btn-mini-gronn" onclick="godkjennKlikk('${b.uid}','${(b.navn||'').replace(/'/g,"\\'")}')">Godkjenn</button>
-                        <button class="btn-mini btn-mini-roed" onclick="avvisKlikk('${b.uid}','${(b.navn||'').replace(/'/g,"\\'")}')">Avvis</button>
+                        <button class="btn-mini btn-mini-gronn" data-action="godkjennKlikk" data-uid="${escHtml(b.uid)}" data-navn="${escHtml(b.navn || '')}">Godkjenn</button>
+                        <button class="btn-mini btn-mini-roed" data-action="avvisKlikk" data-uid="${escHtml(b.uid)}" data-navn="${escHtml(b.navn || '')}">Avvis</button>
                       </div>
                     </td>
                   </tr>
@@ -115,7 +115,7 @@ import {
       }
     }
 
-    window.godkjennKlikk = async function(uid, navn) {
+    async function godkjennKlikk(uid, navn) {
       if (!confirm(`Godkjenn ${navn}?`)) return;
       try {
         await apiBedriftGodkjenn(uid);
@@ -124,16 +124,23 @@ import {
         await lastBedrifter();
         await lastStats();
       } catch (e) { alert(e.message); }
-    };
+    }
 
-    window.avvisKlikk = async function(uid, navn) {
+    async function avvisKlikk(uid, navn) {
       if (!confirm(`Avvis ${navn}? Bedriften vil bli deaktivert.`)) return;
       try {
         await apiBedriftAvvis(uid);
         await lastBedrifter();
         await lastStats();
       } catch (e) { alert(e.message); }
-    };
+    }
+
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      if (el.dataset.action === 'godkjennKlikk') godkjennKlikk(el.dataset.uid, el.dataset.navn);
+      if (el.dataset.action === 'avvisKlikk') avvisKlikk(el.dataset.uid, el.dataset.navn);
+    });
 
     // ===== SØKNADER =====
     let soknaderCache = [];

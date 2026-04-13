@@ -52,8 +52,8 @@ import {
           : '';
 
         const handlinger = b.rolle === 'bedrift' && !b.godkjent
-          ? `<button class="btn-mini btn-mini-gronn" onclick="godkjenn('${b.uid}')">Godkjenn</button>
-             <button class="btn-mini btn-mini-roed" onclick="avvis('${b.uid}')">Avvis</button>`
+          ? `<button class="btn-mini btn-mini-gronn" data-action="godkjenn" data-uid="${escHtml(b.uid)}">Godkjenn</button>
+             <button class="btn-mini btn-mini-roed" data-action="avvis" data-uid="${escHtml(b.uid)}">Avvis</button>`
           : '';
 
         return `
@@ -71,7 +71,7 @@ import {
       }).join('');
     }
 
-    window.godkjenn = async function(uid) {
+    async function godkjenn(uid) {
       if (!confirm('Godkjenn denne bedriften?')) return;
       try {
         await godkjennBedrift(uid);
@@ -79,15 +79,23 @@ import {
         const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = 'Bedrift godkjent!';
         document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
       } catch (err) { alert(err.message); }
-    };
+    }
 
-    window.avvis = async function(uid) {
+    async function avvis(uid) {
       if (!confirm('Avvis denne bedriften? Den vil bli deaktivert.')) return;
       try {
         await avvisBedrift(uid);
         await lastBrukere();
       } catch (err) { alert(err.message); }
-    };
+    }
+
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      const uid = el.dataset.uid;
+      if (el.dataset.action === 'godkjenn') godkjenn(uid);
+      if (el.dataset.action === 'avvis') avvis(uid);
+    });
 
     await lastBrukere();
     initScrollReveal();

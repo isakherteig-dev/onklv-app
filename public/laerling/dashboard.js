@@ -121,7 +121,10 @@ import {
           </div>
           <button
             class="btn btn-primary btn-liten"
-            onclick="åpneSøknadModal('${p.id}', '${escHtml(p.tittel).replace(/'/g, "\\'")}', '${escHtml(p.bedrift_navn).replace(/'/g, "\\'")}')"
+            data-action="åpneSøknadModal"
+            data-id="${escHtml(String(p.id))}"
+            data-tittel="${escHtml(p.tittel)}"
+            data-bedrift="${escHtml(p.bedrift_navn)}"
             style="width: 100%;"
           >Søk nå →</button>
         </div>`;
@@ -176,7 +179,7 @@ import {
     // ===== SØKNAD-MODAL =====
     let valgtLaerplass = null;
 
-    window.åpneSøknadModal = function(id, tittel, bedrift) {
+    function åpneSøknadModal(id, tittel, bedrift) {
       valgtLaerplass = { id, tittel, bedrift };
       document.getElementById('modal-tittel').textContent = `Søk: ${tittel}`;
       document.getElementById('modal-bedrift').textContent = `Bedrift: ${bedrift}`;
@@ -450,6 +453,11 @@ import {
     lastLaereplasser();
     lastSoknader();
     initVarselBjelle();
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action="åpneSøknadModal"]');
+  if (el) åpneSøknadModal(el.dataset.id, el.dataset.tittel, el.dataset.bedrift);
+});
 
 document.querySelectorAll('[data-scroll-til]').forEach(el => {
   el.addEventListener('click', (e) => {
