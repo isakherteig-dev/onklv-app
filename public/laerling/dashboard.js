@@ -396,20 +396,20 @@ import {
     // ===== AI: PROFIL-CHATBOT =====
     let aiProfilHistorikk = [];
 
-    document.getElementById('ai-profil-chat-toggle').addEventListener('click', () => {
+    document.getElementById('ai-profil-chat-toggle')?.addEventListener('click', () => {
       const wrapper = document.getElementById('ai-profil-chat-wrapper');
-      wrapper.classList.toggle('skjult');
-      if (!wrapper.classList.contains('skjult') && aiProfilHistorikk.length === 0) {
+      wrapper?.classList.toggle('skjult');
+      if (!wrapper?.classList.contains('skjult') && aiProfilHistorikk.length === 0) {
         const meldinger = document.getElementById('ai-profil-chat-meldinger');
-        meldinger.innerHTML = '<div class="chat-boble-wrapper dem"><div class="chat-boble">Hei! Jeg er din AI-karriereveileder. Spør meg om hva som helst — profiltips, søknadshjelp, intervjuforberedelser, eller generelle spørsmål om lærlingordningen.</div></div>';
+        if (meldinger) meldinger.innerHTML = '<div class="chat-boble-wrapper dem"><div class="chat-boble">Hei! Jeg er din AI-karriereveileder. Spør meg om hva som helst — profiltips, søknadshjelp, intervjuforberedelser, eller generelle spørsmål om lærlingordningen.</div></div>';
       }
     });
 
-    document.getElementById('ai-profil-chat-send').addEventListener('click', sendAiProfilMelding);
-    document.getElementById('ai-profil-chat-input').addEventListener('keydown', (e) => {
+    document.getElementById('ai-profil-chat-send')?.addEventListener('click', sendAiProfilMelding);
+    document.getElementById('ai-profil-chat-input')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiProfilMelding(); }
     });
-    document.getElementById('ai-profil-chat-input').addEventListener('input', function() {
+    document.getElementById('ai-profil-chat-input')?.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
