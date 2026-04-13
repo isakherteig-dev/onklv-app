@@ -50,6 +50,13 @@ import {
             </div>
           </td>
         </tr>`).join('');
+
+      tbody.querySelectorAll('tr[data-action="visDetaljer"]').forEach(tr => {
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('button')) return;
+          visDetaljer(tr.dataset.id);
+        });
+      });
     }
 
     function visDetaljer(id) {
@@ -224,7 +231,6 @@ import {
       console.log('KLIKK:', el?.dataset?.action, el?.dataset?.id, el?.tagName);
       if (!el) return;
       const id = el.dataset.id || undefined;
-      if (el.dataset.action === 'visDetaljer') visDetaljer(id);
       if (el.dataset.action === 'settStatus') {
         e.stopPropagation();
         settStatus(id, el.dataset.status, el.dataset.tekst);
