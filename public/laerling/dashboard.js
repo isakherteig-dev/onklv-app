@@ -393,33 +393,75 @@ import {
       if (e.target === e.currentTarget) document.getElementById('veiledning-modal').classList.add('skjult');
     });
 
-    // ===== AI: PROFILTIPS =====
-    document.getElementById('ai-tips-btn').addEventListener('click', async () => {
-      const boks = document.getElementById('ai-tips-boks');
-      const innhold = document.getElementById('ai-tips-innhold');
-      const btn = document.getElementById('ai-tips-btn');
+    // ===== AI: PROFIL-CHATBOT =====
+    let aiProfilHistorikk = [];
 
-      boks.style.display = 'block';
-      innhold.textContent = 'Analyserer profilen din…';
+    document.getElementById('ai-profil-chat-toggle').addEventListener('click', () => {
+      const wrapper = document.getElementById('ai-profil-chat-wrapper');
+      wrapper.classList.toggle('skjult');
+      if (!wrapper.classList.contains('skjult') && aiProfilHistorikk.length === 0) {
+        const meldinger = document.getElementById('ai-profil-chat-meldinger');
+        meldinger.innerHTML = '<div class="chat-boble-wrapper dem"><div class="chat-boble">Hei! Jeg er din AI-karriereveileder. Spør meg om hva som helst — profiltips, søknadshjelp, intervjuforberedelser, eller generelle spørsmål om lærlingordningen.</div></div>';
+      }
+    });
+
+    document.getElementById('ai-profil-chat-send').addEventListener('click', sendAiProfilMelding);
+    document.getElementById('ai-profil-chat-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiProfilMelding(); }
+    });
+    document.getElementById('ai-profil-chat-input').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    async function sendAiProfilMelding() {
+      const input = document.getElementById('ai-profil-chat-input');
+      const tekst = input.value.trim();
+      if (!tekst) return;
+
+      const meldinger = document.getElementById('ai-profil-chat-meldinger');
+      const btn = document.getElementById('ai-profil-chat-send');
+
+      meldinger.innerHTML += '<div class="chat-boble-wrapper meg"><div class="chat-boble">' + escHtml(tekst) + '</div></div>';
+      input.value = '';
+      input.style.height = 'auto';
+      meldinger.scrollTop = meldinger.scrollHeight;
+
+      const skeleton = document.createElement('div');
+      skeleton.className = 'chat-boble-wrapper dem';
+      skeleton.innerHTML = '<div class="skeleton" style="width:200px;height:40px;border-radius:4px 12px 12px 12px;"></div>';
+      meldinger.appendChild(skeleton);
+      meldinger.scrollTop = meldinger.scrollHeight;
       btn.disabled = true;
+
+      aiProfilHistorikk.push({ role: 'user', content: tekst });
+      if (aiProfilHistorikk.length > 20) aiProfilHistorikk = aiProfilHistorikk.slice(-20);
 
       try {
         const token = await getToken();
-        const res = await fetch('/api/ai/tips', {
+        const res = await fetch('/api/ai/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ messages: aiProfilHistorikk })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.feil || 'AI-tjenesten feilet');
-        innhold.innerHTML = data.tips.map((t, i) =>
-          `<p style="margin:0 0 0.5rem;"><strong>${i + 1}.</strong> ${escHtml(t)}</p>`
-        ).join('');
+        const svar = res.ok ? (data.svar || 'Beklager, prøv igjen.') : 'AI-assistenten er ikke tilgjengelig akkurat nå.';
+
+        aiProfilHistorikk.push({ role: 'assistant', content: svar });
+        if (aiProfilHistorikk.length > 20) aiProfilHistorikk = aiProfilHistorikk.slice(-20);
+
+        skeleton.remove();
+        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">' + escHtml(svar) + '</div></div>';
+        meldinger.scrollTop = meldinger.scrollHeight;
       } catch (err) {
-        innhold.textContent = err.message || 'Noe gikk galt. Prøv igjen.';
+        console.error(err);
+        skeleton.remove();
+        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">Kunne ikke koble til AI-assistenten. Prøv igjen.</div></div>';
       } finally {
         btn.disabled = false;
+        input.focus();
       }
-    });
+    }
 
     // ===== AI: MATCHING =====
     let aiScorer = {};
