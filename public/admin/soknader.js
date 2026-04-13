@@ -221,7 +221,7 @@ import {
     document.addEventListener('click', (e) => {
       const el = e.target.closest('[data-action]');
       if (!el) return;
-      const id = el.dataset.id ? Number(el.dataset.id) : undefined;
+      const id = el.dataset.id || undefined;
       if (el.dataset.action === 'visDetaljer') visDetaljer(id);
       if (el.dataset.action === 'settStatus') {
         e.stopPropagation();
