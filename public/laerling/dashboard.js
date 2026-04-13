@@ -414,6 +414,20 @@ import {
       this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
 
+    function parseAiMarkdown(tekst) {
+      return String(tekst)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/^### (.+)$/gm, '<strong style="display:block;margin:0.5rem 0 0.25rem;">$1</strong>')
+        .replace(/^## (.+)$/gm, '<strong style="display:block;font-size:1rem;margin:0.75rem 0 0.25rem;">$1</strong>')
+        .replace(/^# (.+)$/gm, '<strong style="display:block;font-size:1.05rem;margin:0.75rem 0 0.25rem;">$1</strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '<span style="display:block;padding-left:1rem;">• $1</span>')
+        .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid rgba(0,0,0,0.1);margin:0.5rem 0;">')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+    }
+
     async function sendAiProfilMelding() {
       const input = document.getElementById('ai-profil-chat-input');
       const tekst = input.value.trim();
@@ -451,7 +465,7 @@ import {
         if (aiProfilHistorikk.length > 20) aiProfilHistorikk = aiProfilHistorikk.slice(-20);
 
         skeleton.remove();
-        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">' + escHtml(svar) + '</div></div>';
+        meldinger.innerHTML += '<div class="chat-boble-wrapper dem"><div class="chat-boble">' + parseAiMarkdown(svar) + '</div></div>';
         meldinger.scrollTop = meldinger.scrollHeight;
       } catch (err) {
         console.error(err);

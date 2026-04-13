@@ -878,15 +878,15 @@ function initAiChat() {
 }
 
 function parseMarkdown(tekst) {
-  return tekst
+  return String(tekst)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<strong style="display:block;margin:0.5rem 0 0.25rem;">$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="display:block;font-size:1rem;margin:0.75rem 0 0.25rem;">$1</strong>')
+    .replace(/^# (.+)$/gm, '<strong style="display:block;font-size:1.05rem;margin:0.75rem 0 0.25rem;">$1</strong>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/(^|\n)(- .+)(\n|$)/g, (_, pre, item, post) => {
-      return pre + '<li>' + item.replace(/^- /, '') + '</li>' + post;
-    })
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    .replace(/<\/ul>\s*<ul>/g, '')
+    .replace(/^- (.+)$/gm, '<span style="display:block;padding-left:1rem;">• $1</span>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid rgba(0,0,0,0.1);margin:0.5rem 0;">')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n/g, '<br>');
 }
