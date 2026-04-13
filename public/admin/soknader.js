@@ -53,8 +53,8 @@ import {
     }
 
     function visDetaljer(id) {
-      console.log('visDetaljer kalt med id:', id, 'alleSoknader:', alleSoknader.map(s => s.id));
-      const s = alleSoknader.find(x => x.id === id);
+      console.log('visDetaljer:', { id, typeofId: typeof id, idsIArray: alleSoknader.slice(0,3).map(s => ({ id: s.id, type: typeof s.id })) });
+      const s = alleSoknader.find(x => String(x.id) === String(id));
       if (!s) return;
       document.getElementById('detaljer-tittel').textContent = `${s.laerling_navn || s.laerling_naam || 'Søker'} → ${s.laerplass_tittel || 'Læreplass'}`;
       document.getElementById('detaljer-innhold').innerHTML = `
