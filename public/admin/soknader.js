@@ -53,6 +53,7 @@ import {
     }
 
     function visDetaljer(id) {
+      console.log('visDetaljer kalt med id:', id, 'alleSoknader:', alleSoknader.map(s => s.id));
       const s = alleSoknader.find(x => x.id === id);
       if (!s) return;
       document.getElementById('detaljer-tittel').textContent = `${s.laerling_navn || s.laerling_naam || 'Søker'} → ${s.laerplass_tittel || 'Læreplass'}`;
@@ -220,6 +221,7 @@ import {
 
     document.addEventListener('click', (e) => {
       const el = e.target.closest('[data-action]');
+      console.log('KLIKK:', el?.dataset?.action, el?.dataset?.id, el?.tagName);
       if (!el) return;
       const id = el.dataset.id || undefined;
       if (el.dataset.action === 'visDetaljer') visDetaljer(id);
