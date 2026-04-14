@@ -75,7 +75,7 @@
             <p style="margin:0;color:var(--farge-tekst-sekundaer);" id="profil-sub">—</p>
           </div>
           <div style="display:flex;gap:0.5rem;align-items:center;">
-            <span class="badge badge-godkjent" id="profil-status">Godkjent av OLKV</span>
+            <span class="badge badge-godkjent skjult" id="profil-status">Godkjent av OLKV</span>
             <button class="btn btn-secondary btn-liten edit-owner-only" id="toggle-edit-btn">Rediger profil</button>
           </div>
         </div>
@@ -147,30 +147,22 @@
         </div>
       </section>
 
-      <!-- KONTAKTINFO -->
+      <!-- STED OG STØRRELSE -->
       <section class="kort reveal" style="margin-bottom:1.5rem;">
         <div class="kort-header">
-          <h2 class="kort-tittel">Kontaktinformasjon</h2>
+          <h2 class="kort-tittel">Om arbeidsstedet</h2>
         </div>
-        <div id="kontakt-visning" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Kontaktperson</div><span id="vis-kontaktperson">Ikke oppgitt</span></div>
-          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">E-post</div><span id="vis-kontaktepost">Ikke oppgitt</span></div>
-          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Telefon</div><span id="vis-kontakttelefon">Ikke oppgitt</span></div>
-          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Nettside</div><span id="vis-nettside">Ikke oppgitt</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
           <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sted</div><span id="vis-sted">Ikke oppgitt</span></div>
           <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Antall ansatte</div><span id="vis-antall">Ikke oppgitt</span></div>
         </div>
         <div class="edit-only skjult" style="margin-top:1rem;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-            <div class="form-gruppe"><label class="etikett" for="edit-kontaktperson">Kontaktperson</label><input type="text" id="edit-kontaktperson" class="input" /></div>
-            <div class="form-gruppe"><label class="etikett" for="edit-kontaktepost">E-post</label><input type="email" id="edit-kontaktepost" class="input" /></div>
-            <div class="form-gruppe"><label class="etikett" for="edit-kontakttelefon">Telefon</label><input type="tel" id="edit-kontakttelefon" class="input" /></div>
-            <div class="form-gruppe"><label class="etikett" for="edit-nettside">Nettside</label><input type="url" id="edit-nettside" class="input" placeholder="https://..." /></div>
             <div class="form-gruppe"><label class="etikett" for="edit-sted">Sted</label><input type="text" id="edit-sted" class="input" /></div>
             <div class="form-gruppe"><label class="etikett" for="edit-antall">Antall ansatte</label><input type="text" id="edit-antall" class="input" placeholder="f.eks. 15" /></div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
-            <button class="btn btn-primary btn-liten" data-action="lagreKontakt">Lagre</button>
+            <button class="btn btn-primary btn-liten" data-action="lagreStedOgStorrelse">Lagre</button>
           </div>
         </div>
       </section>

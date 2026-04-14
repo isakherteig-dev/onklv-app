@@ -363,6 +363,7 @@ ruter.get('/bedriftprofil', krevAuth, async (req, res) => {
       navn: userData.navn || null,
       bransje: userData.bransje || null,
       orgNr: userData.orgNr || null,
+      godkjent: userData.godkjent === true,
       ...(profilDoc.exists ? profilDoc.data() : {})
     });
   } catch (err) {
@@ -381,9 +382,7 @@ ruter.patch('/bedriftprofil', krevAuth, async (req, res) => {
   }
 
   const TILLATTE_FELTER = [
-    'beskrivelse', 'hvaViTilbyr', 'sted', 'antallAnsatte',
-    'kontaktperson', 'kontaktEpost', 'kontaktTelefon',
-    'nettside', 'verdier'
+    'beskrivelse', 'hvaViTilbyr', 'sted', 'antallAnsatte', 'verdier'
   ];
 
   const oppdatering = {};

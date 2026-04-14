@@ -49,19 +49,12 @@ function renderProfil() {
   setText('tilbyr-tekst', profil.hvaViTilbyr, 'Ikke oppgitt ennå.');
   document.getElementById('tilbyr-input').value = profil.hvaViTilbyr || '';
 
-  document.getElementById('vis-kontaktperson').textContent = profil.kontaktperson || 'Ikke oppgitt';
-  document.getElementById('vis-kontaktepost').textContent = profil.kontaktEpost || 'Ikke oppgitt';
-  document.getElementById('vis-kontakttelefon').textContent = profil.kontaktTelefon || 'Ikke oppgitt';
-  document.getElementById('vis-nettside').textContent = profil.nettside || 'Ikke oppgitt';
   document.getElementById('vis-sted').textContent = profil.sted || 'Ikke oppgitt';
   document.getElementById('vis-antall').textContent = profil.antallAnsatte || 'Ikke oppgitt';
-
-  document.getElementById('edit-kontaktperson').value = profil.kontaktperson || '';
-  document.getElementById('edit-kontaktepost').value = profil.kontaktEpost || '';
-  document.getElementById('edit-kontakttelefon').value = profil.kontaktTelefon || '';
-  document.getElementById('edit-nettside').value = profil.nettside || '';
   document.getElementById('edit-sted').value = profil.sted || '';
   document.getElementById('edit-antall').value = profil.antallAnsatte || '';
+
+  document.getElementById('profil-status').classList.toggle('skjult', !profil.godkjent);
 
   setText('verdier-tekst', profil.verdier, 'Ikke oppgitt ennå.');
   document.getElementById('verdier-input').value = profil.verdier || '';
@@ -194,12 +187,8 @@ document.addEventListener('click', (e) => {
       renderProfil();
       visMelding('Lagret!', true);
     },
-    lagreKontakt: async () => {
+    lagreStedOgStorrelse: async () => {
       await lagreProfil({
-        kontaktperson: document.getElementById('edit-kontaktperson').value.trim(),
-        kontaktEpost: document.getElementById('edit-kontaktepost').value.trim(),
-        kontaktTelefon: document.getElementById('edit-kontakttelefon').value.trim(),
-        nettside: document.getElementById('edit-nettside').value.trim(),
         sted: document.getElementById('edit-sted').value.trim(),
         antallAnsatte: document.getElementById('edit-antall').value.trim()
       });
