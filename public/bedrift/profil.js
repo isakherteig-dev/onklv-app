@@ -1,4 +1,4 @@
-import { krevInnlogging, loggUt, getToken, initScrollReveal, initVarselBjelle } from '../app.js';
+import { krevInnlogging, loggUt, getToken, initScrollReveal, initVarselBjelle, oppdaterBruker } from '../app.js';
 
 let bruker = null;
 let profil = {};
@@ -41,6 +41,7 @@ initVarselBjelle();
 
 function renderProfil() {
   document.getElementById('profil-navn').textContent = profil.navn || '—';
+  document.getElementById('edit-bedriftsnavn').value = profil.navn || '';
   document.getElementById('profil-sub').textContent = [profil.bransje, profil.sted, profil.orgNr ? 'Org.nr ' + profil.orgNr : ''].filter(Boolean).join(' · ') || '—';
 
   setText('beskrivelse-tekst', profil.beskrivelse, 'Ingen beskrivelse lagt til ennå.');
@@ -209,6 +210,15 @@ document.addEventListener('click', (e) => {
       profil.videoFilnavn = null;
       renderVideo();
       visMelding('Video slettet.', true);
+    },
+    lagreBedriftsnavn: async () => {
+      const nyttNavn = document.getElementById('edit-bedriftsnavn').value.trim();
+      if (!nyttNavn) { visMelding('Bedriftsnavn kan ikke være tomt.', false); return; }
+      await oppdaterBruker({ navn: nyttNavn });
+      profil.navn = nyttNavn;
+      document.getElementById('profil-navn').textContent = nyttNavn;
+      document.getElementById('nav-navn').textContent = nyttNavn;
+      visMelding('Bedriftsnavn oppdatert!', true);
     },
     apneVideoInput: () => document.getElementById('videoInput')?.click()
   };

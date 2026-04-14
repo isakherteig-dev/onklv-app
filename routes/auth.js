@@ -255,6 +255,24 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
 
   try {
     await adminDB.collection('users').doc(req.user.uid).update(oppdateringer);
+
+    // Oppdater bedrift_navn på eksisterende læreplasser når bedrift endrer navn
+    if (req.user.rolle === 'bedrift' && oppdateringer.navn) {
+      try {
+        const plassSnap = await adminDB.collection('laereplasser')
+          .where('bedrift_user_id', '==', req.user.uid)
+          .get();
+        if (!plassSnap.empty) {
+          const batch = adminDB.batch();
+          plassSnap.docs.forEach(d => batch.update(d.ref, { bedrift_navn: oppdateringer.navn }));
+          await batch.commit();
+        }
+      } catch (navnErr) {
+        console.error('Kunne ikke oppdatere bedrift_navn på læreplasser:', navnErr.message);
+        // Ikke blokker responsen — læreplassene oppdateres neste gang
+      }
+    }
+
     res.json({ ok: true });
   } catch (err) {
     console.error('Profiloppdatering feil:', err);

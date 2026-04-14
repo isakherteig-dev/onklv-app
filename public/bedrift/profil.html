@@ -72,6 +72,10 @@
         <div style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap;">
           <div>
             <h1 style="font-size:1.5rem;font-weight:600;" id="profil-navn">—</h1>
+            <div class="edit-only skjult" style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center;">
+              <input type="text" id="edit-bedriftsnavn" class="input" placeholder="Bedriftsnavn" style="max-width:300px;" />
+              <button class="btn btn-primary btn-liten" data-action="lagreBedriftsnavn">Lagre navn</button>
+            </div>
             <p style="margin:0;color:var(--farge-tekst-sekundaer);" id="profil-sub">—</p>
           </div>
           <div style="display:flex;gap:0.5rem;align-items:center;">
