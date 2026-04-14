@@ -349,7 +349,7 @@ import {
       document.getElementById('soknad-varsel').classList.add('skjult');
       if (bruker?.navn) document.getElementById('soknad-navn').value = bruker.navn;
       if (bruker?.telefon) document.getElementById('soknad-telefon').value = bruker.telefon;
-      if (bruker?.utdanningsprogram) document.getElementById('soknad-vg2').value = bruker.utdanningsprogram;
+      if (bruker?.utdanningsprogram) document.getElementById('soknad-vg1').value = bruker.utdanningsprogram;
       document.getElementById('soknad-modal').classList.remove('skjult');
     };
 
