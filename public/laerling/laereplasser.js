@@ -393,6 +393,13 @@ import {
         document.getElementById('soknad-varsel').classList.remove('skjult');
         return;
       }
+      const telefon = document.getElementById('soknad-telefon').value.trim();
+      if (!telefon || !/^\d{8}$/.test(telefon)) {
+        document.getElementById('soknad-varsel').className = 'varsel varsel-feil';
+        document.getElementById('soknad-varsel').textContent = 'Fyll inn et gyldig telefonnummer (8 siffer).';
+        document.getElementById('soknad-varsel').classList.remove('skjult');
+        return;
+      }
       const vedleggFeil = validerCvFil(cvFil);
       if (vedleggFeil) {
         document.getElementById('soknad-varsel').className = 'varsel varsel-feil';

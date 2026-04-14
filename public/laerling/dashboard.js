@@ -251,6 +251,7 @@ import {
     document.getElementById('soknad-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const melding = document.getElementById('soknad-melding').value.trim();
+      const telefonDash = document.getElementById('soknad-telefon-dash')?.value.trim() || '';
       const cvFil = document.getElementById('soknad-cv').files[0] || null;
       if (!melding) return;
 
@@ -277,13 +278,13 @@ import {
             reader.readAsDataURL(cvFil);
           });
           payload = {
-            laerplass_id: valgtLaerplass.id, melding,
+            laerplass_id: valgtLaerplass.id, melding, telefon: telefonDash,
             vedlegg_base64: base64,
             vedlegg_filnavn: cvFil.name,
             vedlegg_type: cvFil.type
           };
         } else {
-          payload = { laerplass_id: valgtLaerplass.id, melding };
+          payload = { laerplass_id: valgtLaerplass.id, melding, telefon: telefonDash };
         }
 
         await sendSoknadFull(payload);

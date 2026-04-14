@@ -166,8 +166,9 @@
             </div>
           </div>
           <div class="form-gruppe">
-            <label class="etikett" for="soknad-telefon">Telefonnummer</label>
-            <input type="tel" id="soknad-telefon" class="input" placeholder="f.eks. 99887766" />
+            <label class="etikett" for="soknad-telefon">Telefonnummer <span style="color:var(--olkv-red);">*</span></label>
+            <input type="tel" id="soknad-telefon" class="input" placeholder="f.eks. 99887766" required pattern="[0-9]{8}" inputmode="numeric" />
+            <div class="hint">8 siffer, norsk mobilnummer</div>
           </div>
           <div class="form-gruppe">
             <label class="etikett" for="soknad-cv">CV</label>
