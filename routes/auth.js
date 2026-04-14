@@ -426,7 +426,7 @@ ruter.get('/bedriftprofil-offentlig/:uid', krevAuth, async (req, res) => {
       verdier: profil.verdier || '',
       hvaViTilbyr: profil.hvaViTilbyr || '',
       nettside: profil.nettside || '',
-      videoUrl: profil.videoUrl || '',
+      videoUrl: profil.videoURL || '',
       sted: profil.sted || brukerData.sted || '',
       bransje: profil.bransje || brukerData.bransje || '',
       laereplasser

@@ -7,96 +7,168 @@
   <title>Bedriftsprofil — OLKV</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .profil-side {
-      max-width: 720px;
+    .bp-side {
+      max-width: 760px;
       margin: 0 auto;
-      padding: 2rem 1.25rem;
+      padding: 0 1.25rem 3rem;
     }
-    .profil-tilbake {
+
+    /* Tilbake-lenke */
+    .bp-tilbake {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.88rem;
+      font-size: 0.875rem;
       color: var(--olkv-gray);
       text-decoration: none;
-      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem 0;
+      max-width: 760px;
+      margin: 0 auto;
       cursor: pointer;
     }
-    .profil-tilbake:hover { color: var(--olkv-dark); }
-    .profil-header { margin-bottom: 2rem; }
-    .profil-header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin: 0 0 0.25rem;
+    .bp-tilbake:hover { color: var(--olkv-dark); }
+
+    /* Header-banner */
+    .bp-banner {
+      background-color: var(--olkv-blue);
+      padding: 2rem 1.25rem;
+      margin-bottom: 1.5rem;
     }
-    .profil-header .meta {
-      font-size: 0.88rem;
-      color: var(--olkv-gray);
+    .bp-banner-innhold {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .bp-banner h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 0.75rem;
+    }
+    .bp-banner-meta {
       display: flex;
-      gap: 1.25rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
+      align-items: center;
     }
-    .profil-seksjon { margin-bottom: 1.75rem; }
-    .profil-seksjon h2 {
-      font-size: 0.82rem;
+    .bp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .bp-badge-laereplasser {
+      background-color: #fff;
+      color: var(--olkv-blue);
+    }
+
+    /* Seksjoner */
+    .bp-seksjoner {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .bp-kort {
+      background: var(--olkv-white);
+      border: 1px solid var(--olkv-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--skygge);
+    }
+
+    .bp-seksjon-tittel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
       font-weight: 600;
       color: var(--olkv-gray);
-      text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      margin: 0 0 0.75rem;
     }
-    .profil-seksjon p {
-      font-size: 0.95rem;
+    .bp-seksjon-tittel svg {
+      color: var(--olkv-gray);
+      flex-shrink: 0;
+    }
+
+    .bp-tekst {
+      font-size: 0.9375rem;
       line-height: 1.7;
       color: var(--olkv-dark);
       margin: 0;
       white-space: pre-line;
     }
-    .profil-video {
+
+    /* Video */
+    .bp-video {
       width: 100%;
       max-height: 400px;
-      border-radius: var(--radius);
+      border-radius: calc(var(--radius) - 2px);
       background: var(--olkv-gray-light);
+      display: block;
     }
-    .profil-plasser {
+
+    /* Nettside */
+    .bp-nettside {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      color: var(--olkv-blue-light);
+    }
+    .bp-nettside:hover { text-decoration: underline; }
+
+    /* Læreplasser */
+    .bp-plasser {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.625rem;
     }
-    .profil-plass-kort {
+    .bp-plass-rad {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
       background: var(--olkv-gray-light);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.875rem;
       flex-wrap: wrap;
       gap: 0.5rem;
-    }
-    .profil-plass-kortlenke {
-      color: var(--olkv-blue-light);
       text-decoration: none;
-      font-weight: 500;
+      transition: var(--overgang);
     }
-    .profil-plass-kortlenke:hover { text-decoration: underline; }
-    .profil-plass-frist {
+    .bp-plass-rad:hover {
+      background: var(--color-bg-hover);
+      box-shadow: var(--skygge-hover);
+    }
+    .bp-plass-tittel {
+      font-weight: 500;
+      color: var(--olkv-blue-light);
+    }
+    .bp-plass-meta {
       font-size: 0.8rem;
       color: var(--olkv-gray);
     }
-    .profil-laster {
+
+    /* Laster */
+    .bp-laster {
       text-align: center;
       padding: 4rem 1rem;
       color: var(--olkv-gray);
-    }
-    .profil-nettside {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--olkv-blue-light);
       font-size: 0.9rem;
     }
-    .profil-nettside:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .bp-banner { padding: 1.5rem 1rem; }
+      .bp-banner h1 { font-size: 1.25rem; }
+      .bp-side { padding: 0 1rem 2rem; }
+    }
   </style>
 </head>
 <body>
@@ -109,8 +181,11 @@
     </div>
   </nav>
 
-  <main class="profil-side" id="profil-innhold">
-    <div class="profil-laster" id="profil-laster">Laster bedriftsprofil…</div>
+  <div id="bp-tilbake-wrapper"></div>
+  <div id="bp-banner-wrapper"></div>
+
+  <main class="bp-side" id="profil-innhold">
+    <div class="bp-laster" id="profil-laster">Laster bedriftsprofil…</div>
   </main>
 
   <script type="module" src="/bedriftsprofil.js"></script>
