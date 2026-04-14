@@ -103,12 +103,21 @@ if (params.get('epost')) {
 
 if (fraGoogle) {
   document.getElementById('passord-seksjon').classList.add('skjult');
-  document.getElementById('reg-btn').classList.add('skjult');
+  document.getElementById('google-btn').classList.add('skjult');
+  document.getElementById('eller-skillelinje').classList.add('skjult');
+  document.getElementById('reg-btn').textContent = 'Fullfør registrering →';
+
+  googleResultat = {
+    uid: params.get('uid'),
+    epost: params.get('epost'),
+    navn: params.get('navn') || '',
+    token: null
+  };
 
   const banner = document.createElement('div');
   banner.className = 'varsel';
   banner.style.cssText = 'margin-bottom:1.25rem;background:#eff6ff;border-color:var(--olkv-blue-light);color:var(--olkv-dark);font-size:0.9rem;';
-  banner.innerHTML = '<strong>Google-konto koblet!</strong> Velg rolle, fyll ut feltene nedenfor og klikk <strong>«Registrer med Google»</strong> for å fullføre registreringen.';
+  banner.innerHTML = '<strong>Google-konto koblet!</strong> Fyll ut feltene nedenfor og klikk <strong>«Fullfør registrering»</strong> for å fullføre.';
   document.getElementById('reg-form').insertBefore(banner, document.getElementById('reg-form').firstChild);
 }
 
@@ -202,6 +211,16 @@ document.getElementById('reg-form').addEventListener('submit', async (e) => {
     btn.textContent = 'Fullfører registrering…';
 
     try {
+      if (!googleResultat.token) {
+        if (auth.currentUser) {
+          googleResultat.token = await auth.currentUser.getIdToken();
+        } else {
+          visFeilmelding('Google-sesjonen er utløpt. Prøv å logge inn på nytt.');
+          btn.disabled = false;
+          btn.textContent = 'Fullfør registrering →';
+          return;
+        }
+      }
       const data = await registrer(googleResultat.uid, googleResultat.epost, googleResultat.navn, googleResultat.token);
       visBekreftelse(data.venterGodkjenning);
     } catch (err) {
