@@ -1,6 +1,6 @@
 import {
       krevInnlogging, loggUt, hentMineAnnonser, lagreAnnonseUtvidet, oppdaterAnnonse, slettAnnonse,
-      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml
+      formaterDato, initScrollReveal, fagomraader, initVarselBjelle, escHtml, getToken
     } from '../app.js';
 
     let bruker = null;
@@ -137,6 +137,43 @@ import {
     });
     document.getElementById('annonse-modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) lukkAnnonseModal();
+    });
+
+    document.getElementById('ai-generer-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('ai-generer-btn');
+      const fagomraade = document.getElementById('a-fagomraade').value;
+      const sted = document.getElementById('a-sted').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = 'Genererer…';
+
+      try {
+        const token = await getToken();
+        const res = await fetch('/api/ai/generer-annonse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ fagomraade, sted })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil || 'Kunne ikke generere annonse');
+
+        if (data.tittel) document.getElementById('a-tittel').value = data.tittel;
+        if (data.beskrivelse) document.getElementById('a-beskrivelse').value = data.beskrivelse;
+        if (data.krav) document.getElementById('a-krav').value = data.krav;
+        if (data.fagomraade && !fagomraade) document.getElementById('a-fagomraade').value = data.fagomraade;
+        if (data.sted && !sted) document.getElementById('a-sted').value = data.sted;
+
+        document.getElementById('annonse-varsel').className = 'varsel varsel-info';
+        document.getElementById('annonse-varsel').textContent = 'AI har fylt ut forslaget — du kan redigere alt før du publiserer.';
+        document.getElementById('annonse-varsel').classList.remove('skjult');
+      } catch (err) {
+        document.getElementById('annonse-varsel').className = 'varsel varsel-feil';
+        document.getElementById('annonse-varsel').textContent = err.message;
+        document.getElementById('annonse-varsel').classList.remove('skjult');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg> Generer med AI';
+      }
     });
 
     document.getElementById('annonse-form').addEventListener('submit', async (e) => {

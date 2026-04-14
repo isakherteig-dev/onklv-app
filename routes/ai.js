@@ -262,4 +262,50 @@ VG1: ${soknadData.vg1 || '—'} VG2: ${soknadData.vg2 || '—'}`;
   }
 });
 
+/**
+ * POST /api/ai/generer-annonse
+ * Genererer en læreplassannonse basert på bedriftens profil.
+ */
+ruter.post('/generer-annonse', krevAuth, aiLimit, krevRolle('bedrift'), async (req, res) => {
+  const { fagomraade, sted } = req.body;
+
+  if (!anthropicApiKey) {
+    return res.status(503).json({ feil: 'AI-tjenesten er ikke satt opp ennå' });
+  }
+
+  try {
+    const client = new Anthropic({ apiKey: anthropicApiKey });
+
+    const systemPrompt = `Du er en assistent for norske lærebedrifter som skal skrive læreplassannonser.
+Generer en profesjonell og engasjerende læreplassannonse.
+Du returnerer KUN gyldig JSON, ingen forklaring, ingen markdown, ingen kodeblokker.
+Format: { "tittel": "string", "beskrivelse": "string", "krav": "string", "fagomraade": "string", "sted": "string" }
+Skriv på norsk bokmål. Vær konkret og realistisk. Beskrivelsen bør være 3-5 setninger. Krav bør liste 2-4 punkter separert med punktum.`;
+
+    const userMsg = `Bedrift: ${req.user.navn || 'Ukjent bedrift'}
+Bransje: ${req.user.bransje || 'Ikke oppgitt'}
+Fagområde ønsket: ${fagomraade || 'Ikke valgt'}
+Sted: ${sted || 'Ikke oppgitt'}
+
+Generer en læreplassannonse for denne bedriften.`;
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMsg }]
+    });
+
+    const raw = response.content[0].text;
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (err) {
+    console.error('AI generer-annonse feil:', err.message);
+    if (err instanceof SyntaxError) {
+      return res.status(500).json({ feil: 'AI returnerte ugyldig svar. Prøv igjen.' });
+    }
+    res.status(500).json({ feil: 'Kunne ikke generere annonse. Prøv igjen.' });
+  }
+});
+
 export default ruter;
