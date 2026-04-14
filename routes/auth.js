@@ -391,6 +391,53 @@ ruter.get('/bedriftprofil', krevAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/auth/bedriftprofil-offentlig/:uid
+ * Offentlig bedriftsprofil — tilgjengelig for alle innloggede brukere.
+ */
+ruter.get('/bedriftprofil-offentlig/:uid', krevAuth, async (req, res) => {
+  try {
+    const bedriftUid = req.params.uid;
+
+    const brukerDoc = await adminDB.collection('users').doc(bedriftUid).get();
+    if (!brukerDoc.exists || brukerDoc.data().rolle !== 'bedrift') {
+      return res.status(404).json({ feil: 'Bedrift ikke funnet' });
+    }
+    const brukerData = brukerDoc.data();
+
+    const profilDoc = await adminDB.collection('users').doc(bedriftUid)
+      .collection('bedriftProfil').doc('main').get();
+    const profil = profilDoc.exists ? profilDoc.data() : {};
+
+    const plassSnap = await adminDB.collection('laereplasser')
+      .where('bedrift_user_id', '==', bedriftUid)
+      .where('aktiv', '==', true)
+      .get();
+    const laereplasser = plassSnap.docs.map(d => ({
+      id: d.id,
+      tittel: d.data().tittel,
+      sted: d.data().sted,
+      frist: d.data().frist,
+      antall_plasser: d.data().antall_plasser
+    }));
+
+    res.json({
+      navn: brukerData.navn || '—',
+      beskrivelse: profil.beskrivelse || '',
+      verdier: profil.verdier || '',
+      hvaViTilbyr: profil.hvaViTilbyr || '',
+      nettside: profil.nettside || '',
+      videoUrl: profil.videoUrl || '',
+      sted: profil.sted || brukerData.sted || '',
+      bransje: profil.bransje || brukerData.bransje || '',
+      laereplasser
+    });
+  } catch (err) {
+    console.error('Feil ved henting av offentlig bedriftsprofil:', err);
+    res.status(500).json({ feil: 'Serverfeil' });
+  }
+});
+
+/**
  * PATCH /api/auth/bedriftprofil
  * Lagrer bedriftProfil/main for innlogget bedrift.
  */

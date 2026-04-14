@@ -285,7 +285,7 @@ import {
             <div class="kort-footer">
               <div></div>
               <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-                ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;" data-no-detail="true">Se bedrift</a>` : ''}
+                ${p.bedrift_user_id ? `<a href="/bedriftsprofil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;" data-no-detail="true">Se bedrift</a>` : ''}
                 ${harSokt
                   ? `<span class="badge badge-godkjent">Allerede søkt</span>`
                   : utlopt
@@ -353,7 +353,7 @@ import {
 
           <!-- Handlingsknapper -->
           <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
-            ${plass.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(plass.bedrift_user_id)}" class="btn btn-secondary btn-liten" style="flex:1;text-align:center;">
+            ${plass.bedrift_user_id ? `<a href="/bedriftsprofil.html?uid=${encodeURIComponent(plass.bedrift_user_id)}" class="btn btn-secondary btn-liten" style="flex:1;text-align:center;">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg>
               Se bedriftsprofil
             </a>` : ''}

@@ -120,7 +120,7 @@ import {
             <span>${escHtml(p.bransje)}</span>
           </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-            ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;">Se bedrift</a>` : ''}
+            ${p.bedrift_user_id ? `<a href="/bedriftsprofil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;">Se bedrift</a>` : ''}
             <button
               class="btn btn-primary btn-liten"
               data-action="åpneSøknadModal"
