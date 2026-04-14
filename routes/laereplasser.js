@@ -25,7 +25,7 @@ async function hentSoknadsantall(plassIds) {
   return antallMap;
 }
 
-function stripKontaktinfo({ kontakt_epost, kontaktperson, kontakt_telefon, ...rest }) {
+function stripKontaktinfo({ kontakt_telefon, ...rest }) {
   return rest;
 }
 

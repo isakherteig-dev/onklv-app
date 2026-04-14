@@ -119,14 +119,17 @@ import {
             <span>Frist: ${formaterDato(p.frist)}</span>
             <span>${escHtml(p.bransje)}</span>
           </div>
-          <button
-            class="btn btn-primary btn-liten"
-            data-action="åpneSøknadModal"
-            data-id="${escHtml(String(p.id))}"
-            data-tittel="${escHtml(p.tittel)}"
-            data-bedrift="${escHtml(p.bedrift_navn)}"
-            style="width: 100%;"
-          >Søk nå →</button>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;">Se bedrift</a>` : ''}
+            <button
+              class="btn btn-primary btn-liten"
+              data-action="åpneSøknadModal"
+              data-id="${escHtml(String(p.id))}"
+              data-tittel="${escHtml(p.tittel)}"
+              data-bedrift="${escHtml(p.bedrift_navn)}"
+              style="flex:1;"
+            >Søk nå →</button>
+          </div>
         </div>`;
       }).join('');
     }

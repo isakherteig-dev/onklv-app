@@ -269,7 +269,7 @@ import {
         const fagtekst = hentFagtekst(p);
         const fagBadge = fagtekst ? `<span class="badge badge-blaa">${escHtml(fagtekst)}</span>` : '';
         return `
-          <div class="kort laereplass-kort${animer ? ' kort-filter-inn' : ''}${utlopt ? ' opacity-50' : ''}">
+          <div class="kort laereplass-kort${animer ? ' kort-filter-inn' : ''}${utlopt ? ' opacity-50' : ''}" data-action="visDetaljer" data-plass-id="${escHtml(plassId)}" style="cursor:pointer;">
             <div class="kort-header">
               <div>
                 <div class="kort-tittel">${escHtml(p.tittel)}</div>
@@ -285,7 +285,7 @@ import {
             <div class="kort-footer">
               <div></div>
               <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-                ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten">Se bedrift</a>` : ''}
+                ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten" style="font-size:0.78rem;" data-no-detail="true">Se bedrift</a>` : ''}
                 ${harSokt
                   ? `<span class="badge badge-godkjent">Allerede søkt</span>`
                   : utlopt
@@ -297,6 +297,84 @@ import {
           </div>`;
       }).join('');
     }
+
+    async function visDetaljer(plassId) {
+      const plass = allePlasser.find(p => String(p.id) === String(plassId));
+      if (!plass) return;
+
+      const harSokt = minneSoknaderIds.has(String(plassId));
+      const dager = dagertilFrist(plass.frist);
+      const utlopt = dager !== null && dager < 0;
+      const fagtekst = hentFagtekst(plass);
+
+      document.getElementById('detaljer-tittel').textContent = plass.tittel || 'Læreplassdetaljer';
+      document.getElementById('detaljer-innhold').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+          <!-- Bedrift + badge -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.75rem;">
+            <div>
+              <div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Bedrift</div>
+              <strong style="font-size:1.1rem;">${escHtml(plass.bedrift_navn || '—')}</strong>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;">
+              ${fagtekst ? `<span class="badge badge-blaa">${escHtml(fagtekst)}</span>` : ''}
+              ${fristBadge(plass.frist)}
+            </div>
+          </div>
+
+          <!-- Nøkkelinfo -->
+          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.88rem;color:var(--olkv-gray);">
+            ${plass.sted ? `<span style="display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>${escHtml(plass.sted)}</span>` : ''}
+            <span>${plass.antall_plasser || 1} plass${(plass.antall_plasser || 1) !== 1 ? 'er' : ''}</span>
+            ${plass.frist ? `<span>Frist: ${formaterDato(plass.frist)}</span>` : ''}
+            ${plass.start_dato ? `<span>Oppstart: ${formaterDato(plass.start_dato)}</span>` : ''}
+          </div>
+
+          <!-- Beskrivelse -->
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);margin-bottom:6px;">Om læreplassen</div>
+            <p style="font-size:0.95rem;line-height:1.7;color:var(--olkv-dark);margin:0;white-space:pre-line;">${escHtml(plass.beskrivelse || 'Ingen beskrivelse.')}</p>
+          </div>
+
+          <!-- Krav -->
+          ${plass.krav ? `
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;color:var(--olkv-gray);margin-bottom:6px;">Krav til søker</div>
+            <p style="font-size:0.93rem;line-height:1.7;color:var(--olkv-dark);margin:0;background:var(--olkv-gray-light);padding:0.75rem 1rem;border-radius:var(--radius);white-space:pre-line;">${escHtml(plass.krav)}</p>
+          </div>` : ''}
+
+          <!-- Kontaktinfo (hvis tilgjengelig) -->
+          ${plass.kontaktperson || plass.kontakt_epost ? `
+          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.88rem;">
+            ${plass.kontaktperson ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Kontaktperson</div><span>${escHtml(plass.kontaktperson)}</span></div>` : ''}
+            ${plass.kontakt_epost ? `<div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">E-post</div><a href="mailto:${escHtml(plass.kontakt_epost)}" style="color:var(--olkv-blue-light);">${escHtml(plass.kontakt_epost)}</a></div>` : ''}
+          </div>` : ''}
+
+          <!-- Handlingsknapper -->
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-top:0.75rem;border-top:1px solid var(--farge-kant);">
+            ${plass.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(plass.bedrift_user_id)}" class="btn btn-secondary btn-liten" style="flex:1;text-align:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg>
+              Se bedriftsprofil
+            </a>` : ''}
+            ${harSokt
+              ? `<span class="badge badge-godkjent" style="flex:1;text-align:center;padding:0.6rem;">Allerede søkt</span>`
+              : utlopt
+                ? `<span class="badge badge-trukket" style="flex:1;text-align:center;padding:0.6rem;">Frist utløpt</span>`
+                : `<button class="btn btn-primary btn-liten sok-naa-btn" data-id="${escHtml(String(plass.id))}" data-tittel="${escHtml(plass.tittel || '')}" style="flex:1;">Søk nå →</button>`
+            }
+          </div>
+        </div>`;
+
+      document.getElementById('detaljer-modal').classList.remove('skjult');
+    }
+
+    document.getElementById('detaljer-lukk').addEventListener('click', () => {
+      document.getElementById('detaljer-modal').classList.add('skjult');
+    });
+    document.getElementById('detaljer-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('detaljer-modal').classList.add('skjult');
+    });
 
     function haandterSokFraUrl() {
       const sokId = new URLSearchParams(window.location.search).get('sok');
@@ -530,8 +608,22 @@ import {
     document.getElementById('lukk-ai-match-btn').addEventListener('click', lukkAiMatch);
 
     document.addEventListener('click', (e) => {
+      // "Se bedrift"-lenker og andre <a>-tags skal IKKE trigge detaljer-modal
+      if (e.target.closest('[data-no-detail]') || e.target.closest('a')) return;
+
       const sokBtn = e.target.closest('.sok-naa-btn');
-      if (sokBtn) apneSoknadModal(sokBtn.dataset.id, sokBtn.dataset.tittel);
+      if (sokBtn) {
+        e.stopPropagation();
+        apneSoknadModal(sokBtn.dataset.id, sokBtn.dataset.tittel);
+        document.getElementById('detaljer-modal')?.classList.add('skjult');
+        return;
+      }
+
+      const detaljKort = e.target.closest('[data-action="visDetaljer"]');
+      if (detaljKort) {
+        visDetaljer(detaljKort.dataset.plassId);
+        return;
+      }
     });
 
     initScrollReveal();
