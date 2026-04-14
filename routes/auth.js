@@ -245,6 +245,9 @@ ruter.patch('/profil', krevAuth, async (req, res) => {
     if (utdanningsprogram) oppdateringer.utdanningsprogram = utdanningsprogram;
     if (skole)             oppdateringer.skole = skole;
   }
+  if (req.user.rolle === 'bedrift') {
+    if (req.body.bedriftBeskrivelse !== undefined) oppdateringer.bedriftBeskrivelse = req.body.bedriftBeskrivelse;
+  }
 
   if (Object.keys(oppdateringer).length === 0) {
     return res.status(400).json({ feil: 'Ingen felt å oppdatere' });
@@ -334,6 +337,72 @@ ruter.get('/profildata', krevAuth, async (req, res) => {
   } catch (err) {
     console.error('Profildata henting feil:', err);
     res.status(500).json({ feil: 'Kunne ikke hente profildata' });
+  }
+});
+
+/**
+ * GET /api/auth/bedriftprofil
+ * Henter bedriftProfil/main for en bedrift.
+ * Alle innloggede kan lese (lærlinger skal se bedriftsprofiler).
+ */
+ruter.get('/bedriftprofil', krevAuth, async (req, res) => {
+  const targetUid = req.query.uid;
+  const uid = targetUid || req.user.uid;
+
+  try {
+    const userDoc = await adminDB.collection('users').doc(uid).get();
+    if (!userDoc.exists || userDoc.data().rolle !== 'bedrift') {
+      return res.status(404).json({ feil: 'Bedrift ikke funnet' });
+    }
+
+    const profilDoc = await adminDB.collection('users').doc(uid)
+      .collection('bedriftProfil').doc('main').get();
+
+    const userData = userDoc.data();
+    res.json({
+      navn: userData.navn || null,
+      bransje: userData.bransje || null,
+      orgNr: userData.orgNr || null,
+      ...(profilDoc.exists ? profilDoc.data() : {})
+    });
+  } catch (err) {
+    console.error('Bedriftprofil henting feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke hente bedriftsprofil' });
+  }
+});
+
+/**
+ * PATCH /api/auth/bedriftprofil
+ * Lagrer bedriftProfil/main for innlogget bedrift.
+ */
+ruter.patch('/bedriftprofil', krevAuth, async (req, res) => {
+  if (req.user.rolle !== 'bedrift') {
+    return res.status(403).json({ feil: 'Kun bedrifter kan oppdatere bedriftsprofil' });
+  }
+
+  const TILLATTE_FELTER = [
+    'beskrivelse', 'hvaViTilbyr', 'sted', 'antallAnsatte',
+    'kontaktperson', 'kontaktEpost', 'kontaktTelefon',
+    'nettside', 'verdier'
+  ];
+
+  const oppdatering = {};
+  for (const felt of TILLATTE_FELTER) {
+    if (req.body[felt] !== undefined) oppdatering[felt] = req.body[felt];
+  }
+
+  if (Object.keys(oppdatering).length === 0) {
+    return res.status(400).json({ feil: 'Ingen gyldige felt å oppdatere' });
+  }
+
+  try {
+    const ref = adminDB.collection('users').doc(req.user.uid)
+      .collection('bedriftProfil').doc('main');
+    await ref.set(oppdatering, { merge: true });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Bedriftprofil oppdatering feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke lagre bedriftsprofil' });
   }
 });
 

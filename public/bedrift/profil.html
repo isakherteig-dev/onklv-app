@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bedriftsprofil — OLKV</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-innhold">
+      <a href="/" class="nav-logo">
+        <span class="logo-ol">OL</span><span class="logo-kv">KV</span>
+      </a>
+      <div class="nav-lenker" style="gap:0.5rem;align-items:center;">
+        <span id="nav-navn" style="font-size:0.9rem;color:var(--farge-tekst-sekundaer);"></span>
+        <div class="varsel-dropdown-wrapper">
+          <button class="varsel-bjelle" id="varsel-bjelle" aria-label="Varsler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="varsel-bjelle-badge" id="varsel-count" style="display:none;"></span>
+          </button>
+          <div class="varsel-dropdown skjult" id="varsel-dropdown">
+            <div class="varsel-dropdown-header">Varsler</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-liten" id="logg-ut-btn">Logg ut</button>
+      </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Meny">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobil-meny-overlay skjult" id="meny-overlay"></div>
+  <div class="mobil-meny skjult" id="slide-meny">
+    <div class="mobil-meny-topp">
+      <span class="nav-logo"><span class="logo-ol">OL</span><span class="logo-kv">KV</span></span>
+      <button class="mobil-meny-lukk" id="meny-lukk"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <a href="/bedrift/dashboard.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Dashbord</a>
+    <a href="/bedrift/laereplasser.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Mine læreplasser</a>
+    <a href="/bedrift/soknader.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Innkomne søknader</a>
+    <a href="/bedrift/profil.html" class="mobil-meny-lenke"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg> Bedriftsprofil</a>
+    <button class="mobil-meny-lenke logg-ut" id="meny-logg-ut"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logg ut</button>
+  </div>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-seksjon-tittel">Meny</div>
+        <a href="/bedrift/dashboard.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashbord
+        </a>
+        <a href="/bedrift/laereplasser.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Mine læreplasser
+        </a>
+        <a href="/bedrift/soknader.html" class="sidebar-lenke">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Innkomne søknader
+        </a>
+        <a href="/bedrift/profil.html" class="sidebar-lenke aktiv">
+          <span class="sidebar-ikon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg></span> Bedriftsprofil
+        </a>
+      </nav>
+    </aside>
+
+    <main class="hoveddel page-content">
+
+      <!-- PROFILHODE -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap;">
+          <div>
+            <h1 style="font-size:1.5rem;font-weight:600;" id="profil-navn">—</h1>
+            <p style="margin:0;color:var(--farge-tekst-sekundaer);" id="profil-sub">—</p>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="badge badge-godkjent" id="profil-status">Godkjent av OLKV</span>
+            <button class="btn btn-secondary btn-liten edit-owner-only" id="toggle-edit-btn">Rediger profil</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- OM BEDRIFTEN -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;">
+        <div class="kort-header">
+          <h2 class="kort-tittel">Om bedriften</h2>
+        </div>
+        <div id="beskrivelse-visning">
+          <p id="beskrivelse-tekst" style="font-size:0.95rem;line-height:1.7;">Ingen beskrivelse lagt til ennå.</p>
+        </div>
+        <div class="edit-only skjult" style="margin-top:1rem;">
+          <textarea id="beskrivelse-input" rows="5" placeholder="Fortell om bedriften — hva dere gjør, historie, kultur..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+            <button class="btn btn-primary btn-liten" data-action="lagreBeskrivelse">Lagre</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HVA VI TILBYR LÆRLINGER -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;">
+        <div class="kort-header">
+          <h2 class="kort-tittel">Hva vi tilbyr lærlinger</h2>
+        </div>
+        <div id="tilbyr-visning">
+          <p id="tilbyr-tekst" style="font-size:0.95rem;line-height:1.7;">Ikke oppgitt ennå.</p>
+        </div>
+        <div class="edit-only skjult" style="margin-top:1rem;">
+          <textarea id="tilbyr-input" rows="4" placeholder="F.eks. faglig oppfølging, mentorordning, mulighet for fast jobb etter fagbrev..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+            <button class="btn btn-primary btn-liten" data-action="lagreTilbyr">Lagre</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLI KJENT MED BEDRIFTEN — VIDEO -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;" id="video-seksjon">
+        <div class="kort-header">
+          <h2 class="kort-tittel">Bli kjent med oss</h2>
+          <button id="btn-slett-video" class="btn btn-ghost btn-liten edit-only skjult" data-action="slettVideo" style="color:#dc2626;">Slett video</button>
+        </div>
+
+        <div id="video-spiller-wrapper" class="skjult">
+          <video id="video-spiller" controls preload="metadata" style="width:100%;border-radius:var(--radius);background:#000;max-height:480px;"></video>
+        </div>
+
+        <div id="video-tom" class="skjult" style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <p style="margin:0;font-weight:600;color:var(--olkv-dark);">Ingen video lagt til ennå</p>
+        </div>
+
+        <div id="video-opplasting" class="edit-only skjult">
+          <div id="video-dra-slipp" data-action="apneVideoInput" style="aspect-ratio:16/9;background:var(--olkv-gray-light);border:2px dashed #d1d5db;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            <p style="margin:0;font-weight:600;">Klikk for å laste opp video</p>
+            <p style="margin:0;font-size:0.8rem;color:var(--olkv-gray);">MP4, WebM eller MOV — maks 100 MB</p>
+            <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" style="display:none;" />
+          </div>
+        </div>
+
+        <div id="video-progress" class="skjult" style="padding:1.25rem 0 0.5rem;">
+          <p id="video-progress-tekst" style="margin:0 0 0.5rem;font-weight:600;">Laster opp...</p>
+          <div style="background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden;">
+            <div id="video-progress-bar" style="height:100%;width:0%;background:var(--olkv-blue);border-radius:999px;transition:width 0.15s;"></div>
+          </div>
+          <p id="video-progress-prosent" style="margin:0.4rem 0 0;font-size:0.8rem;color:var(--olkv-gray);">0%</p>
+        </div>
+      </section>
+
+      <!-- KONTAKTINFO -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;">
+        <div class="kort-header">
+          <h2 class="kort-tittel">Kontaktinformasjon</h2>
+        </div>
+        <div id="kontakt-visning" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Kontaktperson</div><span id="vis-kontaktperson">Ikke oppgitt</span></div>
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">E-post</div><span id="vis-kontaktepost">Ikke oppgitt</span></div>
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Telefon</div><span id="vis-kontakttelefon">Ikke oppgitt</span></div>
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Nettside</div><span id="vis-nettside">Ikke oppgitt</span></div>
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Sted</div><span id="vis-sted">Ikke oppgitt</span></div>
+          <div><div style="font-size:0.8rem;color:var(--olkv-gray);margin-bottom:2px;">Antall ansatte</div><span id="vis-antall">Ikke oppgitt</span></div>
+        </div>
+        <div class="edit-only skjult" style="margin-top:1rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+            <div class="form-gruppe"><label class="etikett" for="edit-kontaktperson">Kontaktperson</label><input type="text" id="edit-kontaktperson" class="input" /></div>
+            <div class="form-gruppe"><label class="etikett" for="edit-kontaktepost">E-post</label><input type="email" id="edit-kontaktepost" class="input" /></div>
+            <div class="form-gruppe"><label class="etikett" for="edit-kontakttelefon">Telefon</label><input type="tel" id="edit-kontakttelefon" class="input" /></div>
+            <div class="form-gruppe"><label class="etikett" for="edit-nettside">Nettside</label><input type="url" id="edit-nettside" class="input" placeholder="https://..." /></div>
+            <div class="form-gruppe"><label class="etikett" for="edit-sted">Sted</label><input type="text" id="edit-sted" class="input" /></div>
+            <div class="form-gruppe"><label class="etikett" for="edit-antall">Antall ansatte</label><input type="text" id="edit-antall" class="input" placeholder="f.eks. 15" /></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+            <button class="btn btn-primary btn-liten" data-action="lagreKontakt">Lagre</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VÅRE VERDIER -->
+      <section class="kort reveal" style="margin-bottom:1.5rem;">
+        <div class="kort-header">
+          <h2 class="kort-tittel">Våre verdier</h2>
+        </div>
+        <p id="verdier-tekst" style="font-size:0.95rem;line-height:1.7;">Ikke oppgitt ennå.</p>
+        <div class="edit-only skjult" style="margin-top:1rem;">
+          <textarea id="verdier-input" rows="3" placeholder="F.eks. sikkerhet, faglig stolthet, godt arbeidsmiljø..." style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;font-size:0.9rem;"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+            <button class="btn btn-primary btn-liten" data-action="lagreVerdier">Lagre</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="/bedrift/profil.js"></script>
+  <script src="/cookie-banner.js" defer></script>
+  <nav class="bunn-nav" id="bunn-nav">
+    <a href="/bedrift/dashboard.html" class="bunn-nav-lenke" data-side="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashbord</span>
+    </a>
+    <a href="/bedrift/laereplasser.html" class="bunn-nav-lenke" data-side="laereplasser">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>Læreplasser</span>
+    </a>
+    <a href="/bedrift/soknader.html" class="bunn-nav-lenke" data-side="soknader">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Søknader</span>
+    </a>
+    <a href="/bedrift/profil.html" class="bunn-nav-lenke" data-side="profil">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="2" height="2"/></svg>
+      <span>Profil</span>
+    </a>
+  </nav>
+  <script type="module" src="/bedrift/bunn-nav.js"></script>
+</body>
+</html>

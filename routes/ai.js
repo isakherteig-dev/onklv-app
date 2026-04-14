@@ -274,20 +274,34 @@ ruter.post('/generer-annonse', krevAuth, aiLimit, krevRolle('bedrift'), async (r
   }
 
   try {
+    // Hent bedriftsprofil for rik kontekst
+    const profilDoc = await adminDB.collection('users').doc(req.user.uid)
+      .collection('bedriftProfil').doc('main').get();
+    const profil = profilDoc.exists ? profilDoc.data() : {};
+
     const client = new Anthropic({ apiKey: anthropicApiKey });
 
     const systemPrompt = `Du er en assistent for norske lærebedrifter som skal skrive læreplassannonser.
-Generer en profesjonell og engasjerende læreplassannonse.
+Bruk bedriftens profil aktivt — referer til bedriftsbeskrivelse, verdier, hva de tilbyr og sted.
 Du returnerer KUN gyldig JSON, ingen forklaring, ingen markdown, ingen kodeblokker.
 Format: { "tittel": "string", "beskrivelse": "string", "krav": "string", "fagomraade": "string", "sted": "string" }
-Skriv på norsk bokmål. Vær konkret og realistisk. Beskrivelsen bør være 3-5 setninger. Krav bør liste 2-4 punkter separert med punktum.`;
+Skriv på norsk bokmål. Vær konkret og engasjerende. Beskrivelsen bør være 3-5 setninger som får lærlingen til å bli motivert. Krav bør liste 2-4 punkter separert med punktum.`;
 
-    const userMsg = `Bedrift: ${req.user.navn || 'Ukjent bedrift'}
-Bransje: ${req.user.bransje || 'Ikke oppgitt'}
-Fagområde ønsket: ${fagomraade || 'Ikke valgt'}
-Sted: ${sted || 'Ikke oppgitt'}
+    const userMsg = `Bedriftsprofil:
+- Bedriftsnavn: ${req.user.navn || 'Ukjent bedrift'}
+- Bransje: ${req.user.bransje || 'Ikke oppgitt'}
+- Om bedriften: ${profil.beskrivelse || 'Ingen beskrivelse'}
+- Hva vi tilbyr lærlinger: ${profil.hvaViTilbyr || 'Ikke oppgitt'}
+- Våre verdier: ${profil.verdier || 'Ikke oppgitt'}
+- Sted: ${profil.sted || sted || 'Ikke oppgitt'}
+- Kontaktperson: ${profil.kontaktperson || 'Ikke oppgitt'}
+- Antall ansatte: ${profil.antallAnsatte || 'Ikke oppgitt'}
+- Nettside: ${profil.nettside || 'Ikke oppgitt'}
 
-Generer en læreplassannonse for denne bedriften.`;
+Ønsket fagområde: ${fagomraade || 'Ikke valgt'}
+Ønsket sted: ${sted || profil.sted || 'Ikke oppgitt'}
+
+Generer en læreplassannonse som reflekterer denne bedriftens profil og kultur.`;
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',

@@ -4,7 +4,8 @@ const sti = window.location.pathname;
       if (
         (side === 'dashboard' && sti.includes('dashboard')) ||
         (side === 'laereplasser' && sti.includes('laereplasser')) ||
-        (side === 'soknader' && sti.includes('soknader'))
+        (side === 'soknader' && sti.includes('soknader')) ||
+        (side === 'profil' && sti.includes('profil'))
       ) a.classList.add('aktiv');
     });
     const btn = document.getElementById('hamburger-btn');

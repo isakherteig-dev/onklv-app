@@ -284,12 +284,15 @@ import {
             </div>
             <div class="kort-footer">
               <div></div>
-              ${harSokt
-                ? `<span class="badge badge-godkjent">Allerede søkt</span>`
-                : utlopt
-                  ? `<span class="badge badge-trukket">Utløpt</span>`
-                  : `<button class="btn btn-primary btn-liten sok-naa-btn" data-id="${escHtml(plassId)}" data-tittel="${escHtml(p.tittel || '')}">Søk nå →</button>`
-              }
+              <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                ${p.bedrift_user_id ? `<a href="/bedrift/profil.html?uid=${encodeURIComponent(p.bedrift_user_id)}" class="btn btn-ghost btn-liten">Se bedrift</a>` : ''}
+                ${harSokt
+                  ? `<span class="badge badge-godkjent">Allerede søkt</span>`
+                  : utlopt
+                    ? `<span class="badge badge-trukket">Utløpt</span>`
+                    : `<button class="btn btn-primary btn-liten sok-naa-btn" data-id="${escHtml(plassId)}" data-tittel="${escHtml(p.tittel || '')}">Søk nå →</button>`
+                }
+              </div>
             </div>
           </div>`;
       }).join('');

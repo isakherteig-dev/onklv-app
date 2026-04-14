@@ -373,4 +373,113 @@ ruter.delete('/video', krevAuth, krevRolle('laerling'), async (req, res) => {
   }
 });
 
+/**
+ * POST /api/cv/bedrift-video/signed-url
+ * Signert URL for bedrift-videopresentasjon.
+ */
+ruter.post('/bedrift-video/signed-url', krevAuth, krevRolle('bedrift'), async (req, res) => {
+  const { filnavn, contentType, size } = req.body;
+
+  if (!filnavn || !contentType || size == null) {
+    return res.status(400).json({ feil: 'Manglende filinfo.' });
+  }
+
+  const ext = path.extname(filnavn).toLowerCase();
+  const EXT_TIL_MIME = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime' };
+  const resolvedContentType = (contentType && TILLATTE_VIDEO_TYPER.includes(contentType))
+    ? contentType
+    : EXT_TIL_MIME[ext] || contentType;
+  if (!TILLATTE_VIDEO_EXT.includes(ext) || !TILLATTE_VIDEO_TYPER.includes(resolvedContentType)) {
+    return res.status(400).json({ feil: 'Kun MP4, WebM og MOV er tillatt.' });
+  }
+  if (size > MAX_VIDEO_BYTES) {
+    return res.status(400).json({ feil: 'Videoen er for stor. Maks 100 MB.' });
+  }
+
+  try {
+    const uid = req.user.uid;
+    const profilRef = adminDB.collection('users').doc(uid).collection('bedriftProfil').doc('main');
+    const profilDoc = await profilRef.get();
+
+    if (profilDoc.exists && profilDoc.data().videoPath) {
+      await slettGammelVideoFraStorage(profilDoc.data().videoPath);
+    }
+
+    const storagePath = `bedriftVideoer/${uid}/intro${ext}`;
+    const bucket = adminStorage.bucket(process.env.FB_STORAGE_BUCKET);
+    const [signedUrl] = await bucket.file(storagePath).getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000,
+      contentType: resolvedContentType
+    });
+
+    res.json({ ok: true, signedUrl, storagePath, contentType: resolvedContentType });
+  } catch (err) {
+    console.error('Bedrift video signed-url feil:', err.message);
+    res.status(500).json({ feil: 'Kunne ikke klargjøre opplasting.' });
+  }
+});
+
+/**
+ * POST /api/cv/bedrift-video/confirm
+ */
+ruter.post('/bedrift-video/confirm', krevAuth, krevRolle('bedrift'), async (req, res) => {
+  const { storagePath, filnavn } = req.body;
+
+  if (!storagePath || !filnavn) {
+    return res.status(400).json({ feil: 'Manglende feltinfo.' });
+  }
+
+  const forventetPrefix = `bedriftVideoer/${req.user.uid}/`;
+  if (!storagePath.startsWith(forventetPrefix)) {
+    return res.status(403).json({ feil: 'Ingen tilgang.' });
+  }
+
+  try {
+    const bucket = adminStorage.bucket(process.env.FB_STORAGE_BUCKET);
+    const fil = bucket.file(storagePath);
+    const [exists] = await fil.exists();
+    if (!exists) return res.status(400).json({ feil: 'Video ikke funnet etter opplasting.' });
+
+    const [videoURL] = await fil.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000
+    });
+
+    await adminDB.collection('users').doc(req.user.uid)
+      .collection('bedriftProfil').doc('main')
+      .set({ videoPath: storagePath, videoURL, videoFilnavn: filnavn }, { merge: true });
+
+    res.json({ ok: true, videoURL, videoFilnavn: filnavn });
+  } catch (err) {
+    console.error('Bedrift video confirm feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke lagre video.' });
+  }
+});
+
+/**
+ * DELETE /api/cv/bedrift-video
+ */
+ruter.delete('/bedrift-video', krevAuth, krevRolle('bedrift'), async (req, res) => {
+  try {
+    const profilRef = adminDB.collection('users').doc(req.user.uid)
+      .collection('bedriftProfil').doc('main');
+    const doc = await profilRef.get();
+
+    if (doc.exists && doc.data().videoPath) {
+      await slettGammelVideoFraStorage(doc.data().videoPath);
+    }
+
+    await profilRef.set({
+      videoPath: null, videoURL: null, videoFilnavn: null
+    }, { merge: true });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Bedrift video sletting feil:', err);
+    res.status(500).json({ feil: 'Kunne ikke slette video.' });
+  }
+});
+
 export default ruter;
